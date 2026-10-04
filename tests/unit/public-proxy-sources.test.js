@@ -24,23 +24,23 @@ const FREEPROXYDB_FIXTURE = {
   status: 1,
   message: "success",
   data: {
-    total_count: 3,
+    total_count: 4,
     data: [
       {
         ip: "101.251.204.174", port: 8080, protocol: "http", country: "CN",
-        is_valid: 1, connect_string: "http://101.251.204.174:8080",
+        anonymity: "elite", speed: 2.4, is_valid: 1, connect_string: "http://101.251.204.174:8080",
       },
       {
         ip: "47.105.122.72", port: 9080, protocol: "http", country: "CN",
-        is_valid: 0, connect_string: "http://47.105.122.72:9080",
+        anonymity: "transparent", speed: 9.9, is_valid: 0, connect_string: "http://47.105.122.72:9080",
       },
       {
         ip: "203.0.113.10", port: 1080, protocol: "socks5", country: "US",
-        is_valid: 1, connect_string: "socks5://203.0.113.10:1080",
+        anonymity: "anonymous", speed: 0, is_valid: 1, connect_string: "socks5://203.0.113.10:1080",
       },
       {
         ip: "198.51.100.7", port: 1080, protocol: "socks4", country: "DE",
-        is_valid: 1, connect_string: "socks4://198.51.100.7:1080",
+        anonymity: "elite", speed: 1, is_valid: 1, connect_string: "socks4://198.51.100.7:1080",
       },
     ],
   },
@@ -140,15 +140,53 @@ describe("fetchPublicProxyEntries (freeproxydb)", () => {
 
     const url = new URL(fetchMock.mock.calls[0][0]);
     expect(url.origin + url.pathname).toBe("https://freeproxydb.com/api/proxy/search");
-    expect(url.searchParams.get("order_by")).toBe("check_success_count");
+    // Always fetch the freshest full page — it carries the highest density of
+    // currently-valid rows; ranking happens client-side.
+    expect(url.searchParams.get("order_by")).toBe("last_checked");
     expect(url.searchParams.get("order_dir")).toBe("desc");
     expect(url.searchParams.get("page_size")).toBe("100");
     expect(url.searchParams.get("https")).toBe("1");
     expect(url.searchParams.get("speed")).toBe("0,10");
 
+    // Names carry the filter metadata (country, anonymity, measured speed) so
+    // the applied filters are visible in the pool list.
     expect(entries).toEqual([
-      { name: "FreeProxyDB CN 101.251.204.174:8080", proxyUrl: "http://101.251.204.174:8080/", type: "http" },
-      { name: "FreeProxyDB US 203.0.113.10:1080", proxyUrl: "socks5://203.0.113.10:1080", type: "http" },
+      { name: "FreeProxyDB CN elite 2.4s 101.251.204.174:8080", proxyUrl: "http://101.251.204.174:8080/", type: "http" },
+      { name: "FreeProxyDB US anonymous 203.0.113.10:1080", proxyUrl: "socks5://203.0.113.10:1080", type: "http" },
+    ]);
+  });
+
+  it("ranks by latency client-side and demotes unmeasured (speed=0) proxies", async () => {
+    const rows = [
+      { ip: "1.1.1.1", port: 1, country: "US", anonymity: "elite", speed: 0, is_valid: 1, connect_string: "http://1.1.1.1:1" },
+      { ip: "2.2.2.2", port: 2, country: "US", anonymity: "elite", speed: 5.5, is_valid: 1, connect_string: "http://2.2.2.2:2" },
+      { ip: "3.3.3.3", port: 3, country: "US", anonymity: "elite", speed: 1.5, is_valid: 1, connect_string: "http://3.3.3.3:3" },
+    ];
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { data: rows } }));
+
+    const entries = await fetchPublicProxyEntries("freeproxydb", { count: 10, protocol: "http", orderBy: "latency" });
+
+    expect(entries.map((entry) => entry.proxyUrl)).toEqual([
+      "http://3.3.3.3:3/",
+      "http://2.2.2.2:2/",
+      "http://1.1.1.1:1/",
+    ]);
+  });
+
+  it("ranks by success client-side among the valid rows", async () => {
+    const rows = [
+      { ip: "1.1.1.1", port: 1, country: "US", anonymity: "elite", check_success_count: 2, is_valid: 1, connect_string: "http://1.1.1.1:1" },
+      { ip: "2.2.2.2", port: 2, country: "US", anonymity: "elite", check_success_count: 42, is_valid: 1, connect_string: "http://2.2.2.2:2" },
+      { ip: "3.3.3.3", port: 3, country: "US", anonymity: "elite", check_success_count: 7, is_valid: 1, connect_string: "http://3.3.3.3:3" },
+    ];
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { data: rows } }));
+
+    const entries = await fetchPublicProxyEntries("freeproxydb", { count: 10, protocol: "http", orderBy: "success" });
+
+    expect(entries.map((entry) => entry.proxyUrl)).toEqual([
+      "http://2.2.2.2:2/",
+      "http://3.3.3.3:3/",
+      "http://1.1.1.1:1/",
     ]);
   });
 

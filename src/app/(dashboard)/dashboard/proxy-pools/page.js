@@ -193,6 +193,23 @@ function PublicImportModal({ isOpen, form, importing, onChange, onImport, onClos
             disabled={importing}
           />
         ) : null}
+        {source.supportsOrderBy ? (
+          <div>
+            <label htmlFor="public-proxy-order" className="text-sm font-medium text-text-main mb-1 block">Order by</label>
+            <select
+              id="public-proxy-order"
+              value={form.orderBy}
+              onChange={(e) => onChange("orderBy", e.target.value)}
+              className={PUBLIC_IMPORT_SELECT_CLASS}
+              disabled={importing}
+            >
+              {source.orderByOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-text-muted mt-1">Fastest = lowest measured latency; unmeasured proxies sort last.</p>
+          </div>
+        ) : null}
         <p className="text-xs text-text-muted">
           Imported pools start active. Free proxies churn fast — run Health Check after importing and disable the dead ones.
         </p>
@@ -259,6 +276,7 @@ export default function ProxyPoolsPage() {
     anonymity: "",
     httpsOnly: false,
     maxSpeed: "",
+    orderBy: "success",
   });
   const [publicImporting, setPublicImporting] = useState(false);
   const [editingProxyPool, setEditingProxyPool] = useState(null);
@@ -578,6 +596,7 @@ export default function ProxyPoolsPage() {
       anonymity: "",
       httpsOnly: false,
       maxSpeed: "",
+      orderBy: "success",
     });
     setShowPublicImportModal(true);
   };
@@ -599,6 +618,7 @@ export default function ProxyPoolsPage() {
           anonymity: "",
           httpsOnly: false,
           maxSpeed: source.supportsMaxSpeed ? prev.maxSpeed : "",
+          orderBy: "success",
         };
       }
       return { ...prev, [field]: value };
@@ -617,9 +637,13 @@ export default function ProxyPoolsPage() {
       if (res.ok) {
         await fetchProxyPools();
         setShowPublicImportModal(false);
-        notify.success(
-          `Public import: created ${data.imported}, skipped ${data.duplicates} duplicates${data.failed ? `, failed ${data.failed}` : ""}`
-        );
+        if (data.imported === 0 && data.reason) {
+          notify.warning(data.reason);
+        } else {
+          notify.success(
+            `Public import: created ${data.imported}, skipped ${data.duplicates} duplicates${data.failed ? `, failed ${data.failed}` : ""}`
+          );
+        }
       } else {
         notify.error(data.error || "Public import failed");
       }

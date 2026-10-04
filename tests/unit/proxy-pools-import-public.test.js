@@ -73,6 +73,27 @@ describe("POST /api/proxy-pools/import-public", () => {
     expect(await response.json()).toEqual({ error: "Speed filter is not supported for VPSLab" });
   });
 
+  it("rejects ordering on sources without ordering support", async () => {
+    const response = await POST(request({ source: "vpslab", orderBy: "latency" }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Ordering is not supported for VPSLab" });
+  });
+
+  it("explains when filters match no currently-valid proxies", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({
+      data: { data: [
+        { ip: "47.105.122.72", port: 9080, country: "CN", is_valid: 0, connect_string: "http://47.105.122.72:9080" },
+      ] },
+    }));
+
+    const response = await POST(request({ source: "freeproxydb", count: 50, protocol: "http", anonymity: "elite" }));
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data).toMatchObject({ fetched: 0, imported: 0, duplicates: 0 });
+    expect(data.reason).toContain("No currently-valid proxies matched");
+  });
+
   it("imports only new valid proxies and reports duplicates", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({
       data: { data: [

@@ -22,6 +22,29 @@ const VPSLAB_HTTP_FILES = {
   ssl: { any: "http_ssl.txt", elite: "http_ssl_elite.txt", anonymous: "http_ssl_anonymous.txt", transparent: "http_ssl.txt" },
 };
 
+// Client-side ranking of the fetched valid rows.
+//
+// Why client-side: measured against the live API, the search endpoint has no
+// server-side validity filter (an is_valid=1 param is silently ignored) and
+// `order_by=speed asc` fills the whole page with unmeasured invalid rows
+// (0 valid out of 50), while `order_by=last_checked desc` yields the most
+// currently-valid rows (11 out of 100, all with measured speeds). So we always
+// fetch the freshest page_size=100 and rank the valid remainder ourselves:
+//   - "success": lifetime check_success_count (reliability history)
+//   - "latency": measured speed ascending; 0 means "not measured" and is
+//     demoted below every measured proxy
+//   - "recent": keep the upstream last_checked order
+const FREEPROXYDB_FETCH_PAGE_SIZE = 100;
+const FREEPROXYDB_RANKERS = {
+  success: (a, b) => Number(b.check_success_count || 0) - Number(a.check_success_count || 0),
+  latency: (a, b) => {
+    const sa = Number(a.speed) > 0 ? Number(a.speed) : Number.POSITIVE_INFINITY;
+    const sb = Number(b.speed) > 0 ? Number(b.speed) : Number.POSITIVE_INFINITY;
+    return sa - sb;
+  },
+  recent: null,
+};
+
 function isValidIp(octets) {
   return octets.every((part) => Number(part) >= 0 && Number(part) <= 255);
 }
@@ -78,15 +101,18 @@ function buildFreeProxyDbUrl({ count, protocol, country, anonymity, httpsOnly, m
   if (anonymity) params.set("anonymity", anonymity);
   if (httpsOnly === true) params.set("https", "1");
   if (maxSpeed) params.set("speed", `0,${maxSpeed}`);
-  params.set("page_size", String(count));
-  params.set("order_by", "check_success_count");
+  // Always pull the freshest full page: this ordering carries the highest
+  // density of currently-valid rows (see FREEPROXYDB_RANKERS note above), and
+  // the requested ordering is applied client-side afterwards.
+  params.set("page_size", String(Math.max(count, FREEPROXYDB_FETCH_PAGE_SIZE)));
+  params.set("order_by", "last_checked");
   params.set("order_dir", "desc");
   return `${FREEPROXYDB_SEARCH_URL}?${params.toString()}`;
 }
 
-function parseFreeProxyDbPayload(payload, { count }) {
+function parseFreeProxyDbPayload(payload, { count, orderBy } = {}) {
   const rows = Array.isArray(payload?.data?.data) ? payload.data.data : [];
-  const entries = [];
+  let filtered = [];
   const seen = new Set();
   for (const row of rows) {
     // The search endpoint returns invalid entries too — only currently
@@ -97,15 +123,25 @@ function parseFreeProxyDbPayload(payload, { count }) {
     const scheme = connectString.split("://")[0];
     if (scheme !== "http" && scheme !== "socks5") continue;
     const proxyUrl = normalizeProxyUrlKey(connectString);
-    if (!proxyUrl) continue;
-    if (seen.has(proxyUrl)) continue;
+    if (!proxyUrl || seen.has(proxyUrl)) continue;
     seen.add(proxyUrl);
-    const hostLabel = row.port ? `${row.ip}:${row.port}` : `${row.ip}`;
-    const country = typeof row.country === "string" && row.country ? ` ${row.country}` : "";
-    entries.push({ name: `FreeProxyDB${country} ${hostLabel}`, proxyUrl, type: "http" });
-    if (entries.length >= count) break;
+    filtered.push(row);
   }
-  return entries;
+
+  const ranker = FREEPROXYDB_RANKERS[orderBy] || null;
+  if (ranker) filtered.sort(ranker);
+
+  return filtered.slice(0, count).map((row) => {
+    const connectString = row.connect_string.trim();
+    const proxyUrl = normalizeProxyUrlKey(connectString);
+    const hostLabel = row.port ? `${row.ip}:${row.port}` : `${row.ip}`;
+    const bits = ["FreeProxyDB"];
+    if (typeof row.country === "string" && row.country) bits.push(row.country);
+    if (PUBLIC_PROXY_ANONYMITY_LEVELS.includes(row.anonymity)) bits.push(row.anonymity);
+    if (Number(row.speed) > 0) bits.push(`${Number(row.speed).toFixed(1)}s`);
+    bits.push(hostLabel);
+    return { name: bits.join(" "), proxyUrl, type: "http" };
+  });
 }
 
 async function fetchUpstream(url, { sourceLabel, timeoutMs = FETCH_TIMEOUT_MS } = {}) {

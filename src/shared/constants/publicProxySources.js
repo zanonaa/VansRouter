@@ -18,6 +18,15 @@ export const PUBLIC_PROXY_SOURCES = {
     supportsAnonymity: true,
     supportsHttpsOnly: true,
     supportsMaxSpeed: true,
+    // Ranking is applied client-side on the fetched valid rows: "success" by
+    // lifetime check_success_count, "latency" by measured speed (0 = not
+    // measured, sorted last), "recent" by upstream last_checked order.
+    supportsOrderBy: true,
+    orderByOptions: [
+      { value: "success", label: "Best success rate" },
+      { value: "latency", label: "Fastest first (latency)" },
+      { value: "recent", label: "Recently checked" },
+    ],
     minCount: 10,
     // /api/proxy/search caps page_size at 100
     maxCount: 100,
@@ -35,6 +44,7 @@ export const PUBLIC_PROXY_SOURCES = {
     supportsHttpsOnly: true,
     anonymityProtocols: ["http"],
     supportsMaxSpeed: false,
+    supportsOrderBy: false,
     minCount: 10,
     maxCount: 500,
     defaultCount: 100,

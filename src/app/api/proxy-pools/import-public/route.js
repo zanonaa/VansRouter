@@ -39,7 +39,12 @@ function parseImportRequest(body = {}, source) {
     return { error: `Speed filter is not supported for ${source.label}` };
   }
 
-  return { protocol, count, country, anonymity, httpsOnly, maxSpeed };
+  const orderBy = typeof body?.orderBy === "string" && body.orderBy ? body.orderBy : "success";
+  if (!source.supportsOrderBy && orderBy !== "success") {
+    return { error: `Ordering is not supported for ${source.label}` };
+  }
+
+  return { protocol, count, country, anonymity, httpsOnly, maxSpeed, orderBy };
 }
 
 // POST /api/proxy-pools/import-public - Import proxies from a public list source
@@ -105,6 +110,9 @@ export async function POST(request) {
       duplicates,
       failed,
       created,
+      ...(entries.length === 0
+        ? { reason: "No currently-valid proxies matched these filters — relax the filters, switch the ordering, or try again later (the list refreshes continuously)." }
+        : {}),
     });
   } catch (error) {
     console.log("Error importing public proxies:", error);
