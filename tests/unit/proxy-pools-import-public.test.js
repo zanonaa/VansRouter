@@ -127,6 +127,30 @@ describe("POST /api/proxy-pools/import-public", () => {
     expect(url.searchParams.get("page_size")).toBe("100");
   });
 
+  it("imports exactly the requested count when it is below the old floor", async () => {
+    const rows = ["1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"].map((ip, i) => ({
+      ip, port: 80 + i, country: "US", anonymity: "elite", speed: 1, is_valid: 1, connect_string: `http://${ip}:${80 + i}`,
+    }));
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { data: rows } }));
+
+    const response = await POST(request({ source: "freeproxydb", count: 2, protocol: "http" }));
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.imported).toBe(2);
+    expect(data.created).toHaveLength(2);
+  });
+
+  it("clamps a zero count up to the source minimum instead of importing ten", async () => {
+    const rows = [{ ip: "1.1.1.1", port: 80, country: "US", is_valid: 1, connect_string: "http://1.1.1.1:80" }];
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { data: rows } }));
+
+    const response = await POST(request({ source: "freeproxydb", count: 0, protocol: "http" }));
+    const data = await response.json();
+
+    expect(data.imported).toBe(1);
+  });
+
   it("maps vpslab filters to the published file and imports ip:port entries", async () => {
     fetchMock.mockResolvedValueOnce(textResponse("# header\r\n1.2.3.4:8080\r\n5.6.7.8:80\r\n"));
 

@@ -27,7 +27,7 @@ export const PUBLIC_PROXY_SOURCES = {
       { value: "latency", label: "Fastest first (latency)" },
       { value: "recent", label: "Recently checked" },
     ],
-    minCount: 10,
+    minCount: 1,
     // /api/proxy/search caps page_size at 100
     maxCount: 100,
     defaultCount: 50,
@@ -45,7 +45,7 @@ export const PUBLIC_PROXY_SOURCES = {
     anonymityProtocols: ["http"],
     supportsMaxSpeed: false,
     supportsOrderBy: false,
-    minCount: 10,
+    minCount: 1,
     maxCount: 500,
     defaultCount: 100,
     note: "Plain ip:port lists served from GitHub raw (5-minute cache). No country or speed metadata.",
