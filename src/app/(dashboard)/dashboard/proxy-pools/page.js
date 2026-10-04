@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Badge, Button, Card, CardSkeleton, Input, Modal, Toggle, ConfirmModal } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
 import { countBatchResults, dedupeProxyEntries, runProxyPoolBatch } from "./batchOperations.js";
+import { PUBLIC_PROXY_SOURCES } from "@/shared/constants/publicProxySources.js";
 
 function parseProxyLine(line) {
   const trimmed = line.trim();
@@ -95,6 +96,115 @@ function BatchImportModal({ isOpen, text, importing, onChange, onImport, onClose
   );
 }
 
+const PUBLIC_IMPORT_SELECT_CLASS = "w-full px-2 py-2 bg-surface rounded-md text-sm text-text-main border border-border focus:outline-none focus:ring-1 focus:ring-primary/50";
+
+function PublicImportModal({ isOpen, form, importing, onChange, onImport, onClose }) {
+  const source = PUBLIC_PROXY_SOURCES[form.source] || PUBLIC_PROXY_SOURCES.freeproxydb;
+  const vpsLabSocks = form.source === "vpslab" && form.protocol === "socks5";
+  const anonymityDisabled = !source.supportsAnonymity || (vpsLabSocks && !source.anonymityProtocols?.includes("socks5"));
+
+  return (
+    <Modal isOpen={isOpen} title="Import from Public Lists" onClose={onClose}>
+      <div className="flex flex-col gap-4">
+        <div>
+          <label htmlFor="public-proxy-source" className="text-sm font-medium text-text-main mb-1 block">Source</label>
+          <select
+            id="public-proxy-source"
+            value={form.source}
+            onChange={(e) => onChange("source", e.target.value)}
+            className={PUBLIC_IMPORT_SELECT_CLASS}
+            disabled={importing}
+          >
+            {Object.values(PUBLIC_PROXY_SOURCES).map((entry) => (
+              <option key={entry.id} value={entry.id}>{entry.label}</option>
+            ))}
+          </select>
+          <p className="text-xs text-text-muted mt-1">{source.note}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="public-proxy-count" className="text-sm font-medium text-text-main mb-1 block">Count</label>
+            <Input
+              id="public-proxy-count"
+              type="number"
+              value={form.count}
+              onChange={(e) => onChange("count", e.target.value)}
+              placeholder={String(source.defaultCount)}
+              hint={`${source.minCount}-${source.maxCount}`}
+              disabled={importing}
+            />
+          </div>
+          <div>
+            <label htmlFor="public-proxy-protocol" className="text-sm font-medium text-text-main mb-1 block">Protocol</label>
+            <select
+              id="public-proxy-protocol"
+              value={form.protocol}
+              onChange={(e) => onChange("protocol", e.target.value)}
+              className={PUBLIC_IMPORT_SELECT_CLASS}
+              disabled={importing}
+            >
+              {source.protocols.map((protocol) => (
+                <option key={protocol} value={protocol}>{protocol.toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {source.supportsCountry ? (
+          <Input
+            label="Country"
+            value={form.country}
+            onChange={(e) => onChange("country", e.target.value)}
+            placeholder="US,CA"
+            hint="Optional country codes, comma-separated"
+            disabled={importing}
+          />
+        ) : null}
+        <div>
+          <label htmlFor="public-proxy-anonymity" className="text-sm font-medium text-text-main mb-1 block">Anonymity</label>
+          <select
+            id="public-proxy-anonymity"
+            value={form.anonymity}
+            onChange={(e) => onChange("anonymity", e.target.value)}
+            className={PUBLIC_IMPORT_SELECT_CLASS}
+            disabled={importing || anonymityDisabled}
+          >
+            <option value="">any</option>
+            <option value="elite">elite</option>
+            <option value="anonymous">anonymous</option>
+            <option value="transparent">transparent</option>
+          </select>
+          {anonymityDisabled ? <p className="text-xs text-text-muted mt-1">VPSLab socks5 list has no anonymity cuts.</p> : null}
+        </div>
+        <ToggleField
+          label="HTTPS only"
+          description="Only proxies verified as HTTPS-capable."
+          checked={form.httpsOnly === true}
+          onChange={() => onChange("httpsOnly", !form.httpsOnly)}
+          disabled={importing || (form.source === "vpslab" && form.protocol === "socks5")}
+        />
+        {source.supportsMaxSpeed ? (
+          <Input
+            label="Max speed (s)"
+            value={form.maxSpeed}
+            onChange={(e) => onChange("maxSpeed", e.target.value)}
+            placeholder="10"
+            hint="Optional upper bound on response time in seconds"
+            type="number"
+            disabled={importing}
+          />
+        ) : null}
+        <p className="text-xs text-text-muted">
+          Imported pools start active. Free proxies churn fast — run Health Check after importing and disable the dead ones.
+        </p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <Button fullWidth onClick={onImport} disabled={importing}>{importing ? "Importing..." : "Import"}</Button>
+          <Button fullWidth variant="ghost" onClick={onClose} disabled={importing}>Cancel</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 function DeploymentModal({ isOpen, title, onClose, children }) {
   return <Modal isOpen={isOpen} title={title} onClose={onClose}>{children}</Modal>;
 }
@@ -139,6 +249,18 @@ export default function ProxyPoolsPage() {
   const [showCloudflareModal, setShowCloudflareModal] = useState(false);
   const [showDenoModal, setShowDenoModal] = useState(false);
   const [showRelayMenu, setShowRelayMenu] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showPublicImportModal, setShowPublicImportModal] = useState(false);
+  const [publicImportForm, setPublicImportForm] = useState({
+    source: "freeproxydb",
+    count: PUBLIC_PROXY_SOURCES.freeproxydb.defaultCount,
+    protocol: "http",
+    country: "",
+    anonymity: "",
+    httpsOnly: false,
+    maxSpeed: "",
+  });
+  const [publicImporting, setPublicImporting] = useState(false);
   const [editingProxyPool, setEditingProxyPool] = useState(null);
   const [formData, setFormData] = useState(() => normalizeFormData());
   const [batchImportText, setBatchImportText] = useState("");
@@ -156,6 +278,7 @@ export default function ProxyPoolsPage() {
   const [batchProgress, setBatchProgress] = useState({ label: "", current: 0, total: 0 });
   const [confirmState, setConfirmState] = useState(null);
   const relayMenuRef = useRef(null);
+  const addMenuRef = useRef(null);
   const notify = useNotificationStore();
 
   useEffect(() => {
@@ -163,12 +286,15 @@ export default function ProxyPoolsPage() {
       if (relayMenuRef.current && !relayMenuRef.current.contains(e.target)) {
         setShowRelayMenu(false);
       }
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target)) {
+        setShowAddMenu(false);
+      }
     };
-    if (showRelayMenu) {
+    if (showRelayMenu || showAddMenu) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showRelayMenu]);
+  }, [showRelayMenu, showAddMenu]);
 
   const fetchProxyPools = useCallback(async () => {
     try {
@@ -443,6 +569,68 @@ export default function ProxyPoolsPage() {
     setShowBatchImportModal(false);
   };
 
+  const openPublicImportModal = () => {
+    setPublicImportForm({
+      source: "freeproxydb",
+      count: PUBLIC_PROXY_SOURCES.freeproxydb.defaultCount,
+      protocol: "http",
+      country: "",
+      anonymity: "",
+      httpsOnly: false,
+      maxSpeed: "",
+    });
+    setShowPublicImportModal(true);
+  };
+
+  const closePublicImportModal = () => {
+    if (publicImporting) return;
+    setShowPublicImportModal(false);
+  };
+
+  const handlePublicImportField = (field, value) => {
+    setPublicImportForm((prev) => {
+      if (field === "source") {
+        const source = PUBLIC_PROXY_SOURCES[value] || prev.source;
+        return {
+          source: value,
+          count: source.defaultCount,
+          protocol: "http",
+          country: source.supportsCountry ? prev.country : "",
+          anonymity: "",
+          httpsOnly: false,
+          maxSpeed: source.supportsMaxSpeed ? prev.maxSpeed : "",
+        };
+      }
+      return { ...prev, [field]: value };
+    });
+  };
+
+  const handlePublicImport = async () => {
+    setPublicImporting(true);
+    try {
+      const res = await fetch("/api/proxy-pools/import-public", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(publicImportForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchProxyPools();
+        setShowPublicImportModal(false);
+        notify.success(
+          `Public import: created ${data.imported}, skipped ${data.duplicates} duplicates${data.failed ? `, failed ${data.failed}` : ""}`
+        );
+      } else {
+        notify.error(data.error || "Public import failed");
+      }
+    } catch (error) {
+      console.log("Error importing public proxies:", error);
+      notify.error("Public import failed");
+    } finally {
+      setPublicImporting(false);
+    }
+  };
+
   const openVercelModal = () => {
     setVercelForm({ vercelToken: "", projectName: "vercel-relay" });
     setShowVercelModal(true);
@@ -697,7 +885,43 @@ export default function ProxyPoolsPage() {
           <Button size="sm" variant="secondary" icon="upload" onClick={openBatchImportModal}>
             Batch Import
           </Button>
-          <Button size="sm" icon="add" onClick={openCreateModal}>Add Proxy Pool</Button>
+          <div className="relative" ref={addMenuRef}>
+            <Button
+              size="sm"
+              icon="add"
+              onClick={() => setShowAddMenu(!showAddMenu)}
+            >
+              Add Proxy Pool
+              <span className="material-symbols-outlined ml-1 text-[18px]">
+                {showAddMenu ? "expand_less" : "expand_more"}
+              </span>
+            </Button>
+
+            {showAddMenu && (
+              <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-xl border border-black/10 bg-white p-1 shadow-xl dark:border-white/10 dark:bg-zinc-900 sm:left-auto sm:right-0">
+                <button type="button"
+                  onClick={() => {
+                    openCreateModal();
+                    setShowAddMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  <span className="material-symbols-outlined text-[20px] text-primary">edit_note</span>
+                  Manual Entry
+                </button>
+                <button type="button"
+                  onClick={() => {
+                    openPublicImportModal();
+                    setShowAddMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  <span className="material-symbols-outlined text-[20px] text-emerald-500">public</span>
+                  Import from Public Lists
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -796,6 +1020,15 @@ export default function ProxyPoolsPage() {
         onChange={setBatchImportText}
         onImport={handleBatchImport}
         onClose={closeBatchImportModal}
+      />
+
+      <PublicImportModal
+        isOpen={showPublicImportModal}
+        form={publicImportForm}
+        importing={publicImporting}
+        onChange={handlePublicImportField}
+        onImport={handlePublicImport}
+        onClose={closePublicImportModal}
       />
 
       <DeploymentModal isOpen={showVercelModal} title="Deploy Vercel Relay" onClose={closeVercelModal}>
