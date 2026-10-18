@@ -1,3 +1,10 @@
+# v0.91.63 (2026-10-18)
+
+- **Import models**: a saved OpenCode Free account made the button request
+  `https://opencode.ai/models`, which answers 404. The import now uses the
+  catalog the provider declares (`/zen/v1/models`). A failed public catalog
+  returns 502 with the reason instead of an empty list cached for 10 minutes.
+
 # v0.91.62 (2026-10-18)
 
 Local build while #158 and #165 wait on the upstream. Both branches merge
