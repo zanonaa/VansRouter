@@ -1,3 +1,31 @@
+# v0.91.65 (2026-10-18)
+
+## Features
+
+- **Provider model import** (#168, PR #170): discovered models now open a
+  selection preview on standard and compatible provider pages. Search, select
+  individual entries or visible results, clear selection, and confirm only the
+  desired batch. Cancelling does not write registrations; failed imports stay
+  visible in the dialog instead of reporting success.
+- **Batch model removal** (#169, PR #171): search and select user-added models,
+  review the exact batch, then confirm removal. Deletes are scoped by provider
+  and model kind, including matching aliases. Built-in models and provider
+  connections are not deleted. Requests are sequential, so an error explicitly
+  warns that earlier deletions may already have completed.
+
+## Compatibility
+
+- Retains the fork's proxy import (#158), OpenCode Free contract (#165), and
+  catalog discovery (#167 plus PROVIDER_MEDIA/public-catalog corrections) from
+  0.91.64. These remain separate upstream pull requests.
+
+## Tests
+
+- 98 targeted tests passed across eight files covering both new batch helpers,
+  proxy import, OpenCode identity/tool-choice, catalog filters, and SSRF guards.
+- ESLint passed on all six changed implementation files. Browser interaction
+  coverage is not automated; no Dev deployment is included in this release.
+
 # v0.91.64 (2026-10-18)
 
 - **Import models**: the connection route looked for `modelsFetcher` on the
