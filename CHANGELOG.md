@@ -1,3 +1,13 @@
+# v0.91.69 (2026-10-18)
+
+## Fixes
+
+- **Catalog import 401**: any provider with a `modelsFetcher` was treated as a
+  public catalog and fetched without the connection key, so authenticated
+  catalogs (e.g. Token Harbor) answered 401. Only catalogs explicitly declared
+  `modelsFetcher.public === true` (OpenCode Free, Dahl) are now fetched
+  anonymously; the others send the stored key.
+
 # v0.91.68 (2026-10-18)
 
 ## Fixes
