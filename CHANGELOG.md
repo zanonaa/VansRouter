@@ -1,3 +1,32 @@
+# v0.91.66 (2026-10-18)
+
+## Features
+
+- **Split provider model import** (#168, PR #170): the `Import models` button is
+  now a dropdown with `Import all` and `Import batch`, matching the proxy-pools
+  pattern. The batch dialog offers search, `Select all` (visible results),
+  `Clear`, individual selection, and `Test connection` against the active
+  connection, then `Import N models` or `Close`. Available on standard and
+  OpenAI/Anthropic-compatible nodes; nothing is written before confirmation.
+- **Inline batch model removal** (#169, PR #171): the deletion flow now mirrors
+  the combos page instead of opening a dialog. Each user-added model row has a
+  checkbox, with a `Select all (N)` toggle that reveals `Remove (N)` and
+  `Clear`. Removal is confirmed, scoped by provider and model kind (including
+  matching aliases), and leaves built-in models and connections untouched.
+
+## Compatibility
+
+- Supersedes the first-pass UX shipped conceptually in v0.91.65. Retains the
+  fork's proxy import (#158), OpenCode Free contract (#165), and catalog
+  discovery (#167 plus PROVIDER_MEDIA/public-catalog corrections) from 0.91.64.
+  These remain separate upstream pull requests.
+
+## Tests
+
+- 10 targeted tests across the import/removal helpers and custom-model repo
+  passed, plus ESLint on the changed files. Browser interaction coverage is not
+  automated; no Dev deployment is included in this release.
+
 # v0.91.65 (2026-10-18)
 
 ## Features
