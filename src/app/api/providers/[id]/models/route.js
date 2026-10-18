@@ -551,6 +551,9 @@ export async function GET(request, { params }) {
       const validateUrl = catalogUrl || deriveValidateUrl(regCfg);
       if (validateUrl && (connection.apiKey || connection.accessToken || catalogUrl)) {
         config = createOpenAIModelsConfig(validateUrl, regCfg);
+        // The declared catalog is public. A saved account token is not a credential
+        // for it, and sending one makes the catalog answer 401.
+        if (catalogUrl) config.publicCatalog = true;
       }
     }
     if (!config) {
@@ -574,9 +577,11 @@ export async function GET(request, { params }) {
       });
     }
 
-    // Get auth token
-    const token = connection.providerSpecificData?.copilotToken || connection.accessToken || connection.apiKey;
-    if (!token) {
+    // Get auth token. A public catalog is fetched without one.
+    const token = config.publicCatalog
+      ? ""
+      : connection.providerSpecificData?.copilotToken || connection.accessToken || connection.apiKey;
+    if (!token && !config.publicCatalog) {
       return NextResponse.json({ error: "No valid token found" }, { status: 401 });
     }
 
@@ -592,7 +597,7 @@ export async function GET(request, { params }) {
     // Build headers
     const headers = { ...config.headers };
     if (connection.provider === "kimchi") headers["User-Agent"] = getKimchiUserAgent();
-    if (config.authHeader && !config.authQuery) {
+    if (token && config.authHeader && !config.authQuery) {
       headers[config.authHeader] = (config.authPrefix || "") + token;
     }
 
