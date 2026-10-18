@@ -1,3 +1,11 @@
+# v0.91.68 (2026-10-18)
+
+## Fixes
+
+- **Import dropdown icons**: `select_all`/`done_all` are not in the Material
+  Symbols subset font, so they rendered as literal text. Use `download` and
+  `checklist`, which exist in the subset, keeping each item on one line.
+
 # v0.91.67 (2026-10-18)
 
 ## Fixes
