@@ -29,8 +29,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.ref }}
           persist-credentials: false
+
+      - name: Check out the requested ref
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${{ inputs.ref }}"
+          git checkout --detach FETCH_HEAD
+          echo "Building $(git rev-parse HEAD)"
+          git status --short
 
       - name: Read the version this ref ships
         id: version
