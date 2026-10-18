@@ -4,7 +4,7 @@ import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/sha
 import { GEMINI_CONFIG } from "@/lib/oauth/constants/oauth";
 import { refreshGoogleToken, refreshCodexToken, updateProviderCredentials } from "@/sse/services/tokenRefresh";
 import { resolveOllamaLocalHost, getStaticProviderModels } from "open-sse/config/providers.js";
-import { PROVIDERS, PROVIDER_OAUTH } from "open-sse/providers/index.js";
+import { PROVIDERS, PROVIDER_MEDIA, PROVIDER_OAUTH } from "open-sse/providers/index.js";
 import { deriveValidateUrl } from "open-sse/providers/schema.js";
 import { resolveKiroModels } from "open-sse/services/kiroModels.js";
 import { resolveQoderModels } from "open-sse/services/qoderModels.js";
@@ -544,10 +544,10 @@ export async function GET(request, { params }) {
     let config = PROVIDER_MODELS_CONFIG[connection.provider];
     if (!config) {
       const regCfg = PROVIDERS[connection.provider];
-      // A declared catalog wins over a URL derived from the chat base. OpenCode
-      // Free's base is the site root, so the derived URL is https://opencode.ai/models,
-      // which answers 404, while its modelsFetcher points at the catalog that answers.
-      const catalogUrl = regCfg?.modelsFetcher?.url;
+      // modelsFetcher lives on PROVIDER_MEDIA, not on the transport object. OpenCode
+      // Free's transport base is the site root, so deriving /models from it requests
+      // https://opencode.ai/models (404). The declared catalog is /zen/v1/models.
+      const catalogUrl = PROVIDER_MEDIA[connection.provider]?.modelsFetcher?.url;
       const validateUrl = catalogUrl || deriveValidateUrl(regCfg);
       if (validateUrl && (connection.apiKey || connection.accessToken || catalogUrl)) {
         config = createOpenAIModelsConfig(validateUrl, regCfg);

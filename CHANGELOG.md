@@ -1,3 +1,12 @@
+# v0.91.64 (2026-10-18)
+
+- **Import models**: the connection route looked for `modelsFetcher` on the
+  transport object. The registry keeps it on `PROVIDER_MEDIA`, so OpenCode Free
+  still answered "does not support models listing" and the button requested
+  `https://opencode.ai/models` (404). The route now reads the declared catalog,
+  `https://opencode.ai/zen/v1/models`. Carries forward the free-tier session,
+  Responses body, retired-model, proxy-pool, and catalog-error fixes.
+
 # v0.91.63 (2026-10-18)
 
 - **Import models**: a saved OpenCode Free account made the button request

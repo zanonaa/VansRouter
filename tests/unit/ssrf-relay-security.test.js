@@ -84,7 +84,7 @@ describe("generated relay source", () => {
       path.join(projectRoot, "src/app/api/providers/[id]/models/route.js"),
       "utf8"
     );
-    const catalog = source.indexOf("regCfg?.modelsFetcher?.url");
+    const catalog = source.indexOf("PROVIDER_MEDIA[connection.provider]?.modelsFetcher?.url");
     const derived = source.indexOf("deriveValidateUrl(regCfg)");
     expect(catalog).toBeGreaterThan(-1);
     expect(derived).toBeGreaterThan(catalog);
