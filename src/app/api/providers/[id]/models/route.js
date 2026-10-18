@@ -547,13 +547,15 @@ export async function GET(request, { params }) {
       // modelsFetcher lives on PROVIDER_MEDIA, not on the transport object. OpenCode
       // Free's transport base is the site root, so deriving /models from it requests
       // https://opencode.ai/models (404). The declared catalog is /zen/v1/models.
-      const catalogUrl = PROVIDER_MEDIA[connection.provider]?.modelsFetcher?.url;
+      const media = PROVIDER_MEDIA[connection.provider];
+      const catalogUrl = media?.modelsFetcher?.url;
       const validateUrl = catalogUrl || deriveValidateUrl(regCfg);
       if (validateUrl && (connection.apiKey || connection.accessToken || catalogUrl)) {
         config = createOpenAIModelsConfig(validateUrl, regCfg);
-        // The declared catalog is public. A saved account token is not a credential
-        // for it, and sending one makes the catalog answer 401.
-        if (catalogUrl) config.publicCatalog = true;
+        // Only a catalog explicitly declared public is fetched anonymously. Most
+        // modelsFetcher endpoints (tokenharbor, nvidia, ...) need the connection
+        // key; sending none makes them answer 401.
+        if (catalogUrl && media.modelsFetcher.public === true) config.publicCatalog = true;
       }
     }
     if (!config) {

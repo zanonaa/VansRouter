@@ -36,6 +36,6 @@ export default {
     { id: "space-bunny-free", name: "Space Bunny Free" },
     { id: "muse-spark-1.2-contributor-free", name: "Muse Spark 1.2 Contributor Free", targetFormat: "openai-responses" },
   ],
-  modelsFetcher: { url: "https://opencode.ai/zen/v1/models", type: "opencode-free" },
+  modelsFetcher: { url: "https://opencode.ai/zen/v1/models", type: "opencode-free", public: true },
   passthroughModels: true,
 };
