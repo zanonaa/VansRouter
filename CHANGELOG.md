@@ -1,3 +1,19 @@
+# v0.91.62 (2026-10-18)
+
+Local build while #158 and #165 wait on the upstream. Both branches merge
+cleanly onto v0.91.61; neither is in the official main yet.
+
+- **OpenCode Free**: the free tier rejects a session id whose 12 hex are not the
+  client's inverted timestamp (403) and a User-Agent below opencode/1.18.0 (426).
+  A foreign session is now one minted inverted id. The Responses lane clamps
+  `max_output_tokens` up to 16, rewrites a tool name the lane rejects, and pairs
+  an orphan `function_call`. `muse-spark-1.3-contributor-free` (410) and
+  `union-alpha` (unavailable) leave the seed; the auto-only `tool_choice` quirk
+  moves to `muse-spark-1.2-contributor-free`, the Responses model still served.
+- **Proxy pools**: import proxies from the public FreeProxyDB and VPSLab lists,
+  with the dashboard modal, explicit ordering, exact import counts, and a
+  multi-target health check.
+
 # v0.91.61 (2026-10-02)
 
 128 commits over the v0.91.51 tag: an upstream sync to decolua/9router v0.5.95
