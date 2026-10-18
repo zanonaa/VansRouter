@@ -7,9 +7,10 @@ vi.mock("../../open-sse/utils/proxyFetch.js", () => ({
   proxyAwareFetch: vi.fn(async () => ({ ok: true, status: 200, headers: { get: () => "" } })),
 }));
 
-// OpenCode Free answers 400 for muse-spark-1.3-contributor-free unless
-// tool_choice is "auto", so named/required/none must be demoted.
-const FREE_13 = "muse-spark-1.3-contributor-free";
+// OpenCode Free answers 400 for muse-spark-1.2-contributor-free unless
+// tool_choice is "auto", so named/required/none must be demoted. The 1.3 id
+// that used to carry this quirk now answers 410 ModelDeprecated.
+const FREE_13 = "muse-spark-1.2-contributor-free";
 const CREDS = { connectionId: "opencode-free-tool-choice-test" };
 const INPUT = [{ type: "message", role: "user", content: [{ type: "input_text", text: "hi" }] }];
 const TOOLS = [{ type: "function", name: "get_weather", description: "w", parameters: { type: "object", properties: {} } }];
@@ -43,7 +44,7 @@ describe("opencode Free 1.3 tool_choice auto-only", () => {
 
   it("leaves tool_choice of other models untouched", () => {
     const choice = { type: "function", name: "get_weather" };
-    for (const model of ["muse-spark-1.2-contributor-free", "muse-spark-1.4-contributor-free", "big-pickle"]) {
+    for (const model of ["muse-spark-1.4-contributor-free", "big-pickle"]) {
       const body = responsesBody(model, structuredClone(choice));
       const out = new OpenCodeExecutor().transformRequest(model, body, true, CREDS);
       expect(out.tool_choice).toEqual(choice);
@@ -124,12 +125,50 @@ describe("opencode free-tier fingerprint tools", () => {
     expect(out.tools.map((tool) => tool.function.name)).toEqual(["get_weather", ...QUARTET]);
   });
 
+  it("repairs the Responses body the upstream answers 400 for", () => {
+    const body = {
+      model: "muse-spark-1.2-contributor-free",
+      max_output_tokens: 1,
+      input: [
+        { type: "message", role: "user", content: [{ type: "input_text", text: "hi" }] },
+        { type: "function_call", call_id: "call_orphan", name: "mcp:fs:read", arguments: "{}" },
+        { type: "function_call_output", call_id: "call_missing", output: "{}" },
+      ],
+      tools: [{ type: "function", name: "mcp:fs:read", description: "read", parameters: { type: "object", properties: {} } }],
+    };
+    const out = executor.transformRequest("muse-spark-1.2-contributor-free", body, true, CREDS);
+    expect(out.max_output_tokens).toBe(16);
+    expect(out.tools.find((tool) => tool.description === "read").name).toBe("mcp_fs_read");
+    expect(out.input.find((item) => item.call_id === "call_missing")).toBeUndefined();
+    const call = out.input.find((item) => item.type === "function_call" && item.call_id === "call_orphan");
+    expect(call.name).toBe("mcp_fs_read");
+    const output = out.input.find((item) => item.type === "function_call_output" && item.call_id === "call_orphan");
+    expect(output.output).toBe("{}");
+    expect(out.input.indexOf(output)).toBe(out.input.indexOf(call) + 1);
+  });
+
+  it("leaves a large Responses cap and a chat body alone", () => {
+    const responses = executor.transformRequest("muse-spark-1.2-contributor-free", {
+      input: structuredClone(INPUT), max_output_tokens: 700000,
+    }, true, CREDS);
+    expect(responses.max_output_tokens).toBe(700000);
+    const chat = executor.transformRequest("big-pickle", {
+      messages: [{ role: "user", content: "hi" }], max_tokens: 1,
+      tools: [{ type: "function", function: { name: "mcp:fs:read", parameters: { type: "object" } } }],
+    }, true, CREDS);
+    expect(chat.max_tokens).toBe(1);
+    expect(chat.tools[0].function.name).toBe("mcp:fs:read");
+  });
+
   it("uses Anthropic decoy shape for the Messages lane and leaves tool_choice alone", () => {
     const body = {
       messages: [{ role: "user", content: "hi" }],
       tools: [{ name: "get_weather", description: "w", input_schema: { type: "object", properties: {} } }],
     };
-    const out = executor.transformRequest("union-alpha", body, true, CREDS);
+    const out = executor.transformRequest("minimax-m3-free", body, true, {
+      ...CREDS,
+      runtimeTransport: { format: "claude" },
+    });
     expect(out.tools.map((tool) => tool.name)).toEqual(["get_weather", ...QUARTET]);
     expect(out.tools[1]).toMatchObject({ name: "bash", input_schema: { type: "object", properties: {} } });
     expect("tool_choice" in out).toBe(false);
