@@ -1,3 +1,11 @@
+# v0.91.67 (2026-10-18)
+
+## Fixes
+
+- **Import dropdown layout**: the `Import all` / `Import batch` menu items
+  wrapped onto two lines and the `done_all` glyph overflowed. Items now stay on
+  a single line with `select_all`/`checklist` icons and a min-width menu.
+
 # v0.91.66 (2026-10-18)
 
 ## Features
