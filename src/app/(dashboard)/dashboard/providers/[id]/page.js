@@ -2098,12 +2098,6 @@ export default function ProviderDetailPage() {
       )}
 
       {importPreview && <ModelImportModal models={importPreview} onClose={() => setImportPreview(null)} onConfirm={confirmModelImport} />}
-        models={getProviderCustomModelRows({ customModels, modelAliases, providerAlias: providerStorageAlias, builtInModels: models, type: "llm" })}
-        modelAliases={modelAliases}
-        providerAlias={providerStorageAlias}
-        onClose={() => setShowBulkModelDelete(false)}
-        onRefresh={async () => { await Promise.all([fetchCustomModels(), fetchAliases()]); window.dispatchEvent(new CustomEvent("customModelChanged")); }}
-      />}
 
       {/* AG Risk Confirmation Modal */}
       <ConfirmModal
