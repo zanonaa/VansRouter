@@ -75,6 +75,11 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Post("/api/auth/oidc/test", authentication.OIDCTest)
 	}
 	if authentication != nil && nodes != nil {
+		providerHandlers := handlers.Providers{Connections: nodes.Connections, Nodes: nodes.Store}
+		if nodes.Connections != nil {
+			r.Get("/api/providers", providerHandlers.List)
+			r.Head("/api/providers", withoutBody(providerHandlers.List))
+		}
 		r.Get("/api/provider-nodes", nodes.List)
 		r.Head("/api/provider-nodes", withoutBody(nodes.List))
 		r.Post("/api/provider-nodes", nodes.Create)

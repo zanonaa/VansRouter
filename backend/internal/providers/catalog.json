@@ -1,0 +1,2170 @@
+[
+  {
+    "id": "gemini-cli",
+    "category": "free",
+    "alias": "gc",
+    "aliases": [],
+    "name": "Gemini CLI",
+    "displayName": "gemini-cli",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "kiro",
+    "category": "free",
+    "alias": "kr",
+    "aliases": [],
+    "name": "Kiro AI",
+    "displayName": "kiro",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "mimo-free",
+    "category": "free",
+    "alias": "mmf",
+    "aliases": [],
+    "name": "MiMo Code Free",
+    "displayName": "mimo-free",
+    "noAuth": true,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "opencode",
+    "category": "free",
+    "alias": "oc",
+    "aliases": [],
+    "name": "OpenCode Free",
+    "displayName": "opencode",
+    "noAuth": true,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "devin-cli",
+    "category": "free",
+    "alias": "dv",
+    "aliases": [
+      "devin"
+    ],
+    "name": "Devin CLI",
+    "displayName": "devin-cli",
+    "noAuth": true,
+    "serviceKinds": [],
+    "authModes": [
+      "none"
+    ]
+  },
+  {
+    "id": "freebuff",
+    "category": "free",
+    "alias": "fb",
+    "aliases": [],
+    "name": "Freebuff",
+    "displayName": "freebuff",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth"
+    ]
+  },
+  {
+    "id": "agentrouter",
+    "category": "freeTier",
+    "alias": "agentrouter",
+    "aliases": [],
+    "name": "AgentRouter",
+    "displayName": "agentrouter",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "byteplus",
+    "category": "freeTier",
+    "alias": "bpm",
+    "aliases": [
+      "bpm"
+    ],
+    "name": "BytePlus ModelArk",
+    "displayName": "byteplus",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "cloudflare-ai",
+    "category": "freeTier",
+    "alias": "cf",
+    "aliases": [
+      "cf"
+    ],
+    "name": "Cloudflare",
+    "displayName": "cloudflare-ai",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "image"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "coqui",
+    "category": "freeTier",
+    "alias": "coqui",
+    "aliases": [],
+    "name": "Coqui TTS",
+    "displayName": "coqui",
+    "noAuth": true,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "edge-tts",
+    "category": "freeTier",
+    "alias": "edge-tts",
+    "aliases": [],
+    "name": "Edge TTS",
+    "displayName": "edge-tts",
+    "noAuth": true,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "gemini",
+    "category": "freeTier",
+    "alias": "gemini",
+    "aliases": [],
+    "name": "Gemini",
+    "displayName": "gemini",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "image",
+      "imageToText",
+      "webSearch",
+      "tts",
+      "stt"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "google-tts",
+    "category": "freeTier",
+    "alias": "google-tts",
+    "aliases": [],
+    "name": "Google TTS",
+    "displayName": "google-tts",
+    "noAuth": true,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "kimchi",
+    "category": "freeTier",
+    "alias": "kimchi",
+    "aliases": [],
+    "name": "Kimchi",
+    "displayName": "kimchi",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "webSearch"
+    ],
+    "authModes": [
+      "apikey",
+      "oauth"
+    ]
+  },
+  {
+    "id": "local-device",
+    "category": "freeTier",
+    "alias": "local-device",
+    "aliases": [],
+    "name": "Local Device",
+    "displayName": "local-device",
+    "noAuth": true,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "nvidia",
+    "category": "freeTier",
+    "alias": "nvidia",
+    "aliases": [],
+    "name": "NVIDIA NIM",
+    "displayName": "nvidia",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "ollama",
+    "category": "freeTier",
+    "alias": "ollama",
+    "aliases": [],
+    "name": "Ollama Cloud",
+    "displayName": "ollama",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "openrouter",
+    "category": "freeTier",
+    "alias": "openrouter",
+    "aliases": [],
+    "name": "OpenRouter",
+    "displayName": "openrouter",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "tts",
+      "imageToText",
+      "video"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "searxng",
+    "category": "freeTier",
+    "alias": "searxng",
+    "aliases": [],
+    "name": "SearXNG",
+    "displayName": "searxng",
+    "noAuth": true,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "tortoise",
+    "category": "freeTier",
+    "alias": "tortoise",
+    "aliases": [],
+    "name": "Tortoise TTS",
+    "displayName": "tortoise",
+    "noAuth": true,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "vertex",
+    "category": "freeTier",
+    "alias": "vx",
+    "aliases": [
+      "vx"
+    ],
+    "name": "Vertex AI",
+    "displayName": "vertex",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "imageToText",
+      "video"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "poolside",
+    "category": "freeTier",
+    "alias": "ps",
+    "aliases": [
+      "ps"
+    ],
+    "name": "Poolside",
+    "displayName": "poolside",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "api-airforce",
+    "category": "freeTier",
+    "alias": "af",
+    "aliases": [
+      "airforce"
+    ],
+    "name": "API.airforce",
+    "displayName": "api-airforce",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "llm7",
+    "category": "freeTier",
+    "alias": "llm7",
+    "aliases": [
+      "llm-7"
+    ],
+    "name": "LLM7",
+    "displayName": "llm7",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "agnes",
+    "category": "freeTier",
+    "alias": "agnes",
+    "aliases": [
+      "agnes-ai"
+    ],
+    "name": "Agnes AI",
+    "displayName": "agnes",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "antigravity",
+    "category": "oauth",
+    "alias": "ag",
+    "aliases": [],
+    "name": "Antigravity",
+    "displayName": "antigravity",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "image",
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "claude",
+    "category": "oauth",
+    "alias": "cc",
+    "aliases": [],
+    "name": "Claude Code",
+    "displayName": "claude",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "cline",
+    "category": "oauth",
+    "alias": "cl",
+    "aliases": [],
+    "name": "Cline",
+    "displayName": "cline",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "codebuddy-cn",
+    "category": "oauth",
+    "alias": "cbcn",
+    "aliases": [],
+    "name": "CodeBuddy CN",
+    "displayName": "codebuddy-cn",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "codex",
+    "category": "oauth",
+    "alias": "cx",
+    "aliases": [],
+    "name": "OpenAI Codex",
+    "displayName": "codex",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "cursor",
+    "category": "oauth",
+    "alias": "cu",
+    "aliases": [],
+    "name": "Cursor IDE",
+    "displayName": "cursor",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "github",
+    "category": "oauth",
+    "alias": "gh",
+    "aliases": [],
+    "name": "GitHub Copilot",
+    "displayName": "github",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "gitlab",
+    "category": "oauth",
+    "alias": null,
+    "aliases": [],
+    "name": "GitLab Duo",
+    "displayName": "gitlab",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "glm",
+    "category": "oauth",
+    "alias": "glm",
+    "aliases": [],
+    "name": "Zai GLM Coding",
+    "displayName": "glm",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "webSearch"
+    ],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "grok-cli",
+    "category": "oauth",
+    "alias": "gcli",
+    "aliases": [
+      "grok-build",
+      "gb"
+    ],
+    "name": "Grok CLI (Grok Build)",
+    "displayName": "grok-cli",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth"
+    ]
+  },
+  {
+    "id": "iflow",
+    "category": "oauth",
+    "alias": "if",
+    "aliases": [],
+    "name": "iFlow AI",
+    "displayName": "iflow",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "kilocode",
+    "category": "oauth",
+    "alias": "kc",
+    "aliases": [],
+    "name": "Kilo Code",
+    "displayName": "kilocode",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "kimi",
+    "category": "oauth",
+    "alias": "kimi",
+    "aliases": [
+      "kimi-coding",
+      "kmc"
+    ],
+    "name": "Kimi",
+    "displayName": "kimi",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "webSearch"
+    ],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "qoder",
+    "category": "oauth",
+    "alias": "qd",
+    "aliases": [],
+    "name": "Qoder",
+    "displayName": "qoder",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "qwen",
+    "category": "oauth",
+    "alias": "qw",
+    "aliases": [],
+    "name": "Qwen Code",
+    "displayName": "qwen",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "xai",
+    "category": "oauth",
+    "alias": "xai",
+    "aliases": [],
+    "name": "xAI (Grok)",
+    "displayName": "xai",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "imageToText",
+      "webSearch",
+      "image",
+      "video"
+    ],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "codebuddy-intl",
+    "category": "oauth",
+    "alias": "cbai",
+    "aliases": [],
+    "name": "CodeBuddy",
+    "displayName": "codebuddy-intl",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "zed",
+    "category": "oauth",
+    "alias": "zd",
+    "aliases": [],
+    "name": "Zed",
+    "displayName": "zed",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "qoder-cn",
+    "category": "oauth",
+    "alias": "qdcn",
+    "aliases": [],
+    "name": "Qoder CN",
+    "displayName": "qoder-cn",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "muse",
+    "category": "oauth",
+    "alias": "muse",
+    "aliases": [
+      "muse-ai",
+      "meta-model-api",
+      "muse-code",
+      "muse-subscription"
+    ],
+    "name": "Muse (Meta Model API)",
+    "displayName": "muse",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "oauth",
+      "apikey"
+    ]
+  },
+  {
+    "id": "ai21",
+    "category": "apikey",
+    "alias": "ai21",
+    "aliases": [],
+    "name": "AI21 Labs",
+    "displayName": "ai21",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "alibaba",
+    "category": "apikey",
+    "alias": "ali",
+    "aliases": [],
+    "name": "Alibaba DashScope",
+    "displayName": "alibaba",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "alicode-intl",
+    "category": "apikey",
+    "alias": "alicode-intl",
+    "aliases": [],
+    "name": "Alibaba Coding (Intl)",
+    "displayName": "alicode-intl",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "alicode",
+    "category": "apikey",
+    "alias": "alicode",
+    "aliases": [],
+    "name": "Alibaba Coding (CN)",
+    "displayName": "alicode",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "anthropic",
+    "category": "apikey",
+    "alias": "anthropic",
+    "aliases": [],
+    "name": "Anthropic",
+    "displayName": "anthropic",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "imageToText"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "assemblyai",
+    "category": "apikey",
+    "alias": "aai",
+    "aliases": [
+      "aai"
+    ],
+    "name": "AssemblyAI",
+    "displayName": "assemblyai",
+    "noAuth": false,
+    "serviceKinds": [
+      "stt"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "aws-polly",
+    "category": "apikey",
+    "alias": "polly",
+    "aliases": [],
+    "name": "AWS Polly",
+    "displayName": "aws-polly",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "azure",
+    "category": "apikey",
+    "alias": "azure",
+    "aliases": [],
+    "name": "Azure OpenAI",
+    "displayName": "azure",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "baseten",
+    "category": "apikey",
+    "alias": "baseten",
+    "aliases": [],
+    "name": "Baseten",
+    "displayName": "baseten",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "black-forest-labs",
+    "category": "apikey",
+    "alias": "bfl",
+    "aliases": [
+      "bfl"
+    ],
+    "name": "Black Forest Labs",
+    "displayName": "black-forest-labs",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "blackbox",
+    "category": "apikey",
+    "alias": "bb",
+    "aliases": [
+      "bb"
+    ],
+    "name": "Blackbox AI",
+    "displayName": "blackbox",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "brave-search",
+    "category": "apikey",
+    "alias": "brave",
+    "aliases": [],
+    "name": "Brave Search",
+    "displayName": "brave-search",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "bytez",
+    "category": "apikey",
+    "alias": "bytez",
+    "aliases": [],
+    "name": "Bytez",
+    "displayName": "bytez",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "cartesia",
+    "category": "apikey",
+    "alias": "cartesia",
+    "aliases": [],
+    "name": "Cartesia",
+    "displayName": "cartesia",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "cerebras",
+    "category": "apikey",
+    "alias": "cerebras",
+    "aliases": [],
+    "name": "Cerebras",
+    "displayName": "cerebras",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "chutes",
+    "category": "apikey",
+    "alias": "ch",
+    "aliases": [
+      "ch"
+    ],
+    "name": "Chutes AI",
+    "displayName": "chutes",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "clinepass",
+    "category": "apikey",
+    "alias": "clinepass",
+    "aliases": [],
+    "name": "ClinePass",
+    "displayName": "clinepass",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "codestral",
+    "category": "apikey",
+    "alias": "codestral",
+    "aliases": [],
+    "name": "Codestral",
+    "displayName": "codestral",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "cohere",
+    "category": "apikey",
+    "alias": "cohere",
+    "aliases": [],
+    "name": "Cohere",
+    "displayName": "cohere",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "comfyui",
+    "category": "apikey",
+    "alias": "comfyui",
+    "aliases": [],
+    "name": "ComfyUI",
+    "displayName": "comfyui",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "commandcode",
+    "category": "apikey",
+    "alias": "cmc",
+    "aliases": [
+      "cmc"
+    ],
+    "name": "Command Code",
+    "displayName": "commandcode",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "databricks",
+    "category": "apikey",
+    "alias": "databricks",
+    "aliases": [],
+    "name": "Databricks",
+    "displayName": "databricks",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "deepgram",
+    "category": "apikey",
+    "alias": "dg",
+    "aliases": [
+      "dg"
+    ],
+    "name": "Deepgram",
+    "displayName": "deepgram",
+    "noAuth": false,
+    "serviceKinds": [
+      "stt"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "deepinfra",
+    "category": "apikey",
+    "alias": "deepinfra",
+    "aliases": [],
+    "name": "DeepInfra",
+    "displayName": "deepinfra",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "deepseek",
+    "category": "apikey",
+    "alias": "ds",
+    "aliases": [
+      "ds"
+    ],
+    "name": "DeepSeek",
+    "displayName": "deepseek",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "elevenlabs",
+    "category": "apikey",
+    "alias": "el",
+    "aliases": [],
+    "name": "ElevenLabs",
+    "displayName": "elevenlabs",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "exa",
+    "category": "apikey",
+    "alias": "exa",
+    "aliases": [],
+    "name": "Exa",
+    "displayName": "exa",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch",
+      "webFetch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "fal-ai",
+    "category": "apikey",
+    "alias": "fal",
+    "aliases": [
+      "fal"
+    ],
+    "name": "Fal.ai",
+    "displayName": "fal-ai",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "featherless",
+    "category": "apikey",
+    "alias": "fl",
+    "aliases": [
+      "fl"
+    ],
+    "name": "Featherless",
+    "displayName": "featherless",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "firecrawl",
+    "category": "apikey",
+    "alias": "firecrawl",
+    "aliases": [],
+    "name": "Firecrawl",
+    "displayName": "firecrawl",
+    "noAuth": false,
+    "serviceKinds": [
+      "webFetch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "fireworks",
+    "category": "apikey",
+    "alias": "fireworks",
+    "aliases": [],
+    "name": "Fireworks AI",
+    "displayName": "fireworks",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "friendliai",
+    "category": "apikey",
+    "alias": "friendli",
+    "aliases": [],
+    "name": "FriendliAI",
+    "displayName": "friendliai",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "galadriel",
+    "category": "apikey",
+    "alias": "galadriel",
+    "aliases": [],
+    "name": "Galadriel",
+    "displayName": "galadriel",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "gigachat",
+    "category": "apikey",
+    "alias": "gigachat",
+    "aliases": [],
+    "name": "GigaChat (Sber)",
+    "displayName": "gigachat",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "glm-cn",
+    "category": "apikey",
+    "alias": "glm-cn",
+    "aliases": [],
+    "name": "GLM (China)",
+    "displayName": "glm-cn",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "google-pse",
+    "category": "apikey",
+    "alias": "gpse",
+    "aliases": [],
+    "name": "Google PSE",
+    "displayName": "google-pse",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "groq",
+    "category": "apikey",
+    "alias": "groq",
+    "aliases": [],
+    "name": "Groq",
+    "displayName": "groq",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "imageToText",
+      "stt"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "heroku",
+    "category": "apikey",
+    "alias": "heroku",
+    "aliases": [],
+    "name": "Heroku AI",
+    "displayName": "heroku",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "huggingface",
+    "category": "apikey",
+    "alias": "hf",
+    "aliases": [
+      "hf"
+    ],
+    "name": "HuggingFace",
+    "displayName": "huggingface",
+    "noAuth": false,
+    "serviceKinds": [
+      "image",
+      "stt"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "hyperbolic",
+    "category": "apikey",
+    "alias": "hyp",
+    "aliases": [
+      "hyp"
+    ],
+    "name": "Hyperbolic",
+    "displayName": "hyperbolic",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "inworld",
+    "category": "apikey",
+    "alias": "inworld",
+    "aliases": [],
+    "name": "Inworld TTS",
+    "displayName": "inworld",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "jina-ai",
+    "category": "apikey",
+    "alias": "jina",
+    "aliases": [],
+    "name": "Jina AI",
+    "displayName": "jina-ai",
+    "noAuth": false,
+    "serviceKinds": [
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "jina-reader",
+    "category": "apikey",
+    "alias": "jina-reader",
+    "aliases": [],
+    "name": "Jina Reader",
+    "displayName": "jina-reader",
+    "noAuth": false,
+    "serviceKinds": [
+      "webFetch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "linkup",
+    "category": "apikey",
+    "alias": "linkup",
+    "aliases": [],
+    "name": "Linkup",
+    "displayName": "linkup",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "llamagate",
+    "category": "apikey",
+    "alias": "llamagate",
+    "aliases": [],
+    "name": "LlamaGate",
+    "displayName": "llamagate",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "minimax-cn",
+    "category": "apikey",
+    "alias": "minimax-cn",
+    "aliases": [],
+    "name": "Minimax (China)",
+    "displayName": "minimax-cn",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "minimax",
+    "category": "apikey",
+    "alias": "minimax",
+    "aliases": [],
+    "name": "Minimax Coding",
+    "displayName": "minimax",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "image",
+      "imageToText",
+      "webSearch",
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "mistral",
+    "category": "apikey",
+    "alias": "mistral",
+    "aliases": [],
+    "name": "Mistral",
+    "displayName": "mistral",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "imageToText",
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "mmf",
+    "category": "apikey",
+    "alias": null,
+    "aliases": [],
+    "name": "MMF",
+    "displayName": "mmf",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "nanobanana",
+    "category": "apikey",
+    "alias": "nb",
+    "aliases": [
+      "nb"
+    ],
+    "name": "NanoBanana API",
+    "displayName": "nanobanana",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "nanogpt",
+    "category": "apikey",
+    "alias": "nanogpt",
+    "aliases": [],
+    "name": "NanoGPT",
+    "displayName": "nanogpt",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "nebius",
+    "category": "apikey",
+    "alias": "nebius",
+    "aliases": [],
+    "name": "Nebius AI",
+    "displayName": "nebius",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "nscale",
+    "category": "apikey",
+    "alias": "nscale",
+    "aliases": [],
+    "name": "nScale",
+    "displayName": "nscale",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "ollama-local",
+    "category": "apikey",
+    "alias": "ollama-local",
+    "aliases": [],
+    "name": "Ollama Local",
+    "displayName": "ollama-local",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "openai",
+    "category": "apikey",
+    "alias": "openai",
+    "aliases": [],
+    "name": "OpenAI",
+    "displayName": "openai",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "tts",
+      "stt",
+      "image",
+      "imageToText",
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "opencode-go",
+    "category": "apikey",
+    "alias": "ocg",
+    "aliases": [
+      "ocg"
+    ],
+    "name": "OpenCode Go",
+    "displayName": "opencode-go",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "opencode-zen",
+    "category": "apikey",
+    "alias": "ocz",
+    "aliases": [
+      "opencode-zen"
+    ],
+    "name": "OpenCode Zen",
+    "displayName": "opencode-zen",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "ovhcloud",
+    "category": "apikey",
+    "alias": "ovh",
+    "aliases": [],
+    "name": "OVHcloud AI",
+    "displayName": "ovhcloud",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "perplexity-agent",
+    "category": "apikey",
+    "alias": "pa",
+    "aliases": [
+      "pplx-agent",
+      "pplx-responses"
+    ],
+    "name": "Perplexity Agent",
+    "displayName": "perplexity-agent",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "perplexity",
+    "category": "apikey",
+    "alias": "pplx",
+    "aliases": [
+      "pplx"
+    ],
+    "name": "Perplexity",
+    "displayName": "perplexity",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "playht",
+    "category": "apikey",
+    "alias": "playht",
+    "aliases": [],
+    "name": "PlayHT",
+    "displayName": "playht",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "predibase",
+    "category": "apikey",
+    "alias": "predibase",
+    "aliases": [],
+    "name": "Predibase",
+    "displayName": "predibase",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "publicai",
+    "category": "apikey",
+    "alias": "publicai",
+    "aliases": [],
+    "name": "PublicAI",
+    "displayName": "publicai",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "recraft",
+    "category": "apikey",
+    "alias": "recraft",
+    "aliases": [],
+    "name": "Recraft",
+    "displayName": "recraft",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "runwayml",
+    "category": "apikey",
+    "alias": "runway",
+    "aliases": [
+      "runway"
+    ],
+    "name": "Runway ML",
+    "displayName": "runwayml",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "sambanova",
+    "category": "apikey",
+    "alias": "samba",
+    "aliases": [
+      "sambanova-ai"
+    ],
+    "name": "SambaNova",
+    "displayName": "sambanova",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "sdwebui",
+    "category": "apikey",
+    "alias": "sdwebui",
+    "aliases": [],
+    "name": "SD WebUI",
+    "displayName": "sdwebui",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "searchapi",
+    "category": "apikey",
+    "alias": "searchapi",
+    "aliases": [],
+    "name": "SearchAPI",
+    "displayName": "searchapi",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "serper",
+    "category": "apikey",
+    "alias": "serper",
+    "aliases": [],
+    "name": "Serper",
+    "displayName": "serper",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "siliconflow",
+    "category": "apikey",
+    "alias": "siliconflow",
+    "aliases": [],
+    "name": "SiliconFlow",
+    "displayName": "siliconflow",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "snowflake",
+    "category": "apikey",
+    "alias": "snowflake",
+    "aliases": [],
+    "name": "Snowflake Cortex",
+    "displayName": "snowflake",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "stability-ai",
+    "category": "apikey",
+    "alias": "stability",
+    "aliases": [
+      "stability"
+    ],
+    "name": "Stability AI",
+    "displayName": "stability-ai",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "tavily",
+    "category": "apikey",
+    "alias": "tavily",
+    "aliases": [],
+    "name": "Tavily",
+    "displayName": "tavily",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch",
+      "webFetch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "together",
+    "category": "apikey",
+    "alias": "together",
+    "aliases": [],
+    "name": "Together AI",
+    "displayName": "together",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "topaz",
+    "category": "apikey",
+    "alias": "topaz",
+    "aliases": [],
+    "name": "Topaz",
+    "displayName": "topaz",
+    "noAuth": false,
+    "serviceKinds": [
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "upstage",
+    "category": "apikey",
+    "alias": "upstage",
+    "aliases": [],
+    "name": "Upstage",
+    "displayName": "upstage",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "venice",
+    "category": "apikey",
+    "alias": "venice",
+    "aliases": [
+      "vn"
+    ],
+    "name": "Venice AI",
+    "displayName": "venice",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "vercel-ai-gateway",
+    "category": "apikey",
+    "alias": "vercel",
+    "aliases": [
+      "vercel"
+    ],
+    "name": "Vercel AI Gateway",
+    "displayName": "vercel-ai-gateway",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "image",
+      "imageToText",
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "vertex-partner",
+    "category": "apikey",
+    "alias": "vxp",
+    "aliases": [
+      "vxp"
+    ],
+    "name": "Vertex Partner",
+    "displayName": "vertex-partner",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "volcengine-ark",
+    "category": "apikey",
+    "alias": "ark",
+    "aliases": [
+      "ark"
+    ],
+    "name": "Volcengine Ark",
+    "displayName": "volcengine-ark",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "volcengine",
+    "category": "apikey",
+    "alias": "volcengine",
+    "aliases": [],
+    "name": "Volcengine",
+    "displayName": "volcengine",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "voyage-ai",
+    "category": "apikey",
+    "alias": "voyage",
+    "aliases": [],
+    "name": "Voyage AI",
+    "displayName": "voyage-ai",
+    "noAuth": false,
+    "serviceKinds": [
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "wandb",
+    "category": "apikey",
+    "alias": "wandb",
+    "aliases": [],
+    "name": "Weights & Biases Inference",
+    "displayName": "wandb",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "xiaomi-mimo",
+    "category": "apikey",
+    "alias": "mimo",
+    "aliases": [
+      "mimo"
+    ],
+    "name": "Xiaomi MiMo",
+    "displayName": "xiaomi-mimo",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "xiaomi-tokenplan",
+    "category": "apikey",
+    "alias": "xmtp",
+    "aliases": [
+      "xmtp"
+    ],
+    "name": "Xiaomi MiMo (Token Plan)",
+    "displayName": "xiaomi-tokenplan",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "youcom",
+    "category": "apikey",
+    "alias": "youcom",
+    "aliases": [],
+    "name": "You.com Search",
+    "displayName": "youcom",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "zcode",
+    "category": "apikey",
+    "alias": "zc",
+    "aliases": [],
+    "name": "ZCode",
+    "displayName": "zcode",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "a6api",
+    "category": "apikey",
+    "alias": "a6",
+    "aliases": [],
+    "name": "A6API",
+    "displayName": "a6api",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "alims-intl",
+    "category": "apikey",
+    "alias": "alims-intl",
+    "aliases": [],
+    "name": "Alibaba Model Studio (Intl)",
+    "displayName": "alims-intl",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "zenmux",
+    "category": "apikey",
+    "alias": "zenmux",
+    "aliases": [],
+    "name": "ZenMux",
+    "displayName": "zenmux",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "tokenrouter",
+    "category": "apikey",
+    "alias": "tokenrouter",
+    "aliases": [],
+    "name": "TokenRouter",
+    "displayName": "tokenrouter",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "embedding",
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "baidu",
+    "category": "apikey",
+    "alias": "qianfan",
+    "aliases": [
+      "qianfan",
+      "ernie",
+      "baidu-qianfan"
+    ],
+    "name": "Baidu Qianfan",
+    "displayName": "baidu",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "bazaarlink",
+    "category": "apikey",
+    "alias": "bzl",
+    "aliases": [
+      "bazaar-link"
+    ],
+    "name": "Bazaarlink",
+    "displayName": "bazaarlink",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "bluesminds",
+    "category": "apikey",
+    "alias": "bm",
+    "aliases": [
+      "blue-sminds"
+    ],
+    "name": "BluesMinds",
+    "displayName": "bluesminds",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "kilo-gateway",
+    "category": "apikey",
+    "alias": "kgw",
+    "aliases": [
+      "kilo-gateway",
+      "kilogateway"
+    ],
+    "name": "Kilo Gateway",
+    "displayName": "kilo-gateway",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "morph",
+    "category": "apikey",
+    "alias": "morph",
+    "aliases": [
+      "morphllm"
+    ],
+    "name": "Morph",
+    "displayName": "morph",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "tencent",
+    "category": "apikey",
+    "alias": "hunyuan",
+    "aliases": [
+      "hunyuan",
+      "tencent-hunyuan"
+    ],
+    "name": "Tencent Hunyuan",
+    "displayName": "tencent",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "fish-audio",
+    "category": "apikey",
+    "alias": "fish",
+    "aliases": [],
+    "name": "Fish Audio",
+    "displayName": "fish-audio",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "alitp-intl",
+    "category": "apikey",
+    "alias": "alitp-intl",
+    "aliases": [],
+    "name": "Alibaba Token Plan",
+    "displayName": "alitp-intl",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "xquik",
+    "category": "apikey",
+    "alias": "xquik",
+    "aliases": [],
+    "name": "Xquik",
+    "displayName": "xquik",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "ollama-search",
+    "category": "apikey",
+    "alias": "ollama-search",
+    "aliases": [],
+    "name": "Ollama Search",
+    "displayName": "ollama-search",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "selfhosted-embedding",
+    "category": "apikey",
+    "alias": "selfhosted-embedding",
+    "aliases": [],
+    "name": "Self-hosted Embedding",
+    "displayName": "selfhosted-embedding",
+    "noAuth": false,
+    "serviceKinds": [
+      "embedding"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "selfhosted-stt",
+    "category": "apikey",
+    "alias": "selfhosted-stt",
+    "aliases": [],
+    "name": "Self-hosted STT",
+    "displayName": "selfhosted-stt",
+    "noAuth": false,
+    "serviceKinds": [
+      "stt"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "selfhosted-tts",
+    "category": "apikey",
+    "alias": "selfhosted-tts",
+    "aliases": [],
+    "name": "Self-hosted TTS",
+    "displayName": "selfhosted-tts",
+    "noAuth": false,
+    "serviceKinds": [
+      "tts"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "tokenharbor",
+    "category": "apikey",
+    "alias": "tokenharbor",
+    "aliases": [
+      "th",
+      "tokenharbor"
+    ],
+    "name": "Token Harbor",
+    "displayName": "tokenharbor",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "image"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "meta",
+    "category": "apikey",
+    "alias": "meta",
+    "aliases": [
+      "meta",
+      "meta-ai"
+    ],
+    "name": "Meta",
+    "displayName": "meta",
+    "noAuth": false,
+    "serviceKinds": [
+      "llm",
+      "image",
+      "stt"
+    ],
+    "authModes": [
+      "apikey"
+    ]
+  },
+  {
+    "id": "hive",
+    "category": "apikey",
+    "alias": "hive",
+    "aliases": [
+      "hive-ai"
+    ],
+    "name": "Hive",
+    "displayName": "hive",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "dahl",
+    "category": "apikey",
+    "alias": "dahl",
+    "aliases": [
+      "dahl-inference"
+    ],
+    "name": "Dahl Inference",
+    "displayName": "dahl",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "atria",
+    "category": "apikey",
+    "alias": "atria",
+    "aliases": [
+      "atria-asi"
+    ],
+    "name": "Atria Dawn",
+    "displayName": "atria",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "bai",
+    "category": "apikey",
+    "alias": "bai",
+    "aliases": [
+      "b-ai"
+    ],
+    "name": "B.AI",
+    "displayName": "bai",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "tinyfish",
+    "category": "apikey",
+    "alias": "tinyfish",
+    "aliases": [],
+    "name": "TinyFish",
+    "displayName": "tinyfish",
+    "noAuth": false,
+    "serviceKinds": [
+      "webSearch",
+      "webFetch"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "v1m",
+    "category": "apikey",
+    "alias": "v1m",
+    "aliases": [
+      "systemone",
+      "jev"
+    ],
+    "name": "v1m (System One)",
+    "displayName": "v1m",
+    "noAuth": false,
+    "serviceKinds": [
+      "systemone"
+    ],
+    "authModes": []
+  },
+  {
+    "id": "grok-web",
+    "category": "webCookie",
+    "alias": "gw",
+    "aliases": [
+      "gw"
+    ],
+    "name": "Grok Web (Subscription)",
+    "displayName": "grok-web",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "perplexity-web",
+    "category": "webCookie",
+    "alias": "pw",
+    "aliases": [
+      "pw"
+    ],
+    "name": "Perplexity Web (Pro/Max)",
+    "displayName": "perplexity-web",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  },
+  {
+    "id": "muse-spark-web",
+    "category": "webCookie",
+    "alias": "muse",
+    "aliases": [
+      "muse"
+    ],
+    "name": "Muse Spark Web (Meta AI)",
+    "displayName": "muse-spark-web",
+    "noAuth": false,
+    "serviceKinds": [],
+    "authModes": []
+  }
+]

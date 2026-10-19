@@ -48,6 +48,24 @@ func TestNodeMutationsPropagateConnections(t *testing.T) {
 			t.Fatalf("PUT %s: %d %s", tt.path, w.Code, w.Body.String())
 		}
 	}
+	listResponse := httptest.NewRecorder()
+	r.ServeHTTP(listResponse, httptest.NewRequest("GET", "/api/providers", nil))
+	var listing struct {
+		Connections []map[string]any  `json:"connections"`
+		Providers   []map[string]any  `json:"providers"`
+		AliasMap    map[string]string `json:"aliasMap"`
+	}
+	if err = json.Unmarshal(listResponse.Body.Bytes(), &listing); err != nil {
+		t.Fatal(err)
+	}
+	if listResponse.Code != 200 || len(listing.Connections) != 2 || len(listing.Providers) != 160 {
+		t.Fatalf("providers list: %d %s", listResponse.Code, listResponse.Body.String())
+	}
+	for _, connection := range listing.Connections {
+		if _, leak := connection["apiKey"]; leak {
+			t.Fatal("apiKey leaked")
+		}
+	}
 	linked, err := connections.Get(ctx, "linked")
 	if err != nil {
 		t.Fatal(err)
