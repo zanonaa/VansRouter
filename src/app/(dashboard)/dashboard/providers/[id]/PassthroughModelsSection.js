@@ -1,15 +1,53 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import TextField from "@mui/material/TextField";
 import { Button } from "@/shared/components";
 import { getProviderCustomModelRows } from "@/shared/utils/providerCustomModels";
 
+const tooltipSx = {
+  pointerEvents: "none",
+  position: "absolute",
+  mt: 0.5,
+  top: 20,
+  left: "50%",
+  transform: "translateX(-50%)",
+  fontSize: 10,
+  color: "text.secondary",
+  whiteSpace: "nowrap",
+  opacity: 0,
+  transition: "opacity 150ms ease",
+};
+
+function IconButtonLike({ sx, ...props }) {
+  return (
+    <Box
+      component="button"
+      sx={{
+        p: 0.25,
+        border: 0,
+        bgcolor: "transparent",
+        borderRadius: "4px",
+        color: "text.secondary",
+        cursor: "pointer",
+        transition: "background-color 150ms ease, color 150ms ease",
+        "&:hover": { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+        ...sx,
+      }}
+      {...props}
+    />
+  );
+}
+
 function PassthroughModelRow({ modelId, fullModel, copied, onCopy, onDeleteAlias, onTest, testStatus, isTesting }) {
   const borderColor = testStatus === "ok"
-    ? "border-green-500/40"
+    ? "rgba(34,197,94,0.4)"
     : testStatus === "error"
-    ? "border-red-500/40"
-    : "border-border";
+    ? "rgba(239,68,68,0.4)"
+    : "divider";
 
   const iconColor = testStatus === "ok"
     ? "#22c55e"
@@ -18,60 +56,81 @@ function PassthroughModelRow({ modelId, fullModel, copied, onCopy, onDeleteAlias
     : undefined;
 
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-lg border ${borderColor} hover:bg-sidebar/50`}>
-      <span
-        className="material-symbols-outlined text-base text-text-muted"
-        style={iconColor ? { color: iconColor } : undefined}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        p: 1.5,
+        borderRadius: "8px",
+        border: 1,
+        borderColor,
+        transition: "background-color 150ms ease",
+        "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)") },
+      }}
+    >
+      <Icon
+        className="material-symbols-outlined"
+        baseClassName=""
+        sx={{ fontSize: 16, color: iconColor || "text.secondary" }}
       >
         {testStatus === "ok" ? "check_circle" : testStatus === "error" ? "cancel" : "smart_toy"}
-      </span>
+      </Icon>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{modelId}</p>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{modelId}</Typography>
 
-        <div className="flex items-center gap-1 mt-1">
-        <code className="text-xs text-text-muted font-mono bg-sidebar px-1.5 py-0.5 rounded">{fullModel}</code>
-          <div className="relative group/btn">
-            <button
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
+        <Box component="code" sx={{ fontSize: 12, color: "text.secondary", fontFamily: "monospace", bgcolor: "var(--color-sidebar)", px: 0.75, py: 0.25, borderRadius: "4px" }}>{fullModel}</Box>
+          <Box sx={{ position: "relative", "&:hover .pm-tooltip": { opacity: 1 } }}>
+            <IconButtonLike
               onClick={() => onCopy(fullModel, `model-${modelId}`)}
-              className="p-0.5 hover:bg-sidebar rounded text-text-muted hover:text-primary"
             >
-              <span className="material-symbols-outlined text-sm">
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>
                 {copied === `model-${modelId}` ? "check" : "content_copy"}
-              </span>
-            </button>
-            <span className="pointer-events-none absolute top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-muted whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity">
+              </Icon>
+            </IconButtonLike>
+            <Box component="span" className="pm-tooltip" sx={tooltipSx}>
               {copied === `model-${modelId}` ? "Copied!" : "Copy"}
-            </span>
-          </div>
+            </Box>
+          </Box>
           {onTest && (
-            <div className="relative group/btn">
-              <button
+            <Box sx={{ position: "relative", "&:hover .pm-tooltip": { opacity: 1 } }}>
+              <IconButtonLike
                 onClick={onTest}
                 disabled={isTesting}
-                className="p-0.5 hover:bg-sidebar rounded text-text-muted hover:text-primary transition-colors"
               >
-                <span className="material-symbols-outlined text-sm" style={isTesting ? { animation: "spin 1s linear infinite" } : undefined}>
+                <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14, animation: isTesting ? "spin 1s linear infinite" : undefined }}>
                   {isTesting ? "progress_activity" : "science"}
-                </span>
-              </button>
-              <span className="pointer-events-none absolute top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-muted whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                </Icon>
+              </IconButtonLike>
+              <Box component="span" className="pm-tooltip" sx={tooltipSx}>
                 {isTesting ? "Testing..." : "Test"}
-              </span>
-            </div>
+              </Box>
+            </Box>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Delete button */}
-      <button
+      <Box
+        component="button"
         onClick={onDeleteAlias}
-        className="p-1 hover:bg-red-50 rounded text-red-500"
+        sx={{
+          p: 0.5,
+          border: 0,
+          bgcolor: "transparent",
+          borderRadius: "4px",
+          color: "#ef4444",
+          cursor: "pointer",
+          transition: "background-color 150ms ease",
+          "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(239,68,68,0.15)" : "#fef2f2") },
+        }}
         title="Remove model"
       >
-        <span className="material-symbols-outlined text-sm">delete</span>
-      </button>
-    </div>
+        <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>delete</Icon>
+      </Box>
+    </Box>
   );
 }
 
@@ -108,33 +167,34 @@ export default function PassthroughModelsSection({ providerAlias, modelAliases, 
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm text-text-muted">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
         OpenRouter supports any model. Add models and create aliases for quick access.
-      </p>
+      </Typography>
 
       {/* Add new model */}
-      <div className="flex items-end gap-2">
-        <div className="flex-1">
-          <label htmlFor="new-model-input" className="text-xs text-text-muted mb-1 block">Model ID (from OpenRouter)</label>
-          <input
+      <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography component="label" htmlFor="new-model-input" sx={{ display: "block", fontSize: 12, color: "text.secondary", mb: 0.5 }}>Model ID (from OpenRouter)</Typography>
+          <TextField
             id="new-model-input"
             type="text"
+            fullWidth
+            size="small"
             value={newModel}
             onChange={(e) => setNewModel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             placeholder="anthropic/claude-3-opus"
-            className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
           />
-        </div>
+        </Box>
         <Button size="sm" icon="add" onClick={handleAdd} disabled={!newModel.trim() || adding}>
           {adding ? "Adding..." : "Add"}
         </Button>
-      </div>
+      </Box>
 
       {/* Models list */}
       {allModels.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           {allModels.map(({ id, fullModel, alias, source }) => (
             <PassthroughModelRow
               key={`${source}-${fullModel}`}
@@ -145,9 +205,8 @@ export default function PassthroughModelsSection({ providerAlias, modelAliases, 
               onDeleteAlias={() => source === "custom" ? onDeleteCustomModel(id) : onDeleteAlias(alias)}
             />
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
-

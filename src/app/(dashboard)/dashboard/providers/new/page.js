@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import MuiLink from "@mui/material/Link";
+import Icon from "@mui/material/Icon";
 import { Card, Button, Input, Select, Toggle } from "@/shared/components";
 import { AI_PROVIDERS, AUTH_METHODS } from "@/shared/constants/config";
 
@@ -73,25 +77,36 @@ export default function NewProviderPage() {
   const selectedProvider = AI_PROVIDERS[formData.provider];
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <Box sx={{ maxWidth: 672, mx: "auto" }}>
       {/* Header */}
-      <div className="mb-8">
-        <Link
+      <Box sx={{ mb: 4 }}>
+        <MuiLink
+          component={Link}
           href="/dashboard/providers"
-          className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-primary transition-colors mb-4"
+          underline="none"
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            fontSize: 14,
+            color: "text.secondary",
+            mb: 2,
+            transition: "color 150ms ease",
+            "&:hover": { color: "primary.main" },
+          }}
         >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>arrow_back</Icon>
           Back to Providers
-        </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">Add New Provider</h1>
-        <p className="text-text-muted mt-2">
+        </MuiLink>
+        <Typography variant="h4" sx={{ fontWeight: 600, letterSpacing: "-0.025em" }}>Add New Provider</Typography>
+        <Typography sx={{ color: "text.secondary", mt: 1 }}>
           Configure a new AI provider to use with your applications.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* Form */}
       <Card>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {/* Provider Selection */}
           <Select
             label="Provider"
@@ -105,51 +120,77 @@ export default function NewProviderPage() {
 
           {/* Provider Info */}
           {selectedProvider && (
-            <Card.Section className="flex items-center gap-3">
-              <div
-                className="size-10 rounded-lg flex items-center justify-center bg-bg border border-border"
+            <Card.Section sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                }}
               >
-                <span
-                  className="material-symbols-outlined text-xl"
-                  style={{ color: selectedProvider.color }}
+                <Icon
+                  className="material-symbols-outlined"
+                  baseClassName=""
+                  sx={{ fontSize: 20, color: selectedProvider.color }}
                 >
                   {selectedProvider.icon}
-                </span>
-              </div>
-              <div>
-                <p className="font-medium">{selectedProvider.name}</p>
-                <p className="text-sm text-text-muted">
+                </Icon>
+              </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 500 }}>{selectedProvider.name}</Typography>
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
                   Selected provider
-                </p>
-              </div>
+                </Typography>
+              </Box>
             </Card.Section>
           )}
 
           {/* Auth Method */}
-          <div className="flex flex-col gap-3">
-            <span className="text-sm font-medium">
-              Authentication Method <span className="text-red-500">*</span>
-            </span>
-            <div className="flex gap-3">
-              {authMethodOptions.map((method) => (
-                <button
-                  key={method.value}
-                  type="button"
-                  onClick={() => handleChange("authMethod", method.value)}
-                  className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-lg border transition-all ${
-                    formData.authMethod === method.value
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <span className="material-symbols-outlined">
-                    {method.value === "api_key" ? "key" : "lock"}
-                  </span>
-                  <span className="font-medium">{method.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Typography component="span" sx={{ fontSize: 14, fontWeight: 500 }}>
+              Authentication Method <Box component="span" sx={{ color: "error.main" }}>*</Box>
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1.5 }}>
+              {authMethodOptions.map((method) => {
+                const selected = formData.authMethod === method.value;
+                return (
+                  <Box
+                    key={method.value}
+                    component="button"
+                    type="button"
+                    onClick={() => handleChange("authMethod", method.value)}
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                      p: 2,
+                      borderRadius: "8px",
+                      border: 1,
+                      borderColor: selected ? "primary.main" : "divider",
+                      bgcolor: selected ? "rgba(229,106,74,0.05)" : "transparent",
+                      color: selected ? "primary.main" : "text.primary",
+                      cursor: "pointer",
+                      transition: "all 150ms ease",
+                      "&:hover": { borderColor: selected ? "primary.main" : "rgba(229,106,74,0.5)" },
+                    }}
+                  >
+                    <Icon className="material-symbols-outlined" baseClassName="">
+                      {method.value === "api_key" ? "key" : "lock"}
+                    </Icon>
+                    <Box component="span" sx={{ fontWeight: 500 }}>{method.label}</Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
 
           {/* API Key Input */}
           {formData.authMethod === "api_key" && (
@@ -168,9 +209,9 @@ export default function NewProviderPage() {
           {/* OAuth2 Button */}
           {formData.authMethod === "oauth2" && (
             <Card.Section>
-              <p className="text-sm text-text-muted mb-4">
+              <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2 }}>
                 Connect your account using OAuth2 authentication.
-              </p>
+              </Typography>
               <Button type="button" variant="secondary" icon="link">
                 Connect with OAuth2
               </Button>
@@ -196,25 +237,24 @@ export default function NewProviderPage() {
 
           {/* Error Message */}
           {errors.submit && (
-            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+            <Box sx={{ p: 2, borderRadius: "8px", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(127,29,29,0.2)" : "#fef2f2"), border: 1, borderColor: (t) => (t.palette.mode === "dark" ? "#991b1b" : "#fecaca"), color: (t) => (t.palette.mode === "dark" ? "#f87171" : "#dc2626"), fontSize: 14 }}>
               {errors.submit}
-            </div>
+            </Box>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-border">
-            <Link href="/dashboard/providers" className="flex-1">
+          <Box sx={{ display: "flex", gap: 1.5, pt: 2, borderTop: 1, borderColor: "divider", "& > *": { flex: 1 } }}>
+            <Link href="/dashboard/providers">
               <Button type="button" variant="ghost" fullWidth>
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" loading={loading} fullWidth className="flex-1">
+            <Button type="submit" loading={loading} fullWidth>
               Create Provider
             </Button>
-          </div>
-        </form>
+          </Box>
+        </Box>
       </Card>
-    </div>
+    </Box>
   );
 }
-

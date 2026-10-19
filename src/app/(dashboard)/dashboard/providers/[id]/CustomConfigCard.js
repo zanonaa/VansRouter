@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import TextField from "@mui/material/TextField";
 import { Card, Badge } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -88,89 +92,100 @@ export default function CustomConfigCard({ providerId }) {
 
   return (
     <Card padding="xs">
-      <button
+      <Box
+        component="button"
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center justify-between text-left"
+        sx={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", textAlign: "left", border: 0, bgcolor: "transparent", cursor: "pointer", p: 0 }}
       >
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
-          <span className="text-sm font-semibold">Custom Headers</span>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 20, color: "primary.main" }}>tune</Icon>
+          <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>Custom Headers</Box>
           {hasOverride && (
             <Badge variant="success" size="sm">Active</Badge>
           )}
-        </div>
-        <span className="material-symbols-outlined text-text-muted">
+        </Box>
+        <Icon className="material-symbols-outlined" baseClassName="" sx={{ color: "text.secondary" }}>
           {expanded ? "expand_less" : "expand_more"}
-        </span>
-      </button>
+        </Icon>
+      </Box>
 
       {expanded && (
-        <div className="mt-3 border-t border-border pt-3">
-          <div className="flex flex-col gap-2">
+        <Box sx={{ mt: 1.5, borderTop: 1, borderColor: "divider", pt: 1.5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {rows.map((row, i) => {
               const overridden = row.name.trim() in builtin && row.value !== builtin[row.name.trim()];
               return (
-                <div key={i} className="flex items-center gap-2">
-                  <input
+                <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <TextField
+                    size="small"
                     value={row.name}
                     onChange={(e) => setRow(i, "name", e.target.value)}
                     placeholder="Header-Name"
                     spellCheck={false}
-                    className="w-44 rounded-md border border-border bg-background px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
+                    sx={{ width: 176 }}
                   />
-                  <input
+                  <TextField
+                    size="small"
                     value={row.value}
                     onChange={(e) => setRow(i, "value", e.target.value)}
                     placeholder="Value"
                     spellCheck={false}
                     title={overridden ? "Overridden" : row.name.trim() in builtin ? "Registry default" : ""}
-                    className={`min-w-0 flex-1 rounded-md border bg-background px-2 py-1.5 text-sm focus:border-primary focus:outline-none ${
-                      overridden ? "border-amber-400/60" : "border-border"
-                    }`}
+                    sx={{
+                      minWidth: 0,
+                      flex: 1,
+                      "& .MuiOutlinedInput-root": {
+                        borderColor: overridden ? "rgba(251,191,36,0.6)" : "divider",
+                      },
+                    }}
                   />
-                  <button
+                  <Box
+                    component="button"
                     type="button"
                     title="Remove header"
                     onClick={() => setRows((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : [{ name: "", value: "" }]))}
-                    className="shrink-0 text-text-muted hover:text-red-500"
+                    sx={{ flexShrink: 0, border: 0, bgcolor: "transparent", color: "text.secondary", cursor: "pointer", p: 0.5, "&:hover": { color: "#ef4444" } }}
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
-                </div>
+                    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>delete</Icon>
+                  </Box>
+                </Box>
               );
             })}
-          </div>
+          </Box>
 
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <button
+          <Box sx={{ mt: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+            <Box
+              component="button"
               type="button"
               onClick={() => setRows((prev) => [...prev, { name: "", value: "" }])}
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
+              sx={{ display: "flex", alignItems: "center", gap: 0.5, border: 0, bgcolor: "transparent", cursor: "pointer", fontSize: 12, color: "primary.main", "&:hover": { textDecoration: "underline" } }}
             >
-              <span className="material-symbols-outlined text-[16px]">add</span>
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 16 }}>add</Icon>
               Add header
-            </button>
-            <div className="flex gap-2">
-              <button
+            </Box>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Box
+                component="button"
                 type="button"
                 disabled={saving}
                 onClick={resetToBuiltin}
-                className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-black/[0.03] dark:hover:bg-white/[0.03] disabled:opacity-50"
+                sx={{ borderRadius: "6px", border: 1, borderColor: "divider", px: 1.5, py: 0.75, fontSize: 12, bgcolor: "transparent", color: "text.primary", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.5 : 1, "&:hover": { bgcolor: "action.hover" } }}
               >
                 Reset
-              </button>
-              <button
+              </Box>
+              <Box
+                component="button"
                 type="button"
                 disabled={saving}
                 onClick={save}
-                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
+                sx={{ borderRadius: "6px", border: 0, bgcolor: "primary.main", px: 1.5, py: 0.75, fontSize: 12, fontWeight: 500, color: "primary.contrastText", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.5 : 1, "&:hover": { opacity: 0.9 } }}
               >
                 {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
-        </div>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
       )}
     </Card>
   );

@@ -1,54 +1,133 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import TextField from "@mui/material/TextField";
 import { Card, Button, Modal } from "@/shared/components";
 import { getModelsByProviderId, getModelKind } from "@/shared/constants/models";
 import { getProviderAlias } from "@/shared/constants/providers";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 
+const tooltipSx = {
+  pointerEvents: "none",
+  position: "absolute",
+  mt: 0.5,
+  top: 20,
+  left: "50%",
+  transform: "translateX(-50%)",
+  fontSize: 10,
+  color: "text.secondary",
+  whiteSpace: "nowrap",
+  opacity: 0,
+  transition: "opacity 150ms ease",
+};
+
+function HoverHint({ children }) {
+  return <Box component="span" className="mc-tooltip" sx={tooltipSx}>{children}</Box>;
+}
+
 // ── ModelRow ───────────────────────────────────────────────────
 export function ModelRow({ model, fullModel, copied, onCopy, testStatus, isCustom, isFree, onDeleteAlias, onTest, isTesting }) {
-  const borderColor = testStatus === "ok" ? "border-green-500/40" : testStatus === "error" ? "border-red-500/40" : "border-border";
+  const borderColor = testStatus === "ok" ? "rgba(34,197,94,0.4)" : testStatus === "error" ? "rgba(239,68,68,0.4)" : "divider";
   const iconColor = testStatus === "ok" ? "#22c55e" : testStatus === "error" ? "#ef4444" : undefined;
 
   return (
-    <div className={`group px-3 py-2 rounded-lg border ${borderColor} hover:bg-sidebar/50`}>
-      <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-base" style={iconColor ? { color: iconColor } : undefined}>
+    <Box
+      sx={{
+        px: 1.5,
+        py: 1,
+        borderRadius: "8px",
+        border: 1,
+        borderColor,
+        transition: "background-color 150ms ease",
+        "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)") },
+        "&:hover .mc-hover": { opacity: 1 },
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Icon
+          className="material-symbols-outlined"
+          baseClassName=""
+          sx={{ fontSize: 16, color: iconColor }}
+        >
           {testStatus === "ok" ? "check_circle" : testStatus === "error" ? "cancel" : "smart_toy"}
-        </span>
-        <div className="flex flex-col gap-1">
-          <code className="text-xs text-text-muted font-mono bg-sidebar px-1.5 py-0.5 rounded">{fullModel}</code>
-          {model.name && <span className="text-[9px] text-text-muted/70 italic pl-1">{model.name}</span>}
-        </div>
+        </Icon>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Box component="code" sx={{ fontSize: 12, color: "text.secondary", fontFamily: "monospace", bgcolor: "var(--color-sidebar)", px: 0.75, py: 0.25, borderRadius: "4px" }}>{fullModel}</Box>
+          {model.name && <Box component="span" sx={{ fontSize: 9, color: (t) => (t.palette.mode === "dark" ? "rgba(156,163,175,0.7)" : "rgba(107,114,128,0.7)"), fontStyle: "italic", pl: 0.5 }}>{model.name}</Box>}
+        </Box>
         {onTest && (
-          <div className="relative group/btn">
-            <button onClick={onTest} disabled={isTesting} className={`p-0.5 hover:bg-sidebar rounded text-text-muted hover:text-primary transition-opacity ${isTesting ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
-              <span className="material-symbols-outlined text-sm" style={isTesting ? { animation: "spin 1s linear infinite" } : undefined}>
+          <Box sx={{ position: "relative", "&:hover .mc-tooltip": { opacity: 1 } }}>
+            <Box
+              component="button"
+              onClick={onTest}
+              disabled={isTesting}
+              className={isTesting ? undefined : "mc-hover"}
+              sx={{
+                p: 0.25,
+                border: 0,
+                bgcolor: "transparent",
+                borderRadius: "4px",
+                color: "text.secondary",
+                cursor: "pointer",
+                opacity: isTesting ? 1 : 0,
+                transition: "opacity 150ms ease, background-color 150ms ease, color 150ms ease",
+                "&:hover": { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+              }}
+            >
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14, animation: isTesting ? "spin 1s linear infinite" : undefined }}>
                 {isTesting ? "progress_activity" : "science"}
-              </span>
-            </button>
-            <span className="pointer-events-none absolute mt-1 top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-muted whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity">
-              {isTesting ? "Testing..." : "Test"}
-            </span>
-          </div>
+              </Icon>
+            </Box>
+            <HoverHint>{isTesting ? "Testing..." : "Test"}</HoverHint>
+          </Box>
         )}
-        <div className="relative group/btn">
-          <button onClick={() => onCopy(fullModel, `model-${model.id}`)} className="p-0.5 hover:bg-sidebar rounded text-text-muted hover:text-primary">
-            <span className="material-symbols-outlined text-sm">{copied === `model-${model.id}` ? "check" : "content_copy"}</span>
-          </button>
-          <span className="pointer-events-none absolute mt-1 top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-muted whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity">
-            {copied === `model-${model.id}` ? "Copied!" : "Copy"}
-          </span>
-        </div>
-        {isFree && <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded">FREE</span>}
+        <Box sx={{ position: "relative", "&:hover .mc-tooltip": { opacity: 1 } }}>
+          <Box
+            component="button"
+            onClick={() => onCopy(fullModel, `model-${model.id}`)}
+            sx={{
+              p: 0.25,
+              border: 0,
+              bgcolor: "transparent",
+              borderRadius: "4px",
+              color: "text.secondary",
+              cursor: "pointer",
+              transition: "background-color 150ms ease, color 150ms ease",
+              "&:hover": { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+            }}
+          >
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>{copied === `model-${model.id}` ? "check" : "content_copy"}</Icon>
+          </Box>
+          <HoverHint>{copied === `model-${model.id}` ? "Copied!" : "Copy"}</HoverHint>
+        </Box>
+        {isFree && <Box component="span" sx={{ fontSize: 10, fontWeight: 700, color: "#22c55e", bgcolor: "rgba(34,197,94,0.1)", px: 0.75, py: 0.25, borderRadius: "4px" }}>FREE</Box>}
         {isCustom && (
-          <button onClick={onDeleteAlias} className="p-0.5 hover:bg-red-500/10 rounded text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity ml-auto" title="Remove custom model">
-            <span className="material-symbols-outlined text-sm">close</span>
-          </button>
+          <Box
+            component="button"
+            onClick={onDeleteAlias}
+            className="mc-hover"
+            sx={{
+              p: 0.25,
+              ml: "auto",
+              border: 0,
+              bgcolor: "transparent",
+              borderRadius: "4px",
+              color: "text.secondary",
+              cursor: "pointer",
+              opacity: 0,
+              transition: "opacity 150ms ease, background-color 150ms ease, color 150ms ease",
+              "&:hover": { bgcolor: "rgba(239,68,68,0.1)", color: "#ef4444" },
+            }}
+            title="Remove custom model"
+          >
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>close</Icon>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -64,23 +143,24 @@ function AddCustomModelModal({ isOpen, onSave, onClose }) {
 
   return (
     <Modal isOpen={isOpen} title="Add Custom Model" onClose={onClose}>
-      <div className="flex flex-col gap-4">
-        <div>
-          <label className="text-xs text-text-muted mb-1 block">Model ID</label>
-          <input
-            className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box>
+          <Typography component="label" sx={{ display: "block", fontSize: 12, color: "text.secondary", mb: 0.5 }}>Model ID</Typography>
+          <TextField
             value={modelId}
             onChange={(e) => setModelId(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
             placeholder="e.g. tts-1-hd"
             autoFocus
+            fullWidth
+            size="small"
           />
-        </div>
-        <div className="flex gap-2">
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={handleSave} fullWidth disabled={!modelId.trim()}>Add</Button>
           <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }
@@ -200,12 +280,12 @@ export default function ModelsCard({ providerId, kindFilter, providerAliasOverri
   return (
     <>
       <Card>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Models{kindFilter ? ` — ${kindFilter.toUpperCase()}` : ""}</h2>
-        </div>
-        {testError && <p className="text-xs text-red-500 mb-3 break-words">{testError}</p>}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>Models{kindFilter ? ` — ${kindFilter.toUpperCase()}` : ""}</Typography>
+        </Box>
+        {testError && <Typography sx={{ fontSize: 12, color: "error.main", mb: 1.5, wordBreak: "break-word" }}>{testError}</Typography>}
 
-        <div className="flex flex-wrap gap-3">
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
           {displayModels.map((model) => {
             const fullModel = `${providerAlias}/${model.id}`;
             const existingAlias = Object.entries(modelAliases).find(([, m]) => m === fullModel)?.[0];
@@ -243,14 +323,30 @@ export default function ModelsCard({ providerId, kindFilter, providerAliasOverri
             />
           ))}
 
-          <button
+          <Box
+            component="button"
             onClick={() => setShowAddCustomModel(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-black/15 dark:border-white/15 text-xs text-text-muted hover:text-primary hover:border-primary/40 transition-colors"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              px: 1.5,
+              py: 1,
+              borderRadius: "8px",
+              border: "1px dashed",
+              borderColor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"),
+              bgcolor: "transparent",
+              fontSize: 12,
+              color: "text.secondary",
+              cursor: "pointer",
+              transition: "color 150ms ease, border-color 150ms ease",
+              "&:hover": { color: "primary.main", borderColor: "rgba(229,106,74,0.4)" },
+            }}
           >
-            <span className="material-symbols-outlined text-sm">add</span>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>add</Icon>
             Add Model
-          </button>
-        </div>
+          </Box>
+        </Box>
       </Card>
 
       <AddCustomModelModal
@@ -264,4 +360,3 @@ export default function ModelsCard({ providerId, kindFilter, providerAliasOverri
     </>
   );
 }
-

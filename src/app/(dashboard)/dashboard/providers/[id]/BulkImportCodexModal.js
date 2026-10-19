@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Button, Modal } from "@/shared/components";
 import { translate } from "@/i18n/runtime";
 
@@ -84,15 +86,28 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
 
   return (
     <Modal isOpen={isOpen} title={translate("Bulk Add Codex Accounts")} onClose={handleClose}>
-      <div className="flex flex-col gap-4">
-        <p className="text-xs text-text-muted">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
           {translate(
             "Paste an array of codex account JSON objects. Each must include accessToken (and ideally refreshToken, idToken)."
           )}
-        </p>
+        </Typography>
 
-        <textarea
-          className="w-full rounded border border-accent/30 bg-sidebar p-2 text-sm font-mono resize-y min-h-[240px] focus:outline-none focus:ring-1 focus:ring-primary"
+        <Box
+          component="textarea"
+          sx={{
+            width: "100%",
+            borderRadius: "4px",
+            border: 1,
+            borderColor: "rgba(229,106,74,0.3)",
+            bgcolor: "var(--color-sidebar)",
+            p: 1,
+            fontSize: 14,
+            fontFamily: "monospace",
+            resize: "vertical",
+            minHeight: 240,
+            "&:focus": { outline: "none", boxShadow: "0 0 0 1px var(--color-primary)" },
+          }}
           placeholder={PLACEHOLDER}
           value={jsonText}
           onChange={(e) => setJsonText(e.target.value)}
@@ -100,32 +115,34 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
         />
 
         {parseError && (
-          <p className="text-xs text-red-500 break-words">{parseError}</p>
+          <Typography sx={{ fontSize: 12, color: "error.main", wordBreak: "break-word" }}>{parseError}</Typography>
         )}
 
         {result && (
-          <div className="flex flex-col gap-2">
-            <div
-              className={`text-sm font-medium ${
-                result.failed > 0 ? "text-yellow-400" : "text-green-400"
-              }`}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box
+              sx={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: result.failed > 0 ? "#facc15" : "#4ade80",
+              }}
             >
               ✓ {result.success} {translate("added")}
               {result.failed > 0 ? `, ✗ ${result.failed} ${translate("failed")}` : ""}
-            </div>
+            </Box>
             {failedItems.length > 0 && (
-              <ul className="rounded border border-accent/20 bg-sidebar/50 p-2 text-xs font-mono max-h-40 overflow-y-auto">
+              <Box component="ul" sx={{ borderRadius: "4px", border: 1, borderColor: "rgba(229,106,74,0.2)", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)"), p: 1, fontSize: 12, fontFamily: "monospace", maxHeight: 160, overflowY: "auto", m: 0, listStyle: "none" }}>
                 {failedItems.map((item) => (
-                  <li key={item.index} className="text-red-400">
+                  <Box component="li" key={item.index} sx={{ color: "#f87171" }}>
                     [{item.index}] {item.error}
-                  </li>
+                  </Box>
                 ))}
-              </ul>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             onClick={handleSubmit}
             fullWidth
@@ -136,9 +153,8 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
           <Button onClick={handleClose} variant="ghost" fullWidth disabled={submitting}>
             {translate("Close")}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }
-

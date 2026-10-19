@@ -1,9 +1,75 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
 import { getStatusVariant as getConnectionStatusVariant } from "@/shared/utils/connectionStatus";
 import { Badge, Toggle, Tooltip } from "@/shared/components";
 import CooldownTimer from "./CooldownTimer";
+
+const hoverBg = (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)");
+const controlHoverBg = (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)");
+
+const arrowButtonSx = (disabled) => ({
+  p: 0.25,
+  border: 0,
+  borderRadius: "4px",
+  bgcolor: "transparent",
+  cursor: disabled ? "not-allowed" : "pointer",
+  color: disabled
+    ? (t) => (t.palette.mode === "dark" ? "rgba(156,163,175,0.3)" : "rgba(107,114,128,0.3)")
+    : "text.secondary",
+  transition: "background-color 150ms ease, color 150ms ease",
+  "&:hover": disabled ? {} : { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+});
+
+const controlButtonSx = (active) => ({
+  display: "flex",
+  width: { xs: "100%", sm: "auto" },
+  flexDirection: "column",
+  alignItems: "center",
+  borderRadius: "4px",
+  px: 1,
+  py: 0.5,
+  border: 0,
+  bgcolor: "transparent",
+  cursor: "pointer",
+  transition: "background-color 150ms ease, color 150ms ease",
+  color: active ? "primary.main" : "text.secondary",
+  "&:hover": { bgcolor: controlHoverBg, color: "primary.main" },
+});
+
+const deleteButtonSx = {
+  display: "flex",
+  width: { xs: "100%", sm: "auto" },
+  flexDirection: "column",
+  alignItems: "center",
+  borderRadius: "4px",
+  px: 1,
+  py: 0.5,
+  border: 0,
+  bgcolor: "transparent",
+  cursor: "pointer",
+  color: "#ef4444",
+  transition: "background-color 150ms ease",
+  "&:hover": { bgcolor: "rgba(239,68,68,0.1)" },
+};
+
+const dropdownItemSx = (active, disabled) => ({
+  width: "100%",
+  px: 1.5,
+  py: 0.75,
+  textAlign: "left",
+  border: 0,
+  bgcolor: "transparent",
+  cursor: disabled ? "not-allowed" : "pointer",
+  fontSize: 14,
+  color: active ? "primary.main" : "text.primary",
+  fontWeight: active ? 500 : 400,
+  opacity: disabled ? 0.5 : 1,
+  "&:hover": disabled ? {} : { bgcolor: controlHoverBg },
+});
 
 export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst, isLast, onMoveUp, onMoveDown, onToggleActive, onUpdateProxy, onEdit, onDelete, oneByOneStatus = null, autoPing = null, modelAssignmentOptions = null, onModelAssignmentChange = null, strictModelAssignment = false }) {
   const [showProxyDropdown, setShowProxyDropdown] = useState(false);
@@ -158,34 +224,50 @@ export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst
   };
 
   return (
-    <div className={`group flex min-w-0 flex-col gap-3 rounded-lg p-2 transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between ${connection.isActive === false ? "opacity-60" : ""}`}>
-      <div className="flex min-w-0 flex-1 items-start gap-2 sm:items-center sm:gap-3">
+    <Box
+      sx={{
+        display: "flex",
+        minWidth: 0,
+        flexDirection: { xs: "column", sm: "row" },
+        gap: 1.5,
+        borderRadius: "8px",
+        p: 1,
+        opacity: connection.isActive === false ? 0.6 : 1,
+        transition: "background-color 150ms ease",
+        "&:hover": { bgcolor: hoverBg },
+        alignItems: { sm: "center" },
+        justifyContent: { sm: "space-between" },
+      }}
+    >
+      <Box sx={{ display: "flex", minWidth: 0, flex: 1, alignItems: { xs: "flex-start", sm: "center" }, gap: { xs: 1, sm: 1.5 } }}>
         {/* Priority arrows */}
-        <div className="flex shrink-0 flex-col">
-          <button
+        <Box sx={{ display: "flex", flexShrink: 0, flexDirection: "column" }}>
+          <Box
+            component="button"
             onClick={onMoveUp}
             disabled={isFirst}
-            className={`p-0.5 rounded ${isFirst ? "text-text-muted/30 cursor-not-allowed" : "hover:bg-sidebar text-text-muted hover:text-primary"}`}
+            sx={arrowButtonSx(isFirst)}
           >
-            <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
-          </button>
-          <button
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>keyboard_arrow_up</Icon>
+          </Box>
+          <Box
+            component="button"
             onClick={onMoveDown}
             disabled={isLast}
-            className={`p-0.5 rounded ${isLast ? "text-text-muted/30 cursor-not-allowed" : "hover:bg-sidebar text-text-muted hover:text-primary"}`}
+            sx={arrowButtonSx(isLast)}
           >
-            <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
-          </button>
-        </div>
-        <span className="material-symbols-outlined shrink-0 text-base text-text-muted">
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>keyboard_arrow_down</Icon>
+          </Box>
+        </Box>
+        <Icon className="material-symbols-outlined" baseClassName="" sx={{ flexShrink: 0, fontSize: 16, color: "text.secondary" }}>
           {authIcon}
-        </span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{displayName}</p>
+        </Icon>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</Typography>
           {secondaryDisplayName && (
-            <p className="text-xs text-text-muted truncate">{secondaryDisplayName}</p>
+            <Typography sx={{ fontSize: 12, color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{secondaryDisplayName}</Typography>
           )}
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+          <Box sx={{ mt: 0.5, display: "flex", minWidth: 0, flexWrap: "wrap", alignItems: "center", gap: { xs: 0.75, sm: 1 } }}>
             <Badge variant={getStatusVariant()} size="sm" dot>
               {connection.isActive === false ? "disabled" : (effectiveStatus || "Unknown")}
             </Badge>
@@ -199,136 +281,153 @@ export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst
             )}
             {isCooldown && connection.isActive !== false && <CooldownTimer until={modelLockUntil} />}
             {connection.lastError && connection.isActive !== false && (
-              <span className="max-w-full truncate text-xs text-red-500 sm:max-w-[300px]" title={connection.lastError}>
+              <Box component="span" sx={{ maxWidth: { xs: "100%", sm: 300 }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "error.main" }} title={connection.lastError}>
                 {connection.lastError}
-              </span>
+              </Box>
             )}
-            <span className="text-xs text-text-muted">#{connection.priority}</span>
+            <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>#{connection.priority}</Box>
             {connection.globalPriority && (
-              <span className="text-xs text-text-muted">Auto: {connection.globalPriority}</span>
+              <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>Auto: {connection.globalPriority}</Box>
             )}
             {getOneByOneLabel() && (
               <Badge variant={getOneByOneVariant()} size="sm">
                 {getOneByOneLabel()}
               </Badge>
             )}
-          </div>
+          </Box>
           {hasAnyProxy && (
-            <div className="mt-1 flex items-center gap-2 flex-wrap">
-              <span className="max-w-full truncate text-[11px] text-text-muted sm:max-w-[420px]" title={proxyDisplayText}>
+            <Box sx={{ mt: 0.5, display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+              <Box component="span" sx={{ maxWidth: { xs: "100%", sm: 420 }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11, color: "text.secondary" }} title={proxyDisplayText}>
                 {proxyDisplayText}
-              </span>
+              </Box>
               {maskedProxyUrl && (
-                <code className="max-w-full truncate rounded bg-black/5 px-1 py-0.5 font-mono text-[10px] text-text-muted dark:bg-white/5 sm:max-w-[260px]">
+                <Box component="code" sx={{ maxWidth: { xs: "100%", sm: 260 }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRadius: "4px", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), px: 0.5, py: 0.25, fontFamily: "monospace", fontSize: 10, color: "text.secondary" }}>
                   {maskedProxyUrl}
-                </code>
+                </Box>
               )}
               {noProxyText && (
-                <span className="max-w-full truncate text-[11px] text-text-muted sm:max-w-[320px]" title={noProxyText}>
+                <Box component="span" sx={{ maxWidth: { xs: "100%", sm: 320 }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11, color: "text.secondary" }} title={noProxyText}>
                   no_proxy: {noProxyText}
-                </span>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
           {modelAssignmentOptions && onModelAssignmentChange && (
-            <select
+            <Box
+              component="select"
               value={Object.prototype.hasOwnProperty.call(connection.providerSpecificData || {}, "assignedModel")
                 ? (connection.providerSpecificData.assignedModel || "")
                 : (connection.providerSpecificData?.freebuffModel || "")}
               onChange={(event) => onModelAssignmentChange(event.target.value)}
               disabled={!strictModelAssignment}
-              className="mt-2 max-w-full rounded-md border border-border bg-background px-2 py-1 text-[11px] text-text-main"
+              sx={{
+                mt: 1,
+                maxWidth: "100%",
+                borderRadius: "6px",
+                border: 1,
+                borderColor: "divider",
+                bgcolor: "background.default",
+                px: 1,
+                py: 0.5,
+                fontSize: 11,
+                color: "text.primary",
+              }}
               title="Model assignment"
             >
               <option value="">Unassigned</option>
               {modelAssignmentOptions.map((model) => (
                 <option key={model.id} value={model.id}>{model.name || model.id}</option>
               ))}
-            </select>
+            </Box>
           )}
-        </div>
-      </div>
-      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
-        <div className="grid flex-1 grid-cols-3 gap-1 sm:flex sm:flex-none">
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, alignItems: "center", justifyContent: { xs: "space-between", sm: "flex-end" }, gap: 1 }}>
+        <Box sx={{ display: { xs: "grid", sm: "flex" }, flex: { xs: 1, sm: "none" }, gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 0.5 }}>
           {/* Proxy button with inline dropdown */}
           {(proxyPools || []).length > 0 && (
-            <div className="relative" ref={proxyDropdownRef}>
-               <button
+            <Box sx={{ position: "relative" }} ref={proxyDropdownRef}>
+               <Box
+                 component="button"
                  type="button"
                  onClick={() => setShowProxyDropdown((v) => !v)}
-                className={`flex w-full flex-col items-center rounded px-2 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${hasAnyProxy ? "text-primary" : "text-text-muted hover:text-primary"}`}
-                disabled={updatingProxy}
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  {updatingProxy ? "progress_activity" : "lan"}
-                </span>
-                <span className="text-[10px] leading-tight">Proxy</span>
-              </button>
-              {showProxyDropdown && (
-                <div className="absolute right-0 top-full z-50 mt-1 max-w-[78vw] min-w-[160px] rounded-lg border border-border bg-bg py-1 shadow-lg">
-                  {rotationStrategy === "smart" && <p className="px-3 py-1 text-[10px] text-text-muted">Smart skips unfit pools for this provider/model.</p>}
-                   <button
-                     type="button"
-                     onClick={() => handleSelectProxy("__none__")}
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5 ${!boundProxyPoolId ? "text-primary font-medium" : "text-text-main"}`}
-                  >
-                    None
-                  </button>
-                  <p className="px-3 pt-2 text-[10px] font-medium uppercase text-text-muted">Rotation</p>
-                  {["fill-first", "round-robin", "random", "smart"].map((strategy) => (
-                     <button
-                       type="button"
-                       key={strategy}
-                       onClick={() => handleAdvancedProxy(strategy, selectedProxyIds.length > 1 ? selectedProxyIds : (proxyPools || []).filter((pool) => pool.isActive).map((pool) => pool.id))}
-                       disabled={updatingProxy}
-                       className={`w-full px-3 py-1.5 text-left text-sm hover:bg-black/5 dark:hover:bg-white/5 ${rotationStrategy === strategy ? "font-medium text-primary" : "text-text-main"}`}
+                 sx={controlButtonSx(hasAnyProxy)}
+                 disabled={updatingProxy}
+               >
+                 <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>
+                   {updatingProxy ? "progress_activity" : "lan"}
+                 </Icon>
+                 <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Proxy</Box>
+               </Box>
+               {showProxyDropdown && (
+                 <Box sx={{ position: "absolute", right: 0, top: "100%", zIndex: 50, mt: 0.5, maxWidth: "78vw", minWidth: 160, borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: "background.default", py: 0.5, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)" }}>
+                   {rotationStrategy === "smart" && <Typography sx={{ px: 1.5, py: 0.5, fontSize: 10, color: "text.secondary" }}>Smart skips unfit pools for this provider/model.</Typography>}
+                    <Box
+                      component="button"
+                      type="button"
+                      onClick={() => handleSelectProxy("__none__")}
+                      sx={dropdownItemSx(!boundProxyPoolId, false)}
                     >
-                      {strategy === "smart" ? "Smart (provider/model aware)" : strategy}
-                    </button>
-                  ))}
-                  <p className="px-3 pt-2 text-[10px] font-medium uppercase text-text-muted">Single pool</p>
-                  {(proxyPools || []).map((pool) => (
-                     <button
-                       type="button"
-                       key={pool.id}
-                       onClick={() => handleSelectProxy(pool.id)}
-                       disabled={updatingProxy || pool.isActive !== true}
-                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5 ${boundProxyPoolId === pool.id ? "text-primary font-medium" : "text-text-main"}`}
-                    >
-                      {pool.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                      None
+                    </Box>
+                    <Typography sx={{ px: 1.5, pt: 1, fontSize: 10, fontWeight: 500, textTransform: "uppercase", color: "text.secondary" }}>Rotation</Typography>
+                    {["fill-first", "round-robin", "random", "smart"].map((strategy) => (
+                       <Box
+                         component="button"
+                         type="button"
+                         key={strategy}
+                         onClick={() => handleAdvancedProxy(strategy, selectedProxyIds.length > 1 ? selectedProxyIds : (proxyPools || []).filter((pool) => pool.isActive).map((pool) => pool.id))}
+                         disabled={updatingProxy}
+                         sx={dropdownItemSx(rotationStrategy === strategy, updatingProxy)}
+                       >
+                         {strategy === "smart" ? "Smart (provider/model aware)" : strategy}
+                       </Box>
+                    ))}
+                    <Typography sx={{ px: 1.5, pt: 1, fontSize: 10, fontWeight: 500, textTransform: "uppercase", color: "text.secondary" }}>Single pool</Typography>
+                    {(proxyPools || []).map((pool) => (
+                       <Box
+                         component="button"
+                         type="button"
+                         key={pool.id}
+                         onClick={() => handleSelectProxy(pool.id)}
+                         disabled={updatingProxy || pool.isActive !== true}
+                         sx={dropdownItemSx(boundProxyPoolId === pool.id, updatingProxy || pool.isActive !== true)}
+                       >
+                         {pool.name}
+                       </Box>
+                    ))}
+                 </Box>
+               )}
+            </Box>
           )}
           {autoPing && (
             <Tooltip text={autoPingTooltip}>
-              <button
+              <Box
+                component="button"
                 onClick={() => autoPing.onToggle(!autoPing.on)}
-                className={`flex w-full flex-col items-center rounded px-2 py-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${autoPing.on ? "text-primary" : "text-text-muted hover:text-primary"}`}
+                sx={controlButtonSx(autoPing.on)}
               >
-                <span className="material-symbols-outlined text-[18px]">bolt</span>
-                <span className="text-[10px] leading-tight">Auto-ping</span>
-              </button>
+                <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>bolt</Icon>
+                <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Auto-ping</Box>
+              </Box>
             </Tooltip>
           )}
-          <button onClick={onEdit} className="flex flex-col items-center rounded px-2 py-1 text-text-muted hover:bg-black/5 hover:text-primary dark:hover:bg-white/5">
-            <span className="material-symbols-outlined text-[18px]">edit</span>
-            <span className="text-[10px] leading-tight">Edit</span>
-          </button>
-          <button onClick={onDelete} className="flex flex-col items-center rounded px-2 py-1 text-red-500 hover:bg-red-500/10">
-            <span className="material-symbols-outlined text-[18px]">delete</span>
-            <span className="text-[10px] leading-tight">Delete</span>
-          </button>
-        </div>
+          <Box component="button" onClick={onEdit} sx={controlButtonSx(false)}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>edit</Icon>
+            <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Edit</Box>
+          </Box>
+          <Box component="button" onClick={onDelete} sx={deleteButtonSx}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>delete</Icon>
+            <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Delete</Box>
+          </Box>
+        </Box>
         <Toggle
           size="sm"
           checked={connection.isActive ?? true}
           onChange={onToggleActive}
           title={(connection.isActive ?? true) ? "Disable connection" : "Enable connection"}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -2,31 +2,75 @@
  * CircuitBreakerBadge — compact badge showing circuit breaker state for a provider.
  * Integrates into existing provider cards without requiring a new page.
  */
+import Box from "@mui/material/Box";
+import Icon from "@mui/material/Icon";
+
+const stateConfig = {
+  DEGRADED: {
+    bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(120,53,15,0.3)" : "#fef3c7"),
+    color: (t) => (t.palette.mode === "dark" ? "#fbbf24" : "#b45309"),
+    icon: "warning",
+    label: "Degraded",
+  },
+  OPEN: {
+    bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(127,29,29,0.3)" : "#fee2e2"),
+    color: (t) => (t.palette.mode === "dark" ? "#f87171" : "#b91c1c"),
+    icon: "power",
+    label: "Circuit Open",
+  },
+  HALF_OPEN: {
+    bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,58,138,0.3)" : "#dbeafe"),
+    color: (t) => (t.palette.mode === "dark" ? "#60a5fa" : "#1d4ed8"),
+    icon: "autorenew",
+    label: "Recovering",
+  },
+};
+
 export default function CircuitBreakerBadge({ status, onReset }) {
   if (!status || status.state === "CLOSED") return null;
-
-  const stateConfig = {
-    DEGRADED: { color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", icon: "warning", label: "Degraded" },
-    OPEN: { color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: "power", label: "Circuit Open" },
-    HALF_OPEN: { color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", icon: "autorenew", label: "Recovering" },
-  };
 
   const config = stateConfig[status.state] || stateConfig.DEGRADED;
   const retryIn = status.retryAfterMs > 0 ? ` (${Math.ceil(status.retryAfterMs / 1000)}s)` : "";
 
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${config.color}`}>
-      <span className="material-symbols-outlined text-[12px]">{config.icon}</span>
+    <Box
+      component="span"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 0.5,
+        borderRadius: "9999px",
+        px: 1,
+        py: 0.25,
+        fontSize: 10,
+        fontWeight: 500,
+        bgcolor: config.bgcolor,
+        color: config.color,
+      }}
+    >
+      <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 12 }}>{config.icon}</Icon>
       {config.label}{retryIn}
       {status.state === "OPEN" && onReset && (
-        <button
+        <Box
+          component="button"
+          type="button"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onReset(); }}
-          className="ml-0.5 hover:opacity-70 transition-opacity"
+          sx={{
+            ml: 0.25,
+            p: 0,
+            border: 0,
+            bgcolor: "transparent",
+            color: "inherit",
+            cursor: "pointer",
+            display: "inline-flex",
+            transition: "opacity 150ms ease",
+            "&:hover": { opacity: 0.7 },
+          }}
           title="Reset circuit breaker"
         >
-          <span className="material-symbols-outlined text-[12px]">refresh</span>
-        </button>
+          <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 12 }}>refresh</Icon>
+        </Box>
       )}
-    </span>
+    </Box>
   );
 }

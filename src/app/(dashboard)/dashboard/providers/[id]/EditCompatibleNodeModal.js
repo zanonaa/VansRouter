@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
 import { Button, Badge, Input, Modal, Select } from "@/shared/components";
 
 const API_TYPE_OPTIONS = [
@@ -80,7 +81,7 @@ export default function EditCompatibleNodeModal({ isOpen, node, onSave, onClose,
 
   return (
     <Modal isOpen={isOpen} title={`Edit ${isAnthropic ? "Anthropic" : "OpenAI"} Compatible`} onClose={onClose}>
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Input
           label="Name"
           value={formData.name}
@@ -110,20 +111,21 @@ export default function EditCompatibleNodeModal({ isOpen, node, onSave, onClose,
           placeholder={isAnthropic ? "https://api.anthropic.com/v1" : "https://api.openai.com/v1"}
           hint={`Use the base URL (ending in /v1) for your ${isAnthropic ? "Anthropic" : "OpenAI"}-compatible API.`}
         />
-        <div className="flex gap-2">
-          <Input
-            label="API Key (for Check)"
-            type="password"
-            value={checkKey}
-            onChange={(e) => setCheckKey(e.target.value)}
-            className="flex-1"
-          />
-          <div className="pt-6">
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ flex: 1 }}>
+            <Input
+              label="API Key (for Check)"
+              type="password"
+              value={checkKey}
+              onChange={(e) => setCheckKey(e.target.value)}
+            />
+          </Box>
+          <Box sx={{ pt: 3 }}>
             <Button onClick={handleValidate} disabled={!checkKey || validating || !formData.baseUrl.trim()} variant="secondary">
               {validating ? "Checking..." : "Check"}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
         <Input
           label="Model ID (optional)"
           value={checkModelId}
@@ -136,16 +138,15 @@ export default function EditCompatibleNodeModal({ isOpen, node, onSave, onClose,
             {validationResult === "success" ? "Valid" : "Invalid"}
           </Badge>
         )}
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={handleSubmit} fullWidth disabled={!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim() || saving}>
             {saving ? "Saving..." : "Save"}
           </Button>
           <Button onClick={onClose} variant="ghost" fullWidth>
             Cancel
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }
-

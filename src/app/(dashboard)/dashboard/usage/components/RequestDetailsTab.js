@@ -1,11 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
 import Card from "@/shared/components/Card";
 import Button from "@/shared/components/Button";
 import Drawer from "@/shared/components/Drawer";
 import Pagination from "@/shared/components/Pagination";
-import { cn } from "@/shared/utils/cn";
 import { AI_PROVIDERS, getProviderByAlias } from "@/shared/constants/providers";
 
 let providerNameCache = null;
@@ -55,30 +65,48 @@ function CollapsibleSection({ title, children, defaultOpen = false, icon = null 
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border border-black/5 dark:border-white/5 rounded-lg overflow-hidden">
-      <button
+    <Box sx={{ border: 1, borderColor: "divider", borderRadius: "8px", overflow: "hidden" }}>
+      <Box
+        component="button"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors"
+        sx={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 1.5,
+          bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)"),
+          border: 0,
+          cursor: "pointer",
+          transition: "background-color 150ms ease",
+          "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)") },
+        }}
       >
-        <div className="flex items-center gap-2">
-          {icon && <span className="material-symbols-outlined text-[18px] text-text-muted">{icon}</span>}
-          <span className="font-semibold text-sm text-text-main">{title}</span>
-        </div>
-        <span className={cn(
-          "material-symbols-outlined text-[20px] text-text-muted transition-transform duration-200",
-          isOpen ? "rotate-90" : ""
-        )}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {icon && <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, color: "text.secondary" }}>{icon}</Icon>}
+          <Typography component="span" sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}>{title}</Typography>
+        </Box>
+        <Icon
+          className="material-symbols-outlined"
+          baseClassName=""
+          sx={{
+            fontSize: 20,
+            color: "text.secondary",
+            transition: "transform 200ms ease",
+            transform: isOpen ? "rotate(90deg)" : "none",
+          }}
+        >
           chevron_right
-        </span>
-      </button>
+        </Icon>
+      </Box>
 
       {isOpen && (
-        <div className="p-4 border-t border-black/5 dark:border-white/5">
+        <Box sx={{ p: 2, borderTop: 1, borderColor: "divider" }}>
           {children}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -106,66 +134,83 @@ function isTruncated(field) {
 
 function TruncatedNotice({ marker }) {
   return (
-    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-700 dark:text-amber-300">
-      <div className="flex items-center gap-1.5 font-sans font-semibold">
-        <span className="material-symbols-outlined text-[16px]">content_cut</span>
+    <Box
+      sx={{
+        borderRadius: "8px",
+        border: 1,
+        borderColor: "rgba(245,158,11,0.3)",
+        bgcolor: "rgba(245,158,11,0.1)",
+        p: 1.5,
+        fontFamily: "monospace",
+        fontSize: 12,
+        color: (t) => (t.palette.mode === "dark" ? "#fcd34d" : "#b45309"),
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, fontFamily: "inherit", fontWeight: 600 }}>
+        <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 16 }}>content_cut</Icon>
         Payload truncated
-      </div>
-      <div className="mt-1">
+      </Box>
+      <Box sx={{ mt: 0.5 }}>
         Original size: {((marker._originalSize || 0) / 1024).toFixed(1)} KB
-      </div>
+      </Box>
       {marker._preview && (
-        <pre className="mt-2 max-h-[120px] max-w-full overflow-auto whitespace-pre-wrap break-all opacity-80">
+        <Box component="pre" sx={{ mt: 1, maxHeight: 120, maxWidth: "100%", overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", opacity: 0.8, m: 0 }}>
           {marker._preview}
-        </pre>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
-function RequestFilters({ filterProvider, setFilterProvider, filterStart, setFilterStart, filterEnd, setFilterEnd, providers, cn, handleApplyFilters, handleClearFilters }) {
+function RequestFilters({ filterProvider, setFilterProvider, filterStart, setFilterStart, filterEnd, setFilterEnd, providers, handleApplyFilters, handleClearFilters }) {
   return (
       <Card padding="md">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex min-w-0 flex-col gap-2">
-            <label htmlFor="provider-filter" className="text-sm font-medium text-text-main">Provider</label>
-            <select
-              id="provider-filter"
-              value={filterProvider}
-              onChange={(e) => setFilterProvider(e.target.value)}
-              className={cn("h-9 px-3 rounded-lg border border-black/10 dark:border-white/10 bg-surface text-sm text-text-main focus:outline-none focus:ring-2 focus:ring-primary/20 w-full min-w-0 cursor-pointer")}
-              style={{ colorScheme: 'auto' }}
-            >
-              <option value="">All Providers</option>
-              {providers.map((provider) => (
-                <option key={provider.id} value={provider.id}>{provider.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex min-w-0 flex-col gap-2">
-            <label htmlFor="start-date-filter" className="text-sm font-medium text-text-main">Start Date</label>
-            <input id="start-date-filter" type="datetime-local" value={filterStart}
-              onChange={(e) => setFilterStart(e.target.value)}
-              className={cn("h-9 px-3 rounded-lg border border-black/10 dark:border-white/10 bg-surface w-full min-w-0 text-sm text-text-main focus:outline-none focus:ring-2 focus:ring-primary/20")}
-            />
-          </div>
-          <div className="flex min-w-0 flex-col gap-2">
-            <label htmlFor="end-date-filter" className="text-sm font-medium text-text-main">End Date</label>
-            <input id="end-date-filter" type="datetime-local" value={filterEnd}
-              onChange={(e) => setFilterEnd(e.target.value)}
-              className={cn("h-9 px-3 rounded-lg border border-black/10 dark:border-white/10 bg-surface w-full min-w-0 text-sm text-text-main focus:outline-none focus:ring-2 focus:ring-primary/20")}
-            />
-          </div>
-          <div className="flex min-w-0 flex-col gap-2 sm:col-span-2 lg:col-span-1">
-            <span className="hidden text-sm font-medium text-text-main opacity-0 lg:block" aria-hidden="true">Actions</span>
-            <div className="flex gap-2">
-              <Button onClick={handleApplyFilters} className="flex-1">Search</Button>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0,1fr))", lg: "repeat(4, minmax(0,1fr))" }, gap: 2 }}>
+          <TextField
+            id="provider-filter"
+            select
+            size="small"
+            label="Provider"
+            value={filterProvider}
+            onChange={(e) => setFilterProvider(e.target.value)}
+            fullWidth
+          >
+            <MenuItem value="">All Providers</MenuItem>
+            {providers.map((provider) => (
+              <MenuItem key={provider.id} value={provider.id}>{provider.name}</MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            id="start-date-filter"
+            type="datetime-local"
+            size="small"
+            label="Start Date"
+            value={filterStart}
+            onChange={(e) => setFilterStart(e.target.value)}
+            fullWidth
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+          <TextField
+            id="end-date-filter"
+            type="datetime-local"
+            size="small"
+            label="End Date"
+            value={filterEnd}
+            onChange={(e) => setFilterEnd(e.target.value)}
+            fullWidth
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+          <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 1, gridColumn: { xs: "span 2", lg: "span 1" } }}>
+            <Typography sx={{ display: { xs: "none", lg: "block" }, fontSize: 14, fontWeight: 500, color: "text.primary", opacity: 0 }} aria-hidden="true">Actions</Typography>
+            <Box sx={{ display: "flex", gap: 1, "& > *": { flex: 1 } }}>
+              <Button onClick={handleApplyFilters}>Search</Button>
               <Button variant="ghost" onClick={handleClearFilters}
-                disabled={!filterProvider && !filterStart && !filterEnd}
-                className="flex-1">Clear</Button>
-            </div>
-          </div>
-        </div>
+                disabled={!filterProvider && !filterStart && !filterEnd}>
+                Clear
+              </Button>
+            </Box>
+          </Box>
+        </Box>
       </Card>
   );
 }
@@ -173,34 +218,34 @@ function RequestFilters({ filterProvider, setFilterProvider, filterStart, setFil
 
 function RequestRow({ detail, index, handleViewDetail, providerNameCache }) {
   return (
-                  <tr
+                  <TableRow
                     key={`${detail.id}-${index}`}
-                    className="border-b border-black/5 dark:border-white/5 last:border-b-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                    sx={{ transition: "background-color 150ms ease", "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)") } }}
                   >
-                    <td className="whitespace-nowrap p-4 text-sm text-text-main">
+                    <TableCell sx={{ whiteSpace: "nowrap", p: 2, fontSize: 14, color: "text.primary" }}>
                       {new Date(detail.timestamp).toLocaleString()}
-                    </td>
-                    <td className="max-w-[260px] truncate p-4 font-mono text-sm text-text-main">
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", p: 2, fontFamily: "monospace", fontSize: 14, color: "text.primary" }}>
                       {detail.model}
-                    </td>
-                    <td className="max-w-[180px] truncate p-4 text-sm text-text-main">
-                       <span className="font-medium">
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", p: 2, fontSize: 14, color: "text.primary" }}>
+                       <Box component="span" sx={{ fontWeight: 500 }}>
                          {getProviderName(detail.provider, providerNameCache)}
-                       </span>
-                     </td>
-                    <td className="p-4 text-sm text-text-main text-right font-mono">
+                       </Box>
+                     </TableCell>
+                    <TableCell sx={{ p: 2, fontSize: 14, color: "text.primary", textAlign: "right", fontFamily: "monospace" }}>
                       {getInputTokens(detail.tokens).toLocaleString()}
-                    </td>
-                    <td className="p-4 text-sm text-text-main text-right font-mono">
+                    </TableCell>
+                    <TableCell sx={{ p: 2, fontSize: 14, color: "text.primary", textAlign: "right", fontFamily: "monospace" }}>
                       {detail.tokens?.completion_tokens?.toLocaleString() || 0}
-                    </td>
-                    <td className="p-4 text-sm text-text-muted">
-                      <div className="flex flex-col gap-0.5">
-                        <div>TTFT: <span className="font-mono">{detail.latency?.ttft || 0}ms</span></div>
-                        <div>Total: <span className="font-mono">{detail.latency?.total || 0}ms</span></div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-center">
+                    </TableCell>
+                    <TableCell sx={{ p: 2, fontSize: 14, color: "text.secondary" }}>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+                        <Box>TTFT: <Box component="span" sx={{ fontFamily: "monospace" }}>{detail.latency?.ttft || 0}ms</Box></Box>
+                        <Box>Total: <Box component="span" sx={{ fontFamily: "monospace" }}>{detail.latency?.total || 0}ms</Box></Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ p: 2, textAlign: "center" }}>
                       <Button
                         variant="outline"
                         size="sm"
@@ -208,8 +253,8 @@ function RequestRow({ detail, index, handleViewDetail, providerNameCache }) {
                       >
                         Detail
                       </Button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
   );
 }
 
@@ -323,50 +368,50 @@ export default function RequestDetailsTab() {
   const pagination = { page, pageSize, totalItems, totalPages, hasNext: page < totalPages, hasPrev: page > 1 };
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
-      <RequestFilters filterProvider={filterProvider} setFilterProvider={setFilterProvider} filterStart={filterStart} setFilterStart={setFilterStart} filterEnd={filterEnd} setFilterEnd={setFilterEnd} providers={providers} cn={cn} handleApplyFilters={handleApplyFilters} handleClearFilters={handleClearFilters} />
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 3 }}>
+      <RequestFilters filterProvider={filterProvider} setFilterProvider={setFilterProvider} filterStart={filterStart} setFilterStart={setFilterStart} filterEnd={filterEnd} setFilterEnd={setFilterEnd} providers={providers} handleApplyFilters={handleApplyFilters} handleClearFilters={handleClearFilters} />
 
       <Card padding="none">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[880px]">
-            <thead>
-              <tr className="border-b border-black/5 dark:border-white/5">
-                <th className="text-left p-4 text-sm font-semibold text-text-main">Timestamp</th>
-                <th className="text-left p-4 text-sm font-semibold text-text-main">Model</th>
-                <th className="text-left p-4 text-sm font-semibold text-text-main">Provider</th>
-                <th className="text-right p-4 text-sm font-semibold text-text-main">Input Tokens</th>
-                <th className="text-right p-4 text-sm font-semibold text-text-main">Output Tokens</th>
-                <th className="text-left p-4 text-sm font-semibold text-text-main">Latency</th>
-                <th className="text-center p-4 text-sm font-semibold text-text-main">Action</th>
-              </tr>
-            </thead>
-            <tbody>
+        <TableContainer sx={{ overflowX: "auto" }}>
+          <Table sx={{ width: "100%", minWidth: 880 }}>
+            <TableHead>
+              <TableRow sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <TableCell sx={{ textAlign: "left", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Timestamp</TableCell>
+                <TableCell sx={{ textAlign: "left", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Model</TableCell>
+                <TableCell sx={{ textAlign: "left", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Provider</TableCell>
+                <TableCell sx={{ textAlign: "right", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Input Tokens</TableCell>
+                <TableCell sx={{ textAlign: "right", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Output Tokens</TableCell>
+                <TableCell sx={{ textAlign: "left", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Latency</TableCell>
+                <TableCell sx={{ textAlign: "center", p: 2, fontSize: 14, fontWeight: 600, color: "text.primary" }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {loading || !isFilterReady ? (
-                <tr>
-                  <td colSpan="7" className="p-8 text-center text-text-muted">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                <TableRow>
+                  <TableCell colSpan="7" sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                      <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 20, animation: "spin 1s linear infinite" }}>progress_activity</Icon>
                       Loading...
-                    </div>
-                  </td>
-                </tr>
+                    </Box>
+                  </TableCell>
+                </TableRow>
               ) : details.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="p-8 text-center text-text-muted">
+                <TableRow>
+                  <TableCell colSpan="7" sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>
                     No request details found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 details.map((detail, index) => (
                   <RequestRow key={index} detail={detail} index={index} handleViewDetail={handleViewDetail} providerNameCache={providerNameCache} />
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         {!loading && details.length > 0 && (
-          <div className="border-t border-black/5 dark:border-white/5">
+          <Box sx={{ borderTop: 1, borderColor: "divider" }}>
             <Pagination
               currentPage={pagination.page}
               pageSize={pagination.pageSize}
@@ -374,7 +419,7 @@ export default function RequestDetailsTab() {
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
             />
-          </div>
+          </Box>
         )}
       </Card>
 
@@ -385,115 +430,107 @@ export default function RequestDetailsTab() {
         width="lg"
       >
         {selectedDetail && (
-          <div className="space-y-6">
-            <div className="grid min-w-0 grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-              <div>
-                <span className="text-text-muted">ID:</span>{" "}
-                <span className="break-all font-mono text-text-main">{selectedDetail.id}</span>
-              </div>
-              <div>
-                <span className="text-text-muted">Timestamp:</span>{" "}
-                <span className="text-text-main">{new Date(selectedDetail.timestamp).toLocaleString()}</span>
-              </div>
-              <div>
-                 <span className="text-text-muted">Provider:</span>{" "}
-                 <span className="text-text-main font-medium">{getProviderName(selectedDetail.provider, providerNameCache)}</span>
-               </div>
-              <div>
-                <span className="text-text-muted">Model:</span>{" "}
-                <span className="text-text-main font-mono">{selectedDetail.model}</span>
-              </div>
-              <div>
-                <span className="text-text-muted">API Key Name:</span>{" "}
-                <span className="text-text-main">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            <Box sx={{ display: "grid", minWidth: 0, gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0,1fr))" }, gap: 2, fontSize: 14 }}>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>ID:</Box>{" "}
+                <Box component="span" sx={{ wordBreak: "break-all", fontFamily: "monospace", color: "text.primary" }}>{selectedDetail.id}</Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>Timestamp:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary" }}>{new Date(selectedDetail.timestamp).toLocaleString()}</Box>
+              </Box>
+              <Box>
+                 <Box component="span" sx={{ color: "text.secondary" }}>Provider:</Box>{" "}
+                 <Box component="span" sx={{ color: "text.primary", fontWeight: 500 }}>{getProviderName(selectedDetail.provider, providerNameCache)}</Box>
+               </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>Model:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary", fontFamily: "monospace" }}>{selectedDetail.model}</Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>API Key Name:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary" }}>
                   {selectedDetail.apiKeyName || "-"}
-                </span>
-              </div>
-              <div>
-                <span className="text-text-muted">API Key:</span>{" "}
-                <span className="text-text-main font-mono">
+                </Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>API Key:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary", fontFamily: "monospace" }}>
                   {selectedDetail.apiKeyName && selectedDetail.apiKey ? maskKey(selectedDetail.apiKey) : "-"}
-                </span>
-              </div>
-              <div>
-                <span className="text-text-muted">Status:</span>{" "}
-                <span className={cn(
-                  "font-medium",
-                  selectedDetail.status === "success" ? "text-green-600" : "text-red-600"
-                )}>
+                </Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>Status:</Box>{" "}
+                <Box component="span" sx={{ fontWeight: 500, color: selectedDetail.status === "success" ? "success.main" : "error.main" }}>
                   {selectedDetail.status}
-                </span>
-              </div>
-              <div>
-                <span className="text-text-muted">Latency:</span>{" "}
-                <span className="text-text-main font-mono">
+                </Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>Latency:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary", fontFamily: "monospace" }}>
                   TTFT {selectedDetail.latency?.ttft || 0}ms / Total {selectedDetail.latency?.total || 0}ms
-                </span>
-              </div>
-              <div>
-                <span className="text-text-muted">Input Tokens:</span>{" "}
-                <span className="text-text-main font-mono">
+                </Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>Input Tokens:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary", fontFamily: "monospace" }}>
                   {getInputTokens(selectedDetail.tokens).toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="text-text-muted">Output Tokens:</span>{" "}
-                <span className="text-text-main font-mono">
+                </Box>
+              </Box>
+              <Box>
+                <Box component="span" sx={{ color: "text.secondary" }}>Output Tokens:</Box>{" "}
+                <Box component="span" sx={{ color: "text.primary", fontFamily: "monospace" }}>
                   {selectedDetail.tokens?.completion_tokens?.toLocaleString() || 0}
-                </span>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
 
             {selectedDetail.pxpipe && (
-              <div className="rounded-lg border border-black/5 dark:border-white/5 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-[18px] text-text-muted">image</span>
-                  <span className="font-semibold text-sm text-text-main">PXPIPE</span>
-                  <span className={cn(
-                    "text-xs px-2 py-0.5 rounded",
-                    selectedDetail.pxpipe.applied
-                      ? "bg-green-500/15 text-green-600"
-                      : "bg-amber-500/15 text-amber-600"
-                  )}>
+              <Box sx={{ borderRadius: "8px", border: 1, borderColor: "divider", p: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                  <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, color: "text.secondary" }}>image</Icon>
+                  <Box component="span" sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}>PXPIPE</Box>
+                  <Box component="span" sx={{ fontSize: 12, px: 1, py: 0.25, borderRadius: "4px", bgcolor: selectedDetail.pxpipe.applied ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)", color: selectedDetail.pxpipe.applied ? "success.main" : "warning.main" }}>
                     {selectedDetail.pxpipe.applied ? "Activated" : "Skipped"}
-                  </span>
-                </div>
+                  </Box>
+                </Box>
                 {selectedDetail.pxpipe.applied ? (
-                  <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-                    <div>
-                      <span className="text-text-muted block text-xs">Original (est.)</span>
-                      <span className="font-mono">{(selectedDetail.pxpipe.tokensBeforeEst || 0).toLocaleString()} tokens</span>
-                    </div>
-                    <div>
-                      <span className="text-text-muted block text-xs">Compressed (est.)</span>
-                      <span className="font-mono">{(selectedDetail.pxpipe.tokensAfterEst || 0).toLocaleString()} tokens</span>
-                    </div>
-                    <div>
-                      <span className="text-text-muted block text-xs">Saved</span>
-                      <span className="font-mono text-green-600">{selectedDetail.pxpipe.savedPct || 0}%</span>
-                    </div>
-                    <div>
-                      <span className="text-text-muted block text-xs">Images</span>
-                      <span className="font-mono">{selectedDetail.pxpipe.imageCount || 0} ({selectedDetail.pxpipe.durationMs || 0}ms)</span>
-                    </div>
-                  </div>
+                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, minmax(0,1fr))", sm: "repeat(4, minmax(0,1fr))" }, gap: 1, fontSize: 14 }}>
+                    <Box>
+                      <Box component="span" sx={{ color: "text.secondary", display: "block", fontSize: 12 }}>Original (est.)</Box>
+                      <Box component="span" sx={{ fontFamily: "monospace" }}>{(selectedDetail.pxpipe.tokensBeforeEst || 0).toLocaleString()} tokens</Box>
+                    </Box>
+                    <Box>
+                      <Box component="span" sx={{ color: "text.secondary", display: "block", fontSize: 12 }}>Compressed (est.)</Box>
+                      <Box component="span" sx={{ fontFamily: "monospace" }}>{(selectedDetail.pxpipe.tokensAfterEst || 0).toLocaleString()} tokens</Box>
+                    </Box>
+                    <Box>
+                      <Box component="span" sx={{ color: "text.secondary", display: "block", fontSize: 12 }}>Saved</Box>
+                      <Box component="span" sx={{ fontFamily: "monospace", color: "success.main" }}>{selectedDetail.pxpipe.savedPct || 0}%</Box>
+                    </Box>
+                    <Box>
+                      <Box component="span" sx={{ color: "text.secondary", display: "block", fontSize: 12 }}>Images</Box>
+                      <Box component="span" sx={{ fontFamily: "monospace" }}>{selectedDetail.pxpipe.imageCount || 0} ({selectedDetail.pxpipe.durationMs || 0}ms)</Box>
+                    </Box>
+                  </Box>
                 ) : (
-                  <p className="text-sm text-text-muted">
-                    Reason: <span className="font-mono">{selectedDetail.pxpipe.reason}</span>
+                  <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
+                    Reason: <Box component="span" sx={{ fontFamily: "monospace" }}>{selectedDetail.pxpipe.reason}</Box>
                     {selectedDetail.pxpipe.detail ? ` — ${selectedDetail.pxpipe.detail}` : ""}
-                  </p>
+                  </Typography>
                 )}
-              </div>
+              </Box>
             )}
 
-            <div className="space-y-4">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <CollapsibleSection title="1. Client Request (Input)" defaultOpen={true} icon="input">
                 {isTruncated(selectedDetail.request) ? (
                   <TruncatedNotice marker={selectedDetail.request} />
                 ) : (
-                  <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                  <Box component="pre" sx={{ maxHeight: 300, maxWidth: "100%", overflow: "auto", borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), p: { xs: 1.5, sm: 2 }, fontFamily: "monospace", fontSize: 12, color: "text.primary", m: 0 }}>
                     {JSON.stringify(selectedDetail.request, null, 2)}
-                  </pre>
+                  </Box>
                 )}
               </CollapsibleSection>
 
@@ -502,9 +539,9 @@ export default function RequestDetailsTab() {
                   {isTruncated(selectedDetail.providerRequest) ? (
                     <TruncatedNotice marker={selectedDetail.providerRequest} />
                   ) : (
-                    <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                    <Box component="pre" sx={{ maxHeight: 300, maxWidth: "100%", overflow: "auto", borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), p: { xs: 1.5, sm: 2 }, fontFamily: "monospace", fontSize: 12, color: "text.primary", m: 0 }}>
                       {JSON.stringify(selectedDetail.providerRequest, null, 2)}
-                    </pre>
+                    </Box>
                   )}
                 </CollapsibleSection>
               )}
@@ -514,12 +551,12 @@ export default function RequestDetailsTab() {
                   {isTruncated(selectedDetail.providerResponse) ? (
                     <TruncatedNotice marker={selectedDetail.providerResponse} />
                   ) : (
-                    <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                    <Box component="pre" sx={{ maxHeight: 300, maxWidth: "100%", overflow: "auto", borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), p: { xs: 1.5, sm: 2 }, fontFamily: "monospace", fontSize: 12, color: "text.primary", m: 0 }}>
                       {typeof selectedDetail.providerResponse === 'object'
                         ? JSON.stringify(selectedDetail.providerResponse, null, 2)
                         : selectedDetail.providerResponse
                       }
-                    </pre>
+                    </Box>
                   )}
                 </CollapsibleSection>
               )}
@@ -530,30 +567,30 @@ export default function RequestDetailsTab() {
                 ) : (
                   <>
                     {selectedDetail.response?.thinking && (
-                      <div className="mb-4">
-                        <h4 className="font-semibold text-text-main mb-2 flex items-center gap-2 text-xs uppercase tracking-wide opacity-70">
-                          <span className="material-symbols-outlined text-[16px]">psychology</span>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography component="h4" sx={{ fontWeight: 600, color: "text.primary", mb: 1, display: "flex", alignItems: "center", gap: 1, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.025em", opacity: 0.7 }}>
+                          <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 16 }}>psychology</Icon>
                           Thinking Process
-                        </h4>
-                        <pre className="max-h-[200px] max-w-full overflow-auto rounded-lg border border-amber-200 bg-amber-50 p-3 font-mono text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100 sm:p-4">
+                        </Typography>
+                        <Box component="pre" sx={{ maxHeight: 200, maxWidth: "100%", overflow: "auto", borderRadius: "8px", border: 1, borderColor: (t) => (t.palette.mode === "dark" ? "#92400e" : "#fde68a"), bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(69,26,3,0.3)" : "#fffbeb"), p: { xs: 1.5, sm: 2 }, fontFamily: "monospace", fontSize: 12, color: (t) => (t.palette.mode === "dark" ? "#fef3c7" : "#78350f"), m: 0 }}>
                           {selectedDetail.response.thinking}
-                        </pre>
-                      </div>
+                        </Box>
+                      </Box>
                     )}
 
-                    <h4 className="font-semibold text-text-main mb-2 text-xs uppercase tracking-wide opacity-70">
+                    <Typography component="h4" sx={{ fontWeight: 600, color: "text.primary", mb: 1, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.025em", opacity: 0.7 }}>
                       Content
-                    </h4>
-                    <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                    </Typography>
+                    <Box component="pre" sx={{ maxHeight: 300, maxWidth: "100%", overflow: "auto", borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), p: { xs: 1.5, sm: 2 }, fontFamily: "monospace", fontSize: 12, color: "text.primary", m: 0 }}>
                       {selectedDetail.response?.content || "[No content]"}
-                    </pre>
+                    </Box>
                   </>
                 )}
               </CollapsibleSection>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
       </Drawer>
-    </div>
+    </Box>
   );
 }

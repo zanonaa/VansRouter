@@ -1,6 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import { formatResetTime, getRemainingPercentage } from "./utils";
 
 const PAGE_SIZE = 10;
@@ -40,31 +49,31 @@ function formatResetTimeDisplay(resetTime) {
 }
 
 /**
- * Get color classes based on remaining percentage
+ * Get colors based on remaining percentage
  */
-function getColorClasses(remainingPercentage) {
+function getColorConfig(remainingPercentage) {
   if (remainingPercentage > 70) {
     return {
-      text: "text-green-600 dark:text-green-400",
-      bg: "bg-green-500",
-      bgLight: "bg-green-500/10",
+      text: (theme) => (theme.palette.mode === "dark" ? "#4ade80" : "#16a34a"),
+      bg: "#22c55e",
+      bgLight: "rgba(34, 197, 94, 0.1)",
       emoji: "🟢",
     };
   }
 
   if (remainingPercentage >= 30) {
     return {
-      text: "text-yellow-600 dark:text-yellow-400",
-      bg: "bg-yellow-500",
-      bgLight: "bg-yellow-500/10",
+      text: (theme) => (theme.palette.mode === "dark" ? "#facc15" : "#ca8a04"),
+      bg: "#eab308",
+      bgLight: "rgba(234, 179, 8, 0.1)",
       emoji: "🟡",
     };
   }
 
   return {
-    text: "text-red-600 dark:text-red-400",
-    bg: "bg-red-500",
-    bgLight: "bg-red-500/10",
+    text: (theme) => (theme.palette.mode === "dark" ? "#f87171" : "#dc2626"),
+    bg: "#ef4444",
+    bgLight: "rgba(239, 68, 68, 0.1)",
     emoji: "🔴",
   };
 }
@@ -82,6 +91,14 @@ function sortQuotas(quotas, sortMode) {
 }
 
 const EMPTY_QUOTAS = [];
+const borderSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+const borderMuted = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+const surfaceSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)";
+const hoverSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.02)";
 
 /**
  * Quota Table Component - Table-based display for quota data
@@ -134,67 +151,132 @@ export default function QuotaTable({
   const pageStart = sortedQuotas.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const pageEnd = Math.min(page * PAGE_SIZE, sortedQuotas.length);
 
-  const cellPad = compact ? "py-1 px-1.5" : "py-2 px-3";
-  const nameText = compact ? "text-[11px]" : "text-sm";
-  const resetPrimary = compact ? "text-[11px]" : "text-sm";
-  const resetSecondary = compact ? "text-[10px] leading-tight" : "text-xs";
+  const cellSx = compact ? { py: 0.5, px: 0.75 } : { py: 1, px: 1.5 };
+  const nameFontSize = compact ? 11 : 14;
+  const resetPrimaryFontSize = compact ? 11 : 14;
+  const resetSecondaryFontSize = compact ? 10 : 12;
   const sortLabel = "Sorted by account remaining";
+  const chipSx = {
+    borderRadius: 1,
+    border: 1,
+    borderColor: borderMuted,
+    bgcolor: surfaceSubtle,
+    px: 1,
+    py: 0.5,
+    fontSize: 10,
+  };
+
+  const paginationButtonSx = {
+    minWidth: 0,
+    height: 24,
+    px: 1,
+    fontSize: 10,
+    lineHeight: 1,
+    border: 1,
+    borderColor: borderMuted,
+    color: "text.primary",
+    "&:hover": { bgcolor: hoverSubtle },
+    "&.Mui-disabled": { opacity: 0.4 },
+  };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-[10px] text-text-muted">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+        <Typography sx={{ fontSize: 10, color: "text.secondary" }}>
           {sortedQuotas.length} quota{sortedQuotas.length > 1 ? "s" : ""}
-        </div>
+        </Typography>
         {showSortLabel && (
-          <div className="rounded-md border border-black/10 bg-black/[0.02] px-2 py-1 text-[10px] text-text-muted dark:border-white/10 dark:bg-white/[0.03]">
+          <Box sx={chipSx}>
             {sortLabel}
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[420px] table-fixed text-left">
-          <tbody>
+      <Box sx={{ overflowX: "auto" }}>
+        <Table
+          size="small"
+          sx={{ width: "100%", minWidth: 420, tableLayout: "fixed" }}
+        >
+          <TableBody>
             {currentPageRows.map((quota) => {
               const isUnlimited = quota.unlimited === true;
               const isCreditBalance = quota.isCreditBalance === true;
               const colors = isCreditBalance
-                ? { text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500", bgLight: "bg-blue-500/10", emoji: "💰" }
-                : getColorClasses(quota.remaining);
+                ? {
+                    text: (theme) => (theme.palette.mode === "dark" ? "#60a5fa" : "#2563eb"),
+                    bg: "#3b82f6",
+                    bgLight: "rgba(59, 130, 246, 0.1)",
+                    emoji: "💰",
+                  }
+                : getColorConfig(quota.remaining);
               const countdown = formatResetTime(quota.resetAt);
               const resetDisplay = formatResetTimeDisplay(quota.resetAt);
 
               return (
-                <tr
+                <TableRow
                   key={`${quota.name}-${quota.index}`}
-                  className="border-b border-black/5 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                  sx={{
+                    borderBottom: 1,
+                    borderColor: borderSubtle,
+                    transition: "background-color 150ms ease",
+                    "&:hover": { bgcolor: hoverSubtle },
+                    "&:last-child td": { borderBottom: 0 },
+                  }}
                 >
-                  <td className={`${cellPad} w-[30%]`}>
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[10px] shrink-0">{colors.emoji}</span>
-                      <span className={`${nameText} font-medium text-text-primary truncate`}>
+                  <TableCell sx={{ ...cellSx, width: "30%", borderBottom: 0 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0 }}>
+                      <Box component="span" sx={{ fontSize: 10, flexShrink: 0 }}>
+                        {colors.emoji}
+                      </Box>
+                      <Typography
+                        noWrap
+                        sx={{
+                          fontSize: nameFontSize,
+                          fontWeight: 500,
+                          color: "text.primary",
+                          minWidth: 0,
+                        }}
+                      >
                         {quota.name}
-                      </span>
-                    </div>
-                  </td>
+                      </Typography>
+                    </Box>
+                  </TableCell>
 
-                  <td className={`${cellPad} w-[45%]`}>
-                    <div className={compact ? "space-y-1" : "space-y-1.5"}>
+                  <TableCell sx={{ ...cellSx, width: "45%", borderBottom: 0 }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: compact ? 0.5 : 0.75 }}>
                       {!isUnlimited && !isCreditBalance && (
-                        <div className={`${compact ? "h-1" : "h-1.5"} rounded-full overflow-hidden border ${colors.bgLight} ${
-                          quota.remaining === 0 ? "border-black/10 dark:border-white/10" : "border-transparent"
-                        }`}>
-                          <div
-                            className={`h-full transition-all duration-300 ${colors.bg}`}
-                            style={{ width: `${Math.min(quota.remaining, 100)}%` }}
+                        <Box
+                          sx={{
+                            height: compact ? 4 : 6,
+                            borderRadius: 999,
+                            overflow: "hidden",
+                            border: 1,
+                            bgcolor: colors.bgLight,
+                            borderColor:
+                              quota.remaining === 0 ? borderMuted : "transparent",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              height: "100%",
+                              width: `${Math.min(quota.remaining, 100)}%`,
+                              bgcolor: colors.bg,
+                              transition: "width 300ms ease",
+                            }}
                           />
-                        </div>
+                        </Box>
                       )}
 
-                      <div className={`flex items-center justify-between ${compact ? "text-[10px]" : "text-xs"}`}>
-                        <span
-                          className="text-text-muted"
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          fontSize: compact ? 10 : 12,
+                        }}
+                      >
+                        <Box
+                          component="span"
                           title={
                             isUnlimited
                               ? `${quota.used.toLocaleString()} used · Unlimited`
@@ -202,84 +284,132 @@ export default function QuotaTable({
                                 ? `Credit balance: ${quota.total.toFixed(2)} ${quota.currency || ""}`
                                 : `${quota.used.toLocaleString()} / ${quota.total > 0 ? quota.total.toLocaleString() : "∞"}`
                           }
+                          sx={{ color: "text.secondary" }}
                         >
                           {isUnlimited
                             ? `${quota.used.toLocaleString()} used · Unlimited`
                             : isCreditBalance
                               ? `Credit: ${quota.total.toFixed(2)} ${quota.currency || ""}`
                               : `${quota.used.toLocaleString()} / ${quota.total > 0 ? quota.total.toLocaleString() : "∞"}`}
-                        </span>
-                        <span className={`font-medium ${isUnlimited ? "text-green-600 dark:text-green-400" : colors.text}`}>
+                        </Box>
+                        <Box
+                          component="span"
+                          sx={{
+                            fontWeight: 500,
+                            color: isUnlimited
+                              ? (theme) => (theme.palette.mode === "dark" ? "#4ade80" : "#16a34a")
+                              : colors.text,
+                          }}
+                        >
                           {isUnlimited ? "Unlimited" : isCreditBalance ? "" : `${quota.remaining}%`}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </TableCell>
 
-                  <td className={`${cellPad} w-[25%]`}>
+                  <TableCell sx={{ ...cellSx, width: "25%", borderBottom: 0 }}>
                     {countdown !== "-" || resetDisplay ? (
                       compact ? (
-                        <div
-                          className={`${resetPrimary} text-text-primary font-medium truncate`}
+                        <Typography
+                          noWrap
                           title={resetDisplay || ""}
+                          sx={{
+                            fontSize: resetPrimaryFontSize,
+                            fontWeight: 500,
+                            color: "text.primary",
+                          }}
                         >
                           {countdown !== "-" ? `in ${countdown}` : resetDisplay}
-                        </div>
+                        </Typography>
                       ) : (
-                        <div className="space-y-0.5">
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
                           {countdown !== "-" && (
-                            <div className={`${resetPrimary} text-text-primary font-medium`}>
+                            <Box
+                              sx={{
+                                fontSize: resetPrimaryFontSize,
+                                fontWeight: 500,
+                                color: "text.primary",
+                              }}
+                            >
                               in {countdown}
-                            </div>
+                            </Box>
                           )}
                           {resetDisplay && (
-                            <div className={`${resetSecondary} text-text-muted`}>
+                            <Box sx={{ fontSize: resetSecondaryFontSize, color: "text.secondary" }}>
                               {resetDisplay}
-                            </div>
+                            </Box>
                           )}
-                        </div>
+                        </Box>
                       )
                     ) : (
-                      <div className={`${resetPrimary} text-text-muted italic`}>N/A</div>
+                      <Box
+                        sx={{
+                          fontSize: resetPrimaryFontSize,
+                          fontStyle: "italic",
+                          color: "text.secondary",
+                        }}
+                      >
+                        N/A
+                      </Box>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Box>
 
       {totalPages > 1 && (
-        <div className="rounded-md border border-black/10 bg-black/[0.02] px-2 py-1.5 dark:border-white/10 dark:bg-white/[0.03]">
-          <div className="flex items-center justify-between gap-2 text-[10px] text-text-muted">
-            <span>
+        <Box
+          sx={{
+            borderRadius: 1,
+            border: 1,
+            borderColor: borderMuted,
+            bgcolor: surfaceSubtle,
+            px: 1,
+            py: 0.75,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+              fontSize: 10,
+              color: "text.secondary",
+            }}
+          >
+            <Box component="span">
               Showing {pageStart}-{pageEnd} of {sortedQuotas.length}
-            </span>
-            <span>
+            </Box>
+            <Box component="span">
               Page {page} / {totalPages}
-            </span>
-          </div>
-          <div className="mt-1.5 flex items-center justify-end gap-1">
-            <button
+            </Box>
+          </Box>
+          <Box sx={{ mt: 0.75, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 0.5 }}>
+            <Button
               type="button"
+              variant="outlined"
               onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
               disabled={page === 1}
-              className="flex h-6 items-center rounded-md border border-black/10 px-2 text-[10px] text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
+              sx={paginationButtonSx}
             >
               Prev
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outlined"
               onClick={() => setPage((currentPage) => Math.min(totalPages, currentPage + 1))}
               disabled={page === totalPages}
-              className="flex h-6 items-center rounded-md border border-black/10 px-2 text-[10px] text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
+              sx={paginationButtonSx}
             >
               Next
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
 import { Badge, Button, Input, Modal, Select } from "@/shared/components";
 
 const VARIANT_CONFIG = {
@@ -122,22 +123,22 @@ function AddCompatibleModal({ variant, isOpen, onClose, onCreated }) {
         <>
           <Badge variant="success">Valid</Badge>
           {method === "chat" && (
-            <span className="text-sm text-text-muted">(via inference test)</span>
+            <Box component="span" sx={{ fontSize: 14, color: "text.secondary" }}>(via inference test)</Box>
           )}
         </>
       );
     }
     return (
-      <div className="flex flex-col gap-1">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         <Badge variant="error">Invalid</Badge>
-        {error && <span className="text-sm text-red-500">{error}</span>}
-      </div>
+        {error && <Box component="span" sx={{ fontSize: 14, color: "error.main" }}>{error}</Box>}
+      </Box>
     );
   };
 
   return (
     <Modal isOpen={isOpen} title={config.title} onClose={onClose}>
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Input
           label="Name"
           value={formData.name}
@@ -180,18 +181,19 @@ function AddCompatibleModal({ variant, isOpen, onClose, onCreated }) {
           placeholder={config.modelIdPlaceholder}
           hint="If provider lacks /models endpoint, enter a model ID to validate via chat/completions instead."
         />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button
-            onClick={handleValidate}
-            disabled={!checkKey || validating || !formData.baseUrl.trim()}
-            variant="secondary"
-            className="w-full sm:w-auto"
-          >
-            {validating ? "Checking..." : "Check"}
-          </Button>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, gap: 1.5 }}>
+          <Box sx={{ "& .MuiButton-root": { width: { xs: "100%", sm: "auto" } } }}>
+            <Button
+              onClick={handleValidate}
+              disabled={!checkKey || validating || !formData.baseUrl.trim()}
+              variant="secondary"
+            >
+              {validating ? "Checking..." : "Check"}
+            </Button>
+          </Box>
           {renderValidationResult()}
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        </Box>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1 }}>
           <Button
             onClick={handleSubmit}
             fullWidth
@@ -207,8 +209,8 @@ function AddCompatibleModal({ variant, isOpen, onClose, onCreated }) {
           <Button onClick={onClose} variant="ghost" fullWidth>
             Cancel
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }

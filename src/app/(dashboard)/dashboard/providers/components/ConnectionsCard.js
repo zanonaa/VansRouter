@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import TextField from "@mui/material/TextField";
 import { getStatusVariant as getConnectionStatusVariant } from "@/shared/utils/connectionStatus";
 import { Card, Badge, Button, Modal, Select, Toggle, EditConnectionModal, ConfirmModal } from "@/shared/components";
+
+const hoverBg = (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)");
+const controlHoverBg = (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)");
 
 // ── CooldownTimer ──────────────────────────────────────────────
 function CooldownTimer({ until }) {
@@ -23,8 +30,36 @@ function CooldownTimer({ until }) {
   }, [until]);
 
   if (!remaining) return null;
-  return <span className="text-xs text-orange-500 font-mono">⏱ {remaining}</span>;
+  return <Box component="span" sx={{ fontSize: 12, color: "#f97316", fontFamily: "monospace" }}>⏱ {remaining}</Box>;
 }
+
+const arrowButtonSx = (disabled) => ({
+  p: 0.25,
+  border: 0,
+  borderRadius: "4px",
+  bgcolor: "transparent",
+  cursor: disabled ? "not-allowed" : "pointer",
+  color: disabled
+    ? (t) => (t.palette.mode === "dark" ? "rgba(156,163,175,0.3)" : "rgba(107,114,128,0.3)")
+    : "text.secondary",
+  transition: "background-color 150ms ease, color 150ms ease",
+  "&:hover": disabled ? {} : { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+});
+
+const actionButtonSx = (active) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  px: 1,
+  py: 0.5,
+  border: 0,
+  borderRadius: "4px",
+  bgcolor: "transparent",
+  cursor: "pointer",
+  transition: "background-color 150ms ease, color 150ms ease",
+  color: active ? "primary.main" : "text.secondary",
+  "&:hover": { bgcolor: controlHoverBg, color: "primary.main" },
+});
 
 // ── ConnectionRow ──────────────────────────────────────────────
 function ConnectionRow({ connection, proxyPools, isOAuth, isFirst, isLast, onMoveUp, onMoveDown, onToggleActive, onUpdateProxy, onEdit, onDelete }) {
@@ -100,73 +135,87 @@ function ConnectionRow({ connection, proxyPools, isOAuth, isFirst, isLast, onMov
   };
 
   return (
-    <div className={`group flex flex-col gap-3 p-2 rounded-lg sm:flex-row sm:items-center sm:justify-between hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${connection.isActive === false ? "opacity-60" : ""}`}>
-      <div className="flex w-full min-w-0 flex-1 items-start gap-3 sm:items-center">
-        <div className="flex flex-col">
-          <button onClick={onMoveUp} disabled={isFirst} className={`p-0.5 rounded ${isFirst ? "text-text-muted/30 cursor-not-allowed" : "hover:bg-sidebar text-text-muted hover:text-primary"}`}>
-            <span className="material-symbols-outlined text-sm">keyboard_arrow_up</span>
-          </button>
-          <button onClick={onMoveDown} disabled={isLast} className={`p-0.5 rounded ${isLast ? "text-text-muted/30 cursor-not-allowed" : "hover:bg-sidebar text-text-muted hover:text-primary"}`}>
-            <span className="material-symbols-outlined text-sm">keyboard_arrow_down</span>
-          </button>
-        </div>
-        <span className="material-symbols-outlined text-base text-text-muted">{isOAuth ? "lock" : "key"}</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{displayName}</p>
-          <div className="flex flex-wrap items-center gap-2 mt-1">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        gap: 1.5,
+        p: 1,
+        borderRadius: "8px",
+        opacity: connection.isActive === false ? 0.6 : 1,
+        transition: "background-color 150ms ease",
+        "&:hover": { bgcolor: hoverBg },
+        alignItems: { sm: "center" },
+        justifyContent: { sm: "space-between" },
+      }}
+    >
+      <Box sx={{ display: "flex", width: "100%", minWidth: 0, flex: 1, alignItems: { xs: "flex-start", sm: "center" }, gap: 1.5 }}>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Box component="button" onClick={onMoveUp} disabled={isFirst} sx={arrowButtonSx(isFirst)}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>keyboard_arrow_up</Icon>
+          </Box>
+          <Box component="button" onClick={onMoveDown} disabled={isLast} sx={arrowButtonSx(isLast)}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>keyboard_arrow_down</Icon>
+          </Box>
+        </Box>
+        <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 16, color: "text.secondary" }}>{isOAuth ? "lock" : "key"}</Icon>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 0.5 }}>
             <Badge variant={getStatusVariant()} size="sm" dot>
               {connection.isActive === false ? "disabled" : (effectiveStatus || "Unknown")}
             </Badge>
             {hasAnyProxy && <Badge variant={proxyBadgeVariant} size="sm">Proxy</Badge>}
             {isCooldown && connection.isActive !== false && <CooldownTimer until={modelLockUntil} />}
             {connection.lastError && connection.isActive !== false && (
-              <span className="text-xs text-red-500 truncate max-w-[300px]" title={connection.lastError}>{connection.lastError}</span>
+              <Box component="span" sx={{ fontSize: 12, color: "error.main", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 300 }} title={connection.lastError}>{connection.lastError}</Box>
             )}
-            <span className="text-xs text-text-muted">#{connection.priority}</span>
-          </div>
+            <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>#{connection.priority}</Box>
+          </Box>
           {hasAnyProxy && (
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] text-text-muted truncate max-w-[420px]" title={proxyDisplayText}>{proxyDisplayText}</span>
-              {maskedProxyUrl && <code className="text-[10px] font-mono bg-black/5 dark:bg-white/5 px-1 py-0.5 rounded text-text-muted">{maskedProxyUrl}</code>}
-              {noProxyText && <span className="text-[11px] text-text-muted truncate max-w-[320px]" title={noProxyText}>no_proxy: {noProxyText}</span>}
-            </div>
+            <Box sx={{ mt: 0.5, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+              <Box component="span" sx={{ fontSize: 11, color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 420 }} title={proxyDisplayText}>{proxyDisplayText}</Box>
+              {maskedProxyUrl && <Box component="code" sx={{ fontSize: 10, fontFamily: "monospace", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), px: 0.5, py: 0.25, borderRadius: "4px", color: "text.secondary" }}>{maskedProxyUrl}</Box>}
+              {noProxyText && <Box component="span" sx={{ fontSize: 11, color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 320 }} title={noProxyText}>no_proxy: {noProxyText}</Box>}
+            </Box>
           )}
-        </div>
-      </div>
-      <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-end">
-        <div className="flex flex-wrap gap-1">
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexWrap: "wrap", alignItems: "center", justifyContent: { xs: "space-between", sm: "flex-end" }, gap: 1 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
           {(proxyPools || []).length > 0 && (
-            <div className="relative" ref={proxyDropdownRef}>
-              <button
+            <Box sx={{ position: "relative" }} ref={proxyDropdownRef}>
+              <Box
+                component="button"
                 onClick={() => setShowProxyDropdown((v) => !v)}
-                className={`flex flex-col items-center px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors ${hasAnyProxy ? "text-primary" : "text-text-muted hover:text-primary"}`}
+                sx={actionButtonSx(hasAnyProxy)}
                 disabled={updatingProxy}
               >
-                <span className="material-symbols-outlined text-[18px]">{updatingProxy ? "progress_activity" : "lan"}</span>
-                <span className="text-[10px] leading-tight">Proxy</span>
-              </button>
+                <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>{updatingProxy ? "progress_activity" : "lan"}</Icon>
+                <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Proxy</Box>
+              </Box>
               {showProxyDropdown && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-bg border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
-                  <button onClick={() => handleSelectProxy("__none__")} className={`w-full text-left px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5 ${!boundProxyPoolId ? "text-primary font-medium" : "text-text-main"}`}>None</button>
+                <Box sx={{ position: "absolute", right: 0, top: "100%", mt: 0.5, zIndex: 50, bgcolor: "background.default", border: 1, borderColor: "divider", borderRadius: "8px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", py: 0.5, minWidth: 160 }}>
+                  <Box component="button" onClick={() => handleSelectProxy("__none__")} sx={{ width: "100%", textAlign: "left", px: 1.5, py: 0.75, fontSize: 14, border: 0, bgcolor: "transparent", cursor: "pointer", color: !boundProxyPoolId ? "primary.main" : "text.primary", fontWeight: !boundProxyPoolId ? 500 : 400, "&:hover": { bgcolor: controlHoverBg } }}>None</Box>
                   {(proxyPools || []).map((pool) => (
-                    <button key={pool.id} onClick={() => handleSelectProxy(pool.id)} className={`w-full text-left px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5 ${boundProxyPoolId === pool.id ? "text-primary font-medium" : "text-text-main"}`}>{pool.name}</button>
+                    <Box component="button" key={pool.id} onClick={() => handleSelectProxy(pool.id)} sx={{ width: "100%", textAlign: "left", px: 1.5, py: 0.75, fontSize: 14, border: 0, bgcolor: "transparent", cursor: "pointer", color: boundProxyPoolId === pool.id ? "primary.main" : "text.primary", fontWeight: boundProxyPoolId === pool.id ? 500 : 400, "&:hover": { bgcolor: controlHoverBg } }}>{pool.name}</Box>
                   ))}
-                </div>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
-          <button onClick={onEdit} className="flex flex-col items-center px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/5 text-text-muted hover:text-primary">
-            <span className="material-symbols-outlined text-[18px]">edit</span>
-            <span className="text-[10px] leading-tight">Edit</span>
-          </button>
-          <button onClick={onDelete} className="flex flex-col items-center px-2 py-1 rounded hover:bg-red-500/10 text-red-500">
-            <span className="material-symbols-outlined text-[18px]">delete</span>
-            <span className="text-[10px] leading-tight">Delete</span>
-          </button>
-        </div>
+          <Box component="button" onClick={onEdit} sx={actionButtonSx(false)}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>edit</Icon>
+            <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Edit</Box>
+          </Box>
+          <Box component="button" onClick={onDelete} sx={{ display: "flex", flexDirection: "column", alignItems: "center", px: 1, py: 0.5, border: 0, borderRadius: "4px", bgcolor: "transparent", cursor: "pointer", color: "#ef4444", transition: "background-color 150ms ease", "&:hover": { bgcolor: "rgba(239,68,68,0.1)" } }}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>delete</Icon>
+            <Box component="span" sx={{ fontSize: 10, lineHeight: 1.25 }}>Delete</Box>
+          </Box>
+        </Box>
         <Toggle size="sm" checked={connection.isActive ?? true} onChange={onToggleActive} title={(connection.isActive ?? true) ? "Disable" : "Enable"} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -223,40 +272,53 @@ function AddApiKeyModal({ isOpen, provider, providerName, proxyPools, onSave, on
 
   return (
     <Modal isOpen={isOpen} title={`Add ${providerName || provider} API Key`} onClose={onClose}>
-      <div className="flex flex-col gap-4">
-        <div>
-          <label className="text-xs text-text-muted mb-1 block">Name</label>
-          <input className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Production Key" />
-        </div>
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="text-xs text-text-muted mb-1 block">API Key</label>
-            <input type="password" className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary" value={formData.apiKey} onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} />
-          </div>
-          <div className="pt-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <TextField
+          label="Name"
+          size="small"
+          fullWidth
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="Production Key"
+        />
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <TextField
+            label="API Key"
+            type="password"
+            size="small"
+            fullWidth
+            sx={{ flex: 1 }}
+            value={formData.apiKey}
+            onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+          />
+          <Box sx={{ pt: 3 }}>
             <Button onClick={handleValidate} disabled={!formData.apiKey || validating || saving} variant="secondary">
               {validating ? "Checking..." : "Check"}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
         {validationResult && (
           <Badge variant={validationResult === "success" ? "success" : "error"}>
             {validationResult === "success" ? "Valid" : "Invalid"}
           </Badge>
         )}
-        <div>
-          <label className="text-xs text-text-muted mb-1 block">Priority</label>
-          <input type="number" className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary" value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: Number.parseInt(e.target.value) || 1 })} />
-        </div>
+        <TextField
+          label="Priority"
+          type="number"
+          size="small"
+          fullWidth
+          value={formData.priority}
+          onChange={(e) => setFormData({ ...formData, priority: Number.parseInt(e.target.value) || 1 })}
+        />
         <Select label="Proxy Pool" value={formData.proxyPoolId} onChange={(e) => setFormData({ ...formData, proxyPoolId: e.target.value })}
           options={[{ value: NONE, label: "None" }, ...(proxyPools || []).map((p) => ({ value: p.id, label: p.name }))]} />
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={handleSubmit} fullWidth disabled={!formData.name || !formData.apiKey || saving}>
             {saving ? "Saving..." : "Save"}
           </Button>
           <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }
@@ -366,15 +428,15 @@ export default function ConnectionsCard({ providerId, isOAuth }) {
     } catch (e) { console.log("update connection error:", e); }
   };
 
-  if (loading) return <Card><div className="h-20 animate-pulse bg-black/5 rounded-lg" /></Card>;
+  if (loading) return <Card><Box sx={{ height: 80, animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), borderRadius: "8px" }} /></Card>;
 
   return (
     <>
       <Card>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <h2 className="text-lg font-semibold">Connections</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-text-muted font-medium">Round Robin</span>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, gap: 1.5, mb: 2 }}>
+          <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>Connections</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+            <Box component="span" sx={{ fontSize: 12, color: "text.secondary", fontWeight: 500 }}>Round Robin</Box>
             <Toggle
               checked={providerStrategy === "round-robin"}
               onChange={(enabled) => {
@@ -385,26 +447,28 @@ export default function ConnectionsCard({ providerId, isOAuth }) {
               }}
             />
             {providerStrategy === "round-robin" && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-text-muted">Sticky:</span>
-                <input
-                  type="number" min={1} value={providerStickyLimit}
+              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.75 }}>
+                <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>Sticky:</Box>
+                <TextField
+                  type="number"
+                  size="small"
+                  value={providerStickyLimit}
                   onChange={(e) => { setProviderStickyLimit(e.target.value); saveStrategy("round-robin", e.target.value); }}
-                  className="w-16 px-2 py-1 text-xs border border-border rounded-md bg-background focus:outline-none focus:border-primary"
+                  sx={{ width: 64, "& .MuiInputBase-input": { fontSize: 12, py: 0.5 } }}
                 />
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {connections.length === 0 ? (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-text-muted">No connections yet</p>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, gap: 1.5 }}>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>No connections yet</Typography>
             <Button size="sm" icon="add" onClick={() => setShowAddModal(true)}>Add Connection</Button>
-          </div>
+          </Box>
         ) : (
           <>
-            <div className="flex flex-col divide-y divide-black/[0.03] dark:divide-white/[0.03]">
+            <Box sx={{ display: "flex", flexDirection: "column", "& > * + *": { borderTop: 1, borderColor: "divider" } }}>
               {connections.map((conn, idx) => (
                 <ConnectionRow
                   key={conn.id}
@@ -421,10 +485,10 @@ export default function ConnectionsCard({ providerId, isOAuth }) {
                   onDelete={() => handleDelete(conn.id)}
                 />
               ))}
-            </div>
-            <div className="mt-4 flex justify-stretch sm:justify-start">
+            </Box>
+            <Box sx={{ mt: 2, display: "flex", justifyContent: { xs: "stretch", sm: "flex-start" } }}>
               <Button size="sm" icon="add" onClick={() => setShowAddModal(true)}>Add</Button>
-            </div>
+            </Box>
           </>
         )}
       </Card>
@@ -456,4 +520,3 @@ export default function ConnectionsCard({ providerId, isOAuth }) {
     </>
   );
 }
-

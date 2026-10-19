@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import Box from "@mui/material/Box";
 
 const EMPTY_PROVIDERS = [];
 const EMPTY_REQUESTS = [];
@@ -26,6 +27,10 @@ const FIT_VIEW_OPTS = { padding: 0.2, duration: 200 };
 const KAME_PARTICLE_COUNT = 6;
 const SPARK_COUNT = 5;
 
+const handleStyle = { background: "transparent", border: 0, width: 0, height: 0 };
+
+const subtleBg = (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.3)" : "rgba(244,244,245,0.3)");
+
 function getProviderConfig(providerId) {
   return AI_PROVIDERS[providerId] || { color: "#6b7280", name: providerId };
 }
@@ -35,23 +40,39 @@ function ProviderNode({ data }) {
   const { providerId, label, color, imageUrl, textIcon, active } = data;
   const [imgError, setImgError] = useState(false);
   return (
-    <div
-      className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg border-2 transition-all duration-300 bg-bg"
-      style={{
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1.25,
+        px: 2,
+        py: 1.25,
+        borderRadius: "8px",
+        border: "2px solid",
+        transition: "all 300ms ease",
+        bgcolor: "background.default",
+        minWidth: 150,
         borderColor: active ? color : "var(--color-border)",
         boxShadow: active ? `0 0 16px ${color}40` : "none",
-        minWidth: "150px",
       }}
     >
-      <Handle type="target" position={Position.Top} id="top" className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="target" position={Position.Bottom} id="bottom" className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="target" position={Position.Left} id="left" className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="target" position={Position.Right} id="right" className="!bg-transparent !border-0 !w-0 !h-0" />
+      <Handle type="target" position={Position.Top} id="top" style={handleStyle} />
+      <Handle type="target" position={Position.Bottom} id="bottom" style={handleStyle} />
+      <Handle type="target" position={Position.Left} id="left" style={handleStyle} />
+      <Handle type="target" position={Position.Right} id="right" style={handleStyle} />
 
       {/* Provider icon */}
-      <div
-        className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-        style={{ backgroundColor: `${color}15` }}
+      <Box
+        sx={{
+          width: 32,
+          height: 32,
+          borderRadius: "6px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          bgcolor: `${color}15`,
+        }}
       >
         {providerId === "a6api" || providerId === "a6api-cli" ? (
           <span
@@ -79,7 +100,7 @@ function ProviderNode({ data }) {
           <Image
             src={imageUrl}
             alt={label}
-            className="w-6 h-6 rounded-sm object-contain"
+            style={{ width: 24, height: 24, borderRadius: 4, objectFit: "contain" }}
             width={24}
             height={24}
             unoptimized
@@ -90,26 +111,33 @@ function ProviderNode({ data }) {
             }}
           />
         ) : (
-          <span className="text-sm font-bold" style={{ color }}>{textIcon}</span>
+          <Box component="span" sx={{ fontSize: 14, fontWeight: 700, color }}>{textIcon}</Box>
         )}
-      </div>
+      </Box>
 
       {/* Provider name */}
-      <span
-        className="text-base font-medium truncate"
-        style={{ color: active ? color : "var(--color-text)" }}
+      <Box
+        component="span"
+        sx={{
+          fontSize: 16,
+          fontWeight: 500,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          color: active ? color : "var(--color-text)",
+        }}
       >
         {label}
-      </span>
+      </Box>
 
       {/* Active indicator */}
       {active && (
-        <span className="relative flex h-2 w-2 shrink-0">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: color }} />
-          <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: color }} />
-        </span>
+        <Box component="span" sx={{ position: "relative", display: "flex", height: 8, width: 8, flexShrink: 0 }}>
+          <Box component="span" sx={{ animation: "pulse 1.5s cubic-bezier(0,0,0.2,1) infinite", position: "absolute", display: "inline-flex", height: "100%", width: "100%", borderRadius: "9999px", opacity: 0.75, bgcolor: color }} />
+          <Box component="span" sx={{ position: "relative", display: "inline-flex", borderRadius: "9999px", height: 8, width: 8, bgcolor: color }} />
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -118,36 +146,54 @@ function ProviderNode({ data }) {
 function RouterNode({ data }) {
   const powering = (data.activeCount || 0) > 0;
   return (
-    <div
-      className={`relative z-[1] flex items-center justify-center px-5 py-3 rounded-xl border-2 min-w-[130px] ${
-        powering
-          ? "topology-router-core border-yellow-300 bg-gradient-to-br from-primary/30 via-yellow-400/20 to-cyan-400/25"
-          : "border-primary bg-primary/5 shadow-md"
-      }`}
+    <Box
+      className={powering ? "topology-router-core" : undefined}
+      sx={{
+        position: "relative",
+        zIndex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2.5,
+        py: 1.5,
+        borderRadius: "12px",
+        border: "2px solid",
+        minWidth: 130,
+        ...(powering
+          ? {
+              background: "linear-gradient(to bottom right, rgba(229,106,74,0.3), rgba(250,204,21,0.2), rgba(34,211,238,0.25))",
+            }
+          : { borderColor: "primary.main", bgcolor: "rgba(229,106,74,0.05)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }),
+      }}
     >
-      <Handle type="source" position={Position.Top} id="top" className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="source" position={Position.Bottom} id="bottom" className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="source" position={Position.Left} id="left" className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="source" position={Position.Right} id="right" className="!bg-transparent !border-0 !w-0 !h-0" />
+      <Handle type="source" position={Position.Top} id="top" style={handleStyle} />
+      <Handle type="source" position={Position.Bottom} id="bottom" style={handleStyle} />
+      <Handle type="source" position={Position.Left} id="left" style={handleStyle} />
+      <Handle type="source" position={Position.Right} id="right" style={handleStyle} />
 
       <img
         src="/favicon.svg"
         alt="VansAI"
-        className={`w-6 h-6 mr-2 ${powering ? "topology-router-icon" : ""}`}
+        className={powering ? "topology-router-icon" : undefined}
+        style={{ width: 24, height: 24, marginRight: 8 }}
         loading="lazy"
         decoding="async"
         width={24}
         height={24}
       />
-      <span className={`text-sm font-bold ${powering ? "topology-router-label text-yellow-300" : "text-primary"}`}>
+      <Box
+        component="span"
+        className={powering ? "topology-router-label" : undefined}
+        sx={{ fontSize: 14, fontWeight: 700, color: powering ? "#fde047" : "primary.main" }}
+      >
         VansAI
-      </span>
+      </Box>
       {data.activeCount > 0 && (
-        <span className="ml-2 px-1.5 py-0.5 rounded-full bg-yellow-400 text-black text-xs font-bold topology-router-badge">
+        <Box component="span" className="topology-router-badge" sx={{ ml: 1, px: 0.75, py: 0.25, borderRadius: "9999px", bgcolor: "#facc15", color: "#000", fontSize: 12, fontWeight: 700 }}>
           {data.activeCount}
-        </span>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -456,11 +502,11 @@ export default function ProviderTopology({ providers = EMPTY_PROVIDERS, activeRe
   }, [nodes.length]);
 
   return (
-    <div ref={containerRef} className="h-[320px] w-full min-w-0 rounded-lg border border-border bg-bg-subtle/30 sm:h-[480px]">
+    <Box ref={containerRef} sx={{ height: { xs: 320, sm: 480 }, width: "100%", minWidth: 0, borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: subtleBg }}>
       {providers.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-text-muted text-sm">
+        <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "text.secondary", fontSize: 14 }}>
           No providers connected
-        </div>
+        </Box>
       ) : (
         <ReactFlow
           key={providersKey}
@@ -486,7 +532,6 @@ export default function ProviderTopology({ providers = EMPTY_PROVIDERS, activeRe
           <Controls showInteractive={false} className="react-flow-controls-custom" />
         </ReactFlow>
       )}
-    </div>
+    </Box>
   );
 }
-

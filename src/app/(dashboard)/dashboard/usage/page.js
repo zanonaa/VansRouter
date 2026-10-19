@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
 import { RequestLogger, CardSkeleton, SegmentedControl } from "@/shared/components";
 import UsageStats from "@/shared/components/UsageStats";
 import RequestDetailsTab from "./components/RequestDetailsTab";
@@ -41,29 +42,45 @@ function UsageContent() {
     router.push(`/dashboard/usage?${params.toString()}`, { scroll: false });
   };
 
+  const controlWrapperSx = {
+    display: "flex",
+    width: { xs: "100%", sm: "auto" },
+    "& > *": { width: { xs: "100%", sm: "auto" } },
+  };
+
   return (
-    <div className="flex min-w-0 flex-col gap-6 px-1 sm:px-0">
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 3, px: { xs: 0.5, sm: 0 } }}>
       {/* Tabs + period selector on same row */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <SegmentedControl
-          options={[
-            { value: "overview", label: "Overview" },
-            { value: "details", label: "Details" },
-          ]}
-          value={activeTab}
-          onChange={handleTabChange}
-          className="w-full sm:w-auto"
-        />
-        {activeTab === "overview" && (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 1,
+          alignItems: { sm: "center" },
+          justifyContent: { sm: "space-between" },
+        }}
+      >
+        <Box sx={controlWrapperSx}>
           <SegmentedControl
-            options={PERIODS}
-            value={period}
-            onChange={setPeriod}
-            size="sm"
-            className="w-full sm:w-auto"
+            options={[
+              { value: "overview", label: "Overview" },
+              { value: "details", label: "Details" },
+            ]}
+            value={activeTab}
+            onChange={handleTabChange}
           />
+        </Box>
+        {activeTab === "overview" && (
+          <Box sx={controlWrapperSx}>
+            <SegmentedControl
+              options={PERIODS}
+              value={period}
+              onChange={setPeriod}
+              size="sm"
+            />
+          </Box>
         )}
-      </div>
+      </Box>
 
       {activeTab === "overview" && (
         <Suspense fallback={<CardSkeleton />}>
@@ -72,6 +89,6 @@ function UsageContent() {
       )}
       {activeTab === "logs" && <RequestLogger />}
       {activeTab === "details" && <RequestDetailsTab />}
-    </div>
+    </Box>
   );
 }

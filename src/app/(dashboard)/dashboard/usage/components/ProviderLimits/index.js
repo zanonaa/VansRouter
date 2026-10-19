@@ -2,6 +2,20 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import ProviderIcon from "@/shared/components/ProviderIcon";
 import QuotaTable from "./QuotaTable";
 import Toggle from "@/shared/components/Toggle";
@@ -66,6 +80,52 @@ const AUTO_PING_SETTINGS_KEYS = {
 const AUTO_PING_TOOLTIPS = {
   claude: "When your 5h quota runs out, auto-sends a request the moment it resets so a new window starts right away.",
   codex: "Auto-starts the next 5h Codex window after reset by sending a tiny gpt-5.5 request. Consumes a small amount of quota.",
+};
+
+const borderSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+const borderFaint = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+const bgSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)";
+const bgHover = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)";
+
+const controlSx = {
+  height: 32,
+  borderRadius: 2,
+  border: 1,
+  borderColor: borderSubtle,
+  bgcolor: bgSubtle,
+  color: "text.primary",
+  px: 1,
+  fontSize: 12,
+  outline: "none",
+  transition: "background-color 150ms ease",
+  cursor: "pointer",
+  "&:hover": { bgcolor: bgHover },
+  "& option": { bgcolor: "background.paper", color: "text.primary" },
+};
+
+const compactButtonSx = {
+  height: 32,
+  minWidth: 0,
+  px: 1,
+  gap: 0.5,
+  fontSize: 12,
+  borderColor: borderSubtle,
+  color: "text.primary",
+  "&:hover": { bgcolor: bgHover, borderColor: borderSubtle },
+  "&.Mui-disabled": { opacity: 0.5 },
+};
+
+const rowIconSx = {
+  width: 32,
+  height: 32,
+  borderRadius: 2,
+  color: "text.secondary",
+  "&:hover": { bgcolor: bgHover },
+  "&.Mui-disabled": { opacity: 0.5 },
 };
 
 function kiroMethodLabel(conn) {
@@ -260,7 +320,7 @@ export default function ProviderLimits() {
         return [];
       }
     },
-    [accountFilter, expiringFirst, page, pageSize, providerFilter],
+    [accountFilter, page, pageSize, providerFilter],
   );
 
   // Fetch quota for a specific connection
@@ -844,18 +904,22 @@ export default function ProviderLimits() {
   if (!connectionsLoading && !hasEligibleConnections) {
     return (
       <Card padding="lg">
-        <div className="text-center py-12">
-          <span className="material-symbols-outlined text-[64px] text-text-muted opacity-20">
+        <Box sx={{ textAlign: "center", py: 6 }}>
+          <Box
+            component="span"
+            className="material-symbols-outlined"
+            sx={{ fontSize: 64, color: "text.secondary", opacity: 0.2 }}
+          >
             cloud_off
-          </span>
-          <h3 className="mt-4 text-lg font-semibold text-text-primary">
+          </Box>
+          <Typography component="h3" sx={{ mt: 2, fontSize: 18, fontWeight: 600, color: "text.primary" }}>
             No Providers Connected
-          </h3>
-          <p className="mt-2 text-sm text-text-muted max-w-md mx-auto">
+          </Typography>
+          <Typography sx={{ mt: 1, fontSize: 14, color: "text.secondary", maxWidth: 448, mx: "auto" }}>
             Connect to providers with OAuth to track your API quota limits and
             usage.
-          </p>
-        </div>
+          </Typography>
+        </Box>
       </Card>
     );
   }
@@ -863,68 +927,144 @@ export default function ProviderLimits() {
   if (!connectionsLoading && !hasVisibleConnections) {
     return (
       <Card padding="lg">
-        <div className="text-center py-12">
-          <span className="material-symbols-outlined text-[64px] text-text-muted opacity-20">
+        <Box sx={{ textAlign: "center", py: 6 }}>
+          <Box
+            component="span"
+            className="material-symbols-outlined"
+            sx={{ fontSize: 64, color: "text.secondary", opacity: 0.2 }}
+          >
             {emptyState.icon}
-          </span>
-          <h3 className="mt-4 text-lg font-semibold text-text-primary">
+          </Box>
+          <Typography component="h3" sx={{ mt: 2, fontSize: 18, fontWeight: 600, color: "text.primary" }}>
             {emptyState.title}
-          </h3>
-          <p className="mt-2 text-sm text-text-muted max-w-md mx-auto">
+          </Typography>
+          <Typography sx={{ mt: 1, fontSize: 14, color: "text.secondary", maxWidth: 448, mx: "auto" }}>
             {emptyState.description}
-          </p>
-        </div>
+          </Typography>
+        </Box>
       </Card>
     );
   }
 
+  const providerMenuContainerSx = {
+    position: "absolute",
+    left: 0,
+    zIndex: 40,
+    mt: 0.75,
+    width: { xs: 208, sm: 240 },
+    overflow: "hidden",
+    borderRadius: 3,
+    border: 1,
+    borderColor: borderSubtle,
+    bgcolor: (theme) =>
+      theme.palette.mode === "dark" ? "rgba(38, 38, 38, 0.95)" : "rgba(255, 255, 255, 0.95)",
+    p: 0.5,
+    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+    backdropFilter: "blur(8px)",
+  };
+
+  const menuItemSx = (selected) => ({
+    display: "flex",
+    width: "100%",
+    alignItems: "center",
+    gap: 1,
+    borderRadius: 2,
+    px: 1.25,
+    py: 0.75,
+    textAlign: "left",
+    fontSize: 12,
+    border: 0,
+    cursor: "pointer",
+    bgcolor: selected ? "rgba(229, 106, 74, 0.1)" : "transparent",
+    color: selected ? "primary.main" : "text.primary",
+    transition: "background-color 150ms ease",
+    "&:hover": {
+      bgcolor: selected ? "rgba(229, 106, 74, 0.14)" : bgHover,
+    },
+  });
+
+  const resetCreditsOpen = Boolean(resetCreditsState);
+
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {/* Header Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className="relative">
-            <button
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { sm: "center" },
+          justifyContent: { sm: "flex-end" },
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.75 }}>
+          <Box sx={{ position: "relative" }}>
+            <Button
               type="button"
+              variant="outlined"
               onClick={() => setProviderMenuOpen((prev) => !prev)}
-              className="flex h-8 items-center justify-between gap-1 rounded-lg border border-black/10 bg-black/[0.02] px-2 text-xs text-text-primary transition-colors hover:bg-black/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/10"
               aria-haspopup="menu"
               aria-expanded={providerMenuOpen}
               title="Filter quota providers"
+              sx={{
+                ...compactButtonSx,
+                height: 32,
+                justifyContent: "space-between",
+                gap: 0.5,
+                bgcolor: bgSubtle,
+              }}
             >
-              <span className="flex min-w-0 items-center gap-1.5">
+              <Box component="span" sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 0.75 }}>
                 {providerFilter === "all" ? (
-                  <span className="material-symbols-outlined text-[14px] text-text-muted">
+                  <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14, color: "text.secondary" }}>
                     apps
-                  </span>
+                  </Box>
                 ) : (
                   <ProviderIcon
                     src={`/providers/${providerFilter}.webp`}
                     alt={providerFilter}
                     size={18}
-                    className="size-[18px] rounded object-contain"
                     fallbackText={providerFilter.slice(0, 2).toUpperCase()}
                   />
                 )}
-                <span className="truncate capitalize hidden lg:inline">
+                <Box
+                  component="span"
+                  sx={{
+                    display: { xs: "none", lg: "inline" },
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    textTransform: "capitalize",
+                  }}
+                >
                   {selectedProviderLabel}
-                </span>
-              </span>
-              <span className="material-symbols-outlined text-[14px] text-text-muted">
+                </Box>
+              </Box>
+              <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14, color: "text.secondary" }}>
                 expand_more
-              </span>
-            </button>
+              </Box>
+            </Button>
 
             {providerMenuOpen && (
               <>
-                <button
+                <Box
+                  component="button"
                   type="button"
-                  className="fixed inset-0 z-30 bg-transparent"
                   aria-label="Close provider filter"
                   onClick={() => setProviderMenuOpen(false)}
+                  sx={{
+                    position: "fixed",
+                    inset: 0,
+                    zIndex: 30,
+                    bgcolor: "transparent",
+                    border: 0,
+                    p: 0,
+                    cursor: "default",
+                  }}
                 />
-                <div className="absolute left-0 z-40 mt-1.5 w-52 overflow-hidden rounded-xl border border-black/10 bg-surface/95 p-1 shadow-lg shadow-black/10 backdrop-blur dark:border-white/10 dark:bg-surface/95 sm:w-60">
-                  <button
+                <Box sx={providerMenuContainerSx}>
+                  <Box
+                    component="button"
                     type="button"
                     onClick={() => {
                       if (shouldResetPage(providerFilter, "all")) {
@@ -933,22 +1073,23 @@ export default function ProviderLimits() {
                       setProviderFilter("all");
                       setProviderMenuOpen(false);
                     }}
-                    className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${providerFilter === "all" ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-black/5 dark:hover:bg-white/10"}`}
+                    sx={menuItemSx(providerFilter === "all")}
                   >
-                    <span className="material-symbols-outlined text-[16px]">
+                    <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16 }}>
                       apps
-                    </span>
-                    <span className="font-medium">All providers</span>
+                    </Box>
+                    <Box component="span" sx={{ fontWeight: 500 }}>All providers</Box>
                     {providerFilter === "all" && (
-                      <span className="material-symbols-outlined ml-auto text-[16px]">
+                      <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16, ml: "auto" }}>
                         check
-                      </span>
+                      </Box>
                     )}
-                  </button>
-                  <div className="my-1 h-px bg-black/10 dark:bg-white/10" />
-                  <div className="max-h-60 overflow-y-auto pr-0.5">
+                  </Box>
+                  <Box sx={{ my: 0.5, height: "1px", bgcolor: borderSubtle }} />
+                  <Box sx={{ maxHeight: 240, overflowY: "auto", pr: 0.25 }}>
                     {providerOptions.map((provider) => (
-                      <button
+                      <Box
+                        component="button"
                         key={provider}
                         type="button"
                         onClick={() => {
@@ -958,31 +1099,31 @@ export default function ProviderLimits() {
                           setProviderFilter(provider);
                           setProviderMenuOpen(false);
                         }}
-                        className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${providerFilter === provider ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-black/5 dark:hover:bg-white/10"}`}
+                        sx={menuItemSx(providerFilter === provider)}
                       >
                         <ProviderIcon
                           src={`/providers/${provider}.webp`}
                           alt={provider}
                           size={18}
-                          className="size-[18px] rounded object-contain"
                           fallbackText={provider.slice(0, 2).toUpperCase()}
                         />
-                        <span className="font-medium capitalize">
+                        <Box component="span" sx={{ fontWeight: 500, textTransform: "capitalize" }}>
                           {provider}
-                        </span>
+                        </Box>
                         {providerFilter === provider && (
-                          <span className="material-symbols-outlined ml-auto text-[16px]">
+                          <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16, ml: "auto" }}>
                             check
-                          </span>
+                          </Box>
                         )}
-                      </button>
+                      </Box>
                     ))}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               </>
             )}
-          </div>
-          <select
+          </Box>
+          <Box
+            component="select"
             value={accountFilter}
             onChange={(event) => {
               const nextValue = event.target.value;
@@ -991,37 +1132,39 @@ export default function ProviderLimits() {
               }
               setAccountFilter(nextValue);
             }}
-            className="h-8 rounded-lg border border-black/10 bg-black/[0.02] px-2 text-xs text-text-primary outline-none transition-colors hover:bg-black/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/10"
             aria-label="Filter accounts by status"
+            sx={controlSx}
           >
             {ACCOUNT_FILTER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Box>
 
           {providerFilter === "codex" && (
-            <select
+            <Box
+              component="select"
               value={quotaSortMode}
               onChange={(event) => setQuotaSortMode(event.target.value)}
-              className="h-8 rounded-lg border border-black/10 bg-black/[0.02] px-2 text-xs text-text-primary outline-none transition-colors hover:bg-black/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/10"
               aria-label="Sort Codex quotas by remaining"
+              sx={controlSx}
             >
               {QUOTA_SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Box>
           )}
 
           {isMultiModelProvider(providerFilter) && modelOptions.length > 0 && (
-            <select
+            <Box
+              component="select"
               value={modelFilter}
               onChange={(event) => setModelFilter(event.target.value)}
-              className="h-8 rounded-lg border border-black/10 bg-black/[0.02] px-2 text-xs text-text-primary outline-none transition-colors hover:bg-black/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/10"
               aria-label="Filter quotas by model"
+              sx={controlSx}
             >
               <option value="all">All models</option>
               {modelOptions.map((model) => (
@@ -1029,123 +1172,179 @@ export default function ProviderLimits() {
                   {model.name}
                 </option>
               ))}
-            </select>
+            </Box>
           )}
 
-          <button
+          <Button
             type="button"
+            variant="outlined"
             onClick={() => setExpiringFirst((prev) => !prev)}
             aria-pressed={expiringFirst}
-            className={`flex h-8 shrink-0 items-center gap-1 rounded-lg border px-2 text-xs transition-colors ${expiringFirst ? "border-amber-500/40 bg-amber-500/10 text-amber-500" : "border-black/10 text-text-primary hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"}`}
             title="Sort accounts by earliest quota reset time"
+            sx={{
+              ...compactButtonSx,
+              flexShrink: 0,
+              ...(expiringFirst
+                ? {
+                    borderColor: "rgba(245, 158, 11, 0.4)",
+                    bgcolor: "rgba(245, 158, 11, 0.1)",
+                    color: "#f59e0b",
+                    "&:hover": { bgcolor: "rgba(245, 158, 11, 0.16)", borderColor: "rgba(245, 158, 11, 0.4)" },
+                  }
+                : {}),
+            }}
           >
-            <span className="material-symbols-outlined text-[14px]">
+            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14 }}>
               hourglass_top
-            </span>
-            <span className="hidden sm:inline">Expiring first</span>
-          </button>
+            </Box>
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Expiring first</Box>
+          </Button>
 
           {/* Bulk: disable depleted */}
-          <button
+          <Button
             type="button"
+            variant="outlined"
             onClick={handleDisableDepleted}
             disabled={bulkToggling}
-            className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-red-500/30 px-2 text-xs text-red-500 transition-colors hover:bg-red-500/10 disabled:opacity-50"
             title="Disable connections with depleted quota on the current page"
+            sx={{
+              ...compactButtonSx,
+              flexShrink: 0,
+              borderColor: "rgba(239, 68, 68, 0.3)",
+              color: "#ef4444",
+              "&:hover": { bgcolor: "rgba(239, 68, 68, 0.1)", borderColor: "rgba(239, 68, 68, 0.3)" },
+            }}
           >
-            <span className="material-symbols-outlined text-[14px]">block</span>
-            <span className="hidden sm:inline">Turn off Empty</span>
-          </button>
+            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14 }}>block</Box>
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Turn off Empty</Box>
+          </Button>
 
           {/* Bulk: enable available */}
-          <button
+          <Button
             type="button"
+            variant="outlined"
             onClick={handleEnableAvailable}
             disabled={bulkToggling}
-            className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-emerald-500/30 px-2 text-xs text-emerald-500 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
             title="Enable connections that still have quota on the current page"
+            sx={{
+              ...compactButtonSx,
+              flexShrink: 0,
+              borderColor: "rgba(16, 185, 129, 0.3)",
+              color: "#10b981",
+              "&:hover": { bgcolor: "rgba(16, 185, 129, 0.1)", borderColor: "rgba(16, 185, 129, 0.3)" },
+            }}
           >
-            <span className="material-symbols-outlined text-[14px]">
+            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14 }}>
               check_circle
-            </span>
-            <span className="hidden sm:inline">Turn on Available</span>
-          </button>
+            </Box>
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Turn on Available</Box>
+          </Button>
 
           {/* Bulk: delete Codex 401 unavailable */}
           {providerFilter === "codex" && (
-            <button
+            <Button
               type="button"
+              variant="outlined"
               onClick={handleBulkDeleteCodexUnavailable}
               disabled={bulkDeleting || codexUnavailableIds.length === 0}
-              className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-red-500/40 bg-red-500/10 px-2 text-xs text-red-600 dark:text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
               title={
                 codexUnavailableIds.length > 0
                   ? `Delete ${codexUnavailableIds.length} Codex connection(s) with "Usage API temporarily unavailable (401)"`
                   : "No Codex 401 unavailable connections on current page"
               }
+              sx={{
+                ...compactButtonSx,
+                flexShrink: 0,
+                borderColor: "rgba(239, 68, 68, 0.4)",
+                bgcolor: "rgba(239, 68, 68, 0.1)",
+                color: (theme) => (theme.palette.mode === "dark" ? "#f87171" : "#dc2626"),
+                "&:hover": { bgcolor: "rgba(239, 68, 68, 0.2)", borderColor: "rgba(239, 68, 68, 0.4)" },
+                "&.Mui-disabled": { opacity: 0.4 },
+              }}
             >
-              <span className={`material-symbols-outlined text-[14px] ${bulkDeleting ? "animate-spin" : ""}`}>
+              <Box
+                component="span"
+                className="material-symbols-outlined"
+                sx={{ fontSize: 14, animation: bulkDeleting ? "spin 1s linear infinite" : "none" }}
+              >
                 {bulkDeleting ? "progress_activity" : "delete_sweep"}
-              </span>
-              <span className="hidden sm:inline">
+              </Box>
+              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
                 Delete 401 ({codexUnavailableIds.length})
-              </span>
-              <span className="sm:hidden">
+              </Box>
+              <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
                 401 ({codexUnavailableIds.length})
-              </span>
-            </button>
+              </Box>
+            </Button>
           )}
 
           {/* Auto-refresh toggle */}
-          <button
+          <Button
+            variant="outlined"
             onClick={() => setAutoRefresh((prev) => !prev)}
-            className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-black/10 px-2 text-xs transition-colors hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
             title={autoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"}
+            sx={{ ...compactButtonSx, flexShrink: 0, bgcolor: "transparent" }}
           >
-            <span
-              className={`material-symbols-outlined text-[14px] ${
-                autoRefresh ? "text-primary" : "text-text-muted"
-              }`}
+            <Box
+              component="span"
+              className="material-symbols-outlined"
+              sx={{ fontSize: 14, color: autoRefresh ? "primary.main" : "text.secondary" }}
             >
               {autoRefresh ? "toggle_on" : "toggle_off"}
-            </span>
-            <span className="hidden text-text-primary sm:inline">
+            </Box>
+            <Box component="span" sx={{ display: { xs: "none", sm: "inline" }, color: "text.primary" }}>
               Auto-refresh
-            </span>
+            </Box>
             {autoRefresh && (
-              <span className="text-[10px] text-text-muted tabular-nums">
+              <Box
+                component="span"
+                sx={{ fontSize: 10, color: "text.secondary", fontVariantNumeric: "tabular-nums" }}
+              >
                 ({countdown}s)
-              </span>
+              </Box>
             )}
-          </button>
-
+          </Button>
 
           {/* Refresh all button */}
-          <button
+          <Button
             type="button"
+            variant="outlined"
             onClick={() => refreshAll(true)}
             disabled={refreshingAll}
-            className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-black/10 px-2 text-xs text-text-primary transition-colors hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5 disabled:opacity-50"
             title="Refresh all"
+            sx={{ ...compactButtonSx, flexShrink: 0, bgcolor: "transparent", px: 1 }}
           >
-            <span
-              className={`material-symbols-outlined text-[14px] ${refreshingAll ? "animate-spin" : ""}`}
+            <Box
+              component="span"
+              className="material-symbols-outlined"
+              sx={{ fontSize: 14, animation: refreshingAll ? "spin 1s linear infinite" : "none" }}
             >
               refresh
-            </span>
-          </button>
-        </div>
-      </div>
+            </Box>
+          </Button>
+        </Box>
+      </Box>
 
       {/* Provider cards: 2 columns, compact */}
       {expiringFirst && (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+        <Box
+          sx={{
+            borderRadius: 3,
+            border: 1,
+            borderColor: "rgba(245, 158, 11, 0.2)",
+            bgcolor: "rgba(245, 158, 11, 0.1)",
+            px: 1.5,
+            py: 1,
+            fontSize: 12,
+            color: (theme) => (theme.palette.mode === "dark" ? "#fcd34d" : "#b45309"),
+          }}
+        >
           Expiring-first currently reorders accounts inside the current page.
           Cross-page ordering still follows backend pagination.
-        </div>
+        </Box>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" }, gap: 1.5 }}>
         {sortedConnections.map((conn) => {
           const quota = quotaData[conn.id];
           const isLoading = loading[conn.id];
@@ -1164,80 +1363,140 @@ export default function ProviderLimits() {
             <Card
               key={conn.id}
               padding="none"
-              className={`min-w-0 ${isInactive ? "opacity-60" : ""}`}
+              sx={{ minWidth: 0, opacity: isInactive ? 0.6 : 1 }}
             >
-              <div className="px-3 py-2 border-b border-black/10 dark:border-white/10">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 shrink-0 rounded-md flex items-center justify-center overflow-hidden">
+              <Box sx={{ px: 1.5, py: 1, borderBottom: 1, borderColor: borderSubtle }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+                    <Box sx={{ width: 32, height: 32, flexShrink: 0, borderRadius: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                       <ProviderIcon
                         src={`/providers/${conn.provider}.webp`}
                         alt={conn.provider}
                         size={32}
-                        className="object-contain"
                         fallbackText={
                           conn.provider?.slice(0, 2).toUpperCase() || "PR"
                         }
                       />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-text-primary capitalize truncate">
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        component="h3"
+                        noWrap
+                        sx={{ fontSize: 14, fontWeight: 600, color: "text.primary", textTransform: "capitalize" }}
+                      >
                         {conn.provider}
-                      </h3>
+                      </Typography>
                       {getConnectionLabel(conn) ? (
-                        <p className="text-xs text-text-muted truncate">
+                        <Typography noWrap sx={{ fontSize: 12, color: "text.secondary" }}>
                           {getConnectionLabel(conn)}
-                        </p>
+                        </Typography>
                       ) : null}
                       {getConnectionSecondaryLabel(conn) ? (
-                        <p className="text-[11px] text-text-muted/80 truncate">
+                        <Typography noWrap sx={{ fontSize: 11, color: "text.secondary", opacity: 0.8 }}>
                           {getConnectionSecondaryLabel(conn)}
-                        </p>
+                        </Typography>
                       ) : null}
                       {conn.provider === "kiro" && (
-                        <div className="mt-1 flex flex-wrap items-center gap-1">
-                          <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-[10px] font-semibold text-brand-600 dark:text-brand-300">
+                        <Box sx={{ mt: 0.5, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.5 }}>
+                          <Box
+                            component="span"
+                            sx={{
+                              borderRadius: 999,
+                              bgcolor: "rgba(229, 106, 74, 0.1)",
+                              px: 1,
+                              py: 0.25,
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: (theme) => (theme.palette.mode === "dark" ? "#f0a68f" : "#cc5236"),
+                            }}
+                          >
                             {kiroMethodLabel(conn)}
-                          </span>
+                          </Box>
                           {kiroRegion(conn) && (
-                            <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                            <Box
+                              component="span"
+                              sx={{
+                                borderRadius: 999,
+                                bgcolor: "rgba(59, 130, 246, 0.1)",
+                                px: 1,
+                                py: 0.25,
+                                fontSize: 10,
+                                fontWeight: 600,
+                                color: (theme) => (theme.palette.mode === "dark" ? "#60a5fa" : "#2563eb"),
+                              }}
+                            >
                               {kiroRegion(conn)}
-                            </span>
+                            </Box>
                           )}
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                              isInactive
-                                ? "bg-surface-2 text-text-muted"
+                          <Box
+                            component="span"
+                            sx={{
+                              borderRadius: 999,
+                              px: 1,
+                              py: 0.25,
+                              fontSize: 10,
+                              fontWeight: 600,
+                              ...(isInactive
+                                ? {
+                                    bgcolor: (theme) => (theme.palette.mode === "dark" ? "#303030" : "#f4f4f5"),
+                                    color: "text.secondary",
+                                  }
                                 : conn.testStatus === "active" || conn.testStatus === "success"
-                                  ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                  ? {
+                                      bgcolor: "rgba(34, 197, 94, 0.1)",
+                                      color: (theme) => (theme.palette.mode === "dark" ? "#4ade80" : "#16a34a"),
+                                    }
                                   : conn.testStatus === "error" || conn.testStatus === "expired" || conn.testStatus === "unavailable"
-                                    ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                                    : "bg-surface-2 text-text-muted"
-                            }`}
+                                    ? {
+                                        bgcolor: "rgba(239, 68, 68, 0.1)",
+                                        color: (theme) => (theme.palette.mode === "dark" ? "#f87171" : "#dc2626"),
+                                      }
+                                    : {
+                                        bgcolor: (theme) => (theme.palette.mode === "dark" ? "#303030" : "#f4f4f5"),
+                                        color: "text.secondary",
+                                      }),
+                            }}
                           >
                             {isInactive ? "disabled" : conn.testStatus || "unknown"}
-                          </span>
+                          </Box>
                           {conn.providerSpecificData?.profileArn && (
-                            <button
+                            <Box
+                              component="button"
                               type="button"
                               onClick={() => copy(conn.providerSpecificData.profileArn, conn.id)}
                               title={conn.providerSpecificData.profileArn}
-                              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border-subtle px-2 py-0.5 text-[10px] text-text-muted transition-colors hover:text-primary"
+                              sx={{
+                                display: "inline-flex",
+                                maxWidth: "100%",
+                                alignItems: "center",
+                                gap: 0.5,
+                                borderRadius: 999,
+                                border: 1,
+                                borderColor: borderFaint,
+                                bgcolor: "transparent",
+                                px: 1,
+                                py: 0.25,
+                                fontSize: 10,
+                                color: "text.secondary",
+                                cursor: "pointer",
+                                transition: "color 150ms ease",
+                                "&:hover": { color: "primary.main" },
+                              }}
                             >
-                              <span className="material-symbols-outlined text-[12px]">
+                              <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 12 }}>
                                 {copied === conn.id ? "check" : "content_copy"}
-                              </span>
-                              <code className="truncate font-mono">
+                              </Box>
+                              <Box component="code" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "monospace" }}>
                                 {conn.providerSpecificData.profileArn}
-                              </code>
-                            </button>
+                              </Box>
+                            </Box>
                           )}
-                        </div>
+                        </Box>
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
                     {(isCodex || claudeReset) && (
                       <>
                         <Tooltip
@@ -1249,8 +1508,9 @@ export default function ProviderLimits() {
                               : `No ${resetLabel}s available`
                           }
                         >
-                          <button
+                          <Button
                             type="button"
+                            variant="outlined"
                             onClick={() => setResetConfirmState({ connection: conn, resetCreditCount })}
                             disabled={resetCreditCount <= 0 || isLoading || rowBusy}
                             aria-label={
@@ -1258,60 +1518,87 @@ export default function ProviderLimits() {
                                 ? `Use one ${resetLabel}. ${resetCreditCount} available.`
                                 : `No ${resetLabel}s available`
                             }
-                            className={`flex h-8 min-w-10 items-center justify-center gap-1 rounded-lg border px-2 text-[11px] font-medium tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 disabled:cursor-not-allowed disabled:opacity-60 ${
-                              resetCreditCount > 0
-                                ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
-                                : "border-black/10 bg-black/[0.02] text-text-muted dark:border-white/10 dark:bg-white/[0.03]"
-                            }`}
+                            sx={{
+                              height: 32,
+                              minWidth: 40,
+                              px: 1,
+                              gap: 0.5,
+                              fontSize: 11,
+                              fontWeight: 500,
+                              fontVariantNumeric: "tabular-nums",
+                              borderRadius: 2,
+                              "&.Mui-disabled": { opacity: 0.6 },
+                              ...(resetCreditCount > 0
+                                ? {
+                                    borderColor: "rgba(229, 106, 74, 0.3)",
+                                    bgcolor: "rgba(229, 106, 74, 0.05)",
+                                    color: "primary.main",
+                                    "&:hover": { bgcolor: "rgba(229, 106, 74, 0.1)", borderColor: "rgba(229, 106, 74, 0.3)" },
+                                  }
+                                : {
+                                    borderColor: borderSubtle,
+                                    bgcolor: bgSubtle,
+                                    color: "text.secondary",
+                                  }),
+                            }}
                           >
-                            <span className={`material-symbols-outlined text-[15px] ${isResettingLimit ? "animate-spin" : ""}`}>
+                            <Box
+                              component="span"
+                              className="material-symbols-outlined"
+                              sx={{ fontSize: 15, animation: isResettingLimit ? "spin 1s linear infinite" : "none" }}
+                            >
                               {isResettingLimit ? "progress_activity" : "restart_alt"}
-                            </span>
-                            <span>{resetCreditCount}</span>
-                          </button>
+                            </Box>
+                            <Box component="span">{resetCreditCount}</Box>
+                          </Button>
                         </Tooltip>
                         <Tooltip text={isCodex ? "View Codex reset credit expiry" : "View Claude Code reset expiry"}>
-                          <button
+                          <IconButton
                             type="button"
                             onClick={() => (isCodex ? handleViewCodexResetCredits(conn) : handleViewClaudeResets(conn, claudeReset))}
                             disabled={isLoading || rowBusy}
                             aria-label={isCodex ? "View Codex reset credit expiry" : "View Claude Code reset expiry"}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-text-muted transition-colors hover:bg-black/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:hover:bg-white/5"
+                            sx={rowIconSx}
                           >
-                            <span className="material-symbols-outlined text-[17px]">schedule</span>
-                          </button>
+                            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 17 }}>schedule</Box>
+                          </IconButton>
                         </Tooltip>
                       </>
                     )}
                     {AUTO_PING_SETTINGS_KEYS[conn.provider] && conn.authType === "oauth" && (
                       <Tooltip text={AUTO_PING_TOOLTIPS[conn.provider]}>
-                        <button
+                        <IconButton
                           type="button"
                           onClick={() => toggleAutoPing(conn.id, conn.provider, !(autoPingMaps[conn.provider]?.[conn.id] === true))}
                           aria-label="Toggle auto-ping"
-                          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${autoPingMaps[conn.provider]?.[conn.id] === true ? "text-primary" : "text-text-muted"}`}
+                          sx={{
+                            ...rowIconSx,
+                            color: autoPingMaps[conn.provider]?.[conn.id] === true ? "primary.main" : "text.secondary",
+                          }}
                         >
-                          <span className="material-symbols-outlined text-[18px]">bolt</span>
-                        </button>
+                          <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 18 }}>bolt</Box>
+                        </IconButton>
                       </Tooltip>
                     )}
                     <Tooltip text="Refresh quota">
-                      <button
+                      <IconButton
                         type="button"
                         onClick={() => refreshProvider(conn.id, conn.provider)}
                         disabled={isLoading || rowBusy}
                         aria-label="Refresh quota"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+                        sx={rowIconSx}
                       >
-                        <span
-                          className={`material-symbols-outlined text-[18px] text-text-muted ${isLoading ? "animate-spin" : ""}`}
+                        <Box
+                          component="span"
+                          className="material-symbols-outlined"
+                          sx={{ fontSize: 18, color: "text.secondary", animation: isLoading ? "spin 1s linear infinite" : "none" }}
                         >
                           refresh
-                        </span>
-                      </button>
+                        </Box>
+                      </IconButton>
                     </Tooltip>
                     <Tooltip text="Edit connection">
-                      <button
+                      <IconButton
                         type="button"
                         onClick={() => {
                           setSelectedConnection(conn);
@@ -1319,30 +1606,39 @@ export default function ProviderLimits() {
                         }}
                         disabled={rowBusy}
                         aria-label="Edit connection"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-text-muted hover:text-primary transition-colors disabled:opacity-50"
+                        sx={{
+                          ...rowIconSx,
+                          "&:hover": { bgcolor: bgHover, color: "primary.main" },
+                        }}
                       >
-                        <span className="material-symbols-outlined text-[18px]">
+                        <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 18 }}>
                           edit
-                        </span>
-                      </button>
+                        </Box>
+                      </IconButton>
                     </Tooltip>
                     <Tooltip text="Delete connection">
-                      <button
+                      <IconButton
                         type="button"
                         onClick={() => handleDeleteConnection(conn.id)}
                         disabled={rowBusy}
                         aria-label="Delete connection"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-red-500/10 text-red-500 transition-colors disabled:opacity-50"
+                        sx={{
+                          ...rowIconSx,
+                          color: "#ef4444",
+                          "&:hover": { bgcolor: "rgba(239, 68, 68, 0.1)" },
+                        }}
                       >
-                        <span
-                          className={`material-symbols-outlined text-[18px] ${deletingId === conn.id ? "animate-pulse" : ""}`}
+                        <Box
+                          component="span"
+                          className="material-symbols-outlined"
+                          sx={{ fontSize: 18, animation: deletingId === conn.id ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none" }}
                         >
                           delete
-                        </span>
-                      </button>
+                        </Box>
+                      </IconButton>
                     </Tooltip>
-                    <div
-                      className="inline-flex items-center pl-0.5"
+                    <Box
+                      sx={{ display: "inline-flex", alignItems: "center", pl: 0.25 }}
                       title={
                         (conn.isActive ?? true)
                           ? "Disable connection"
@@ -1357,29 +1653,33 @@ export default function ProviderLimits() {
                           handleToggleConnectionActive(conn.id, nextActive)
                         }
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
 
-              <div className="px-2 py-1.5">
+              <Box sx={{ px: 1, py: 0.75 }}>
                 {isLoading ? (
-                  <div className="text-center py-5 text-text-muted">
-                    <span className="material-symbols-outlined text-[28px] animate-spin">
+                  <Box sx={{ textAlign: "center", py: 2.5, color: "text.secondary" }}>
+                    <Box
+                      component="span"
+                      className="material-symbols-outlined"
+                      sx={{ fontSize: 28, animation: "spin 1s linear infinite" }}
+                    >
                       progress_activity
-                    </span>
-                  </div>
+                    </Box>
+                  </Box>
                 ) : error ? (
-                  <div className="text-center py-5">
-                    <span className="material-symbols-outlined text-[28px] text-red-500">
+                  <Box sx={{ textAlign: "center", py: 2.5 }}>
+                    <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 28, color: "#ef4444" }}>
                       error
-                    </span>
-                    <p className="mt-1.5 text-xs text-text-muted">{error}</p>
-                  </div>
+                    </Box>
+                    <Typography sx={{ mt: 0.75, fontSize: 12, color: "text.secondary" }}>{error}</Typography>
+                  </Box>
                 ) : quota?.message ? (
-                  <div className="text-center py-5">
-                    <p className="text-xs text-text-muted">{quota.message}</p>
-                  </div>
+                  <Box sx={{ textAlign: "center", py: 2.5 }}>
+                    <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{quota.message}</Typography>
+                  </Box>
                 ) : (
                   <QuotaTable
                     quotas={filterQuotasByModel(quota?.quotas, modelFilter)}
@@ -1390,134 +1690,147 @@ export default function ProviderLimits() {
                     }
                   />
                 )}
-              </div>
+              </Box>
             </Card>
           );
         })}
-      </div>
+      </Box>
 
-      <div className="rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs text-text-muted">{connectionsPageSummary}</span>
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={isCustomPageSize ? "custom" : String(pageSize)}
-                onChange={(event) => {
-                  const nextValue = event.target.value;
-                  if (nextValue === "custom") return;
-                  const nextPageSize = Number.parseInt(nextValue, 10);
-                  if (Number.isFinite(nextPageSize)) {
-                    setPage(1);
-                    setPageSize(nextPageSize);
-                    setCustomPageSizeInput(String(nextPageSize));
-                  }
-                }}
-                className="h-8 rounded-lg border border-black/10 bg-black/[0.02] px-2 text-xs text-text-primary outline-none transition-colors hover:bg-black/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/10"
-                aria-label="Accounts per page"
-              >
-                {ACCOUNT_PAGE_SIZE_OPTIONS.map((option) => (
-                  <option key={option} value={String(option)}>
-                    {option} / page
-                  </option>
-                ))}
-                <option value="custom">Custom</option>
-              </select>
-              <input
-                type="number"
-                min="1"
-                max={String(ACCOUNT_PAGE_SIZE_MAX)}
-                inputMode="numeric"
-                value={customPageSizeInput}
-                onChange={(event) => setCustomPageSizeInput(event.target.value)}
-                onBlur={() => {
-                  const parsedValue = Number.parseInt(customPageSizeInput, 10);
-                  if (!Number.isFinite(parsedValue)) {
-                    setCustomPageSizeInput(String(pageSize));
-                    return;
-                  }
-                  const nextPageSize = Math.min(ACCOUNT_PAGE_SIZE_MAX, Math.max(1, parsedValue));
+      <Box
+        sx={{
+          borderRadius: 3,
+          border: 1,
+          borderColor: borderSubtle,
+          bgcolor: bgSubtle,
+          px: 1.5,
+          py: 1,
+        }}
+      >
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{connectionsPageSummary}</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+            <Box
+              component="select"
+              value={isCustomPageSize ? "custom" : String(pageSize)}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                if (nextValue === "custom") return;
+                const nextPageSize = Number.parseInt(nextValue, 10);
+                if (Number.isFinite(nextPageSize)) {
                   setPage(1);
                   setPageSize(nextPageSize);
                   setCustomPageSizeInput(String(nextPageSize));
-                }}
-                onKeyDown={(event) => {
-                  if (event.key !== "Enter") return;
-                  const parsedValue = Number.parseInt(customPageSizeInput, 10);
-                  if (!Number.isFinite(parsedValue)) {
-                    setCustomPageSizeInput(String(pageSize));
-                    return;
-                  }
-                  const nextPageSize = Math.min(ACCOUNT_PAGE_SIZE_MAX, Math.max(1, parsedValue));
-                  setPage(1);
-                  setPageSize(nextPageSize);
-                  setCustomPageSizeInput(String(nextPageSize));
-                }}
-                className="h-8 w-20 rounded-lg border border-black/10 bg-black/[0.02] px-2 text-xs text-text-primary outline-none transition-colors hover:bg-black/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/10"
-                aria-label="Custom accounts per page"
-                placeholder="Custom"
-              />
-              <span className="text-xs text-text-muted">Page {pagination.page} / {pagination.totalPages}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                disabled={
-                  pagination.page <= 1 || connectionsLoading || refreshingAll
                 }
-                className="flex h-8 items-center rounded-lg border border-black/10 px-3 text-xs text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
-              >
-                First Page
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setPage((currentPage) => Math.max(1, currentPage - 1))
+              }}
+              aria-label="Accounts per page"
+              sx={controlSx}
+            >
+              {ACCOUNT_PAGE_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={String(option)}>
+                  {option} / page
+                </option>
+              ))}
+              <option value="custom">Custom</option>
+            </Box>
+            <Box
+              component="input"
+              type="number"
+              min="1"
+              max={String(ACCOUNT_PAGE_SIZE_MAX)}
+              inputMode="numeric"
+              value={customPageSizeInput}
+              onChange={(event) => setCustomPageSizeInput(event.target.value)}
+              onBlur={() => {
+                const parsedValue = Number.parseInt(customPageSizeInput, 10);
+                if (!Number.isFinite(parsedValue)) {
+                  setCustomPageSizeInput(String(pageSize));
+                  return;
                 }
-                disabled={
-                  pagination.page <= 1 || connectionsLoading || refreshingAll
+                const nextPageSize = Math.min(ACCOUNT_PAGE_SIZE_MAX, Math.max(1, parsedValue));
+                setPage(1);
+                setPageSize(nextPageSize);
+                setCustomPageSizeInput(String(nextPageSize));
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                const parsedValue = Number.parseInt(customPageSizeInput, 10);
+                if (!Number.isFinite(parsedValue)) {
+                  setCustomPageSizeInput(String(pageSize));
+                  return;
                 }
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
-                aria-label="Previous accounts page"
-              >
-                <span className="material-symbols-outlined text-[16px]">
-                  chevron_left
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setPage((currentPage) =>
-                    Math.min(pagination.totalPages, currentPage + 1),
-                  )
-                }
-                disabled={
-                  pagination.page >= pagination.totalPages ||
-                  connectionsLoading ||
-                  refreshingAll
-                }
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
-                aria-label="Next accounts page"
-              >
-                <span className="material-symbols-outlined text-[16px]">
-                  chevron_right
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(pagination.totalPages)}
-                disabled={
-                  pagination.page >= pagination.totalPages ||
-                  connectionsLoading ||
-                  refreshingAll
-                }
-                className="flex h-8 items-center rounded-lg border border-black/10 px-3 text-xs text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
-              >
-                Last Page
-              </button>
-            </div>
-          </div>
-        </div>
+                const nextPageSize = Math.min(ACCOUNT_PAGE_SIZE_MAX, Math.max(1, parsedValue));
+                setPage(1);
+                setPageSize(nextPageSize);
+                setCustomPageSizeInput(String(nextPageSize));
+              }}
+              aria-label="Custom accounts per page"
+              placeholder="Custom"
+              sx={{ ...controlSx, width: 80 }}
+            />
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Page {pagination.page} / {pagination.totalPages}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={() => setPage(1)}
+              disabled={
+                pagination.page <= 1 || connectionsLoading || refreshingAll
+              }
+              sx={{ ...compactButtonSx, px: 1.5 }}
+            >
+              First Page
+            </Button>
+            <IconButton
+              type="button"
+              onClick={() =>
+                setPage((currentPage) => Math.max(1, currentPage - 1))
+              }
+              disabled={
+                pagination.page <= 1 || connectionsLoading || refreshingAll
+              }
+              aria-label="Previous accounts page"
+              sx={{ ...rowIconSx, border: 1, borderColor: borderSubtle, color: "text.primary" }}
+            >
+              <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16 }}>
+                chevron_left
+              </Box>
+            </IconButton>
+            <IconButton
+              type="button"
+              onClick={() =>
+                setPage((currentPage) =>
+                  Math.min(pagination.totalPages, currentPage + 1),
+                )
+              }
+              disabled={
+                pagination.page >= pagination.totalPages ||
+                connectionsLoading ||
+                refreshingAll
+              }
+              aria-label="Next accounts page"
+              sx={{ ...rowIconSx, border: 1, borderColor: borderSubtle, color: "text.primary" }}
+            >
+              <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16 }}>
+                chevron_right
+              </Box>
+            </IconButton>
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={() => setPage(pagination.totalPages)}
+              disabled={
+                pagination.page >= pagination.totalPages ||
+                connectionsLoading ||
+                refreshingAll
+              }
+              sx={{ ...compactButtonSx, px: 1.5 }}
+            >
+              Last Page
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
       <ConfirmModal
         isOpen={Boolean(resetConfirmState)}
@@ -1540,116 +1853,248 @@ export default function ProviderLimits() {
         loading={Boolean(resettingLimitId)}
       />
 
-      {resetCreditsState && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-black/15 bg-white shadow-2xl ring-1 ring-black/10 dark:border-white/15 dark:bg-neutral-950 dark:ring-white/10">
-            <div className="flex items-start justify-between gap-3 border-b border-black/10 bg-black/[0.03] px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold text-text-primary">
+      <Dialog
+        open={resetCreditsOpen}
+        onClose={() => setResetCreditsState(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        {resetCreditsState && (
+          <>
+            <DialogTitle
+              sx={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 1.5,
+                borderBottom: 1,
+                borderColor: borderSubtle,
+                bgcolor: (theme) =>
+                  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)",
+                px: 2,
+                py: 1.5,
+              }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 600, color: "text.primary" }}>
                   {resetCreditsState.data?.kind === "claude" ? "Claude Code Limit Resets" : "Codex Reset Credit Expiry"}
-                </h3>
-                <p className="mt-0.5 truncate text-xs text-text-muted">
+                </Typography>
+                <Typography noWrap sx={{ mt: 0.25, fontSize: 12, color: "text.secondary" }}>
                   {getConnectionLabel(resetCreditsState.connection) || (resetCreditsState.data?.kind === "claude" ? "Claude account" : "Codex account")}
-                </p>
-              </div>
-              <button
+                </Typography>
+              </Box>
+              <IconButton
                 type="button"
                 onClick={() => setResetCreditsState(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-black/5 hover:text-text-primary dark:hover:bg-white/5"
                 aria-label="Close reset credit expiry modal"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 2,
+                  color: "text.secondary",
+                  "&:hover": { bgcolor: bgHover, color: "text.primary" },
+                }}
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
-              </button>
-            </div>
+                <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 18 }}>close</Box>
+              </IconButton>
+            </DialogTitle>
 
-            <div className="max-h-[70vh] overflow-auto bg-white p-4 dark:bg-neutral-950">
-              {resetCreditsState.loading ? (
-                <div className="flex items-center justify-center gap-2 py-10 text-sm text-text-muted">
-                  <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                  Loading reset credits...
-                </div>
-              ) : resetCreditsState.error ? (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-300">
-                  {resetCreditsState.error}
-                </div>
-              ) : resetCreditsState.data?.kind === "claude" && resetCreditsState.data.grants?.length ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2 text-xs text-text-muted dark:border-white/10 dark:bg-white/[0.03]">
-                    <span>{resetCreditsState.data.availableCount ?? 0} reset{resetCreditsState.data.availableCount === 1 ? "" : "s"} left</span>
-                    <span>Weekly reset day: {formatCreditDate(resetCreditsState.data.weeklyResetsAt)}</span>
-                  </div>
-                  <div className="overflow-x-auto rounded-xl border border-black/10 dark:border-white/10">
-                    <table className="w-full min-w-[560px] text-left text-sm">
-                      <thead className="bg-black/[0.03] text-xs uppercase tracking-wide text-text-muted dark:bg-white/[0.04]">
-                        <tr>
-                          <th className="px-3 py-2 font-medium">Reset</th>
-                          <th className="px-3 py-2 font-medium">Left</th>
-                          <th className="px-3 py-2 font-medium">Refills</th>
-                          <th className="px-3 py-2 font-medium">Use By</th>
-                          <th className="px-3 py-2 font-medium">Remaining</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(resetCreditsState.data.grants || []).map((grant) => (
-                          <tr key={grant.id} className="border-t border-black/5 dark:border-white/5">
-                            <td className="px-3 py-2">
-                              <div className="text-text-primary">{grant.label || grant.id}</div>
-                              <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                {claudeGrantStatus(grant)}
-                              </span>
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-2 font-medium tabular-nums text-text-primary">{grant.resetsLeft} / {grant.resetsTotal}</td>
-                            <td className="px-3 py-2 text-text-muted">{formatClaudeResetClears(grant.clears)}</td>
-                            <td className="px-3 py-2 text-text-primary">{formatCreditDate(grant.endsAt)}</td>
-                            <td className="whitespace-nowrap px-3 py-2 font-medium text-text-primary">{formatTimeRemaining(grant.endsAt)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : resetCreditsState.data?.credits?.length ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2 text-xs text-text-muted dark:border-white/10 dark:bg-white/[0.03]">
-                    <span>{resetCreditsState.data.credits.length} reset credit{resetCreditsState.data.credits.length === 1 ? "" : "s"}</span>
-                    <span>{resetCreditsState.data.availableCount ?? 0} available</span>
-                  </div>
-                  <div className="overflow-x-auto rounded-xl border border-black/10 dark:border-white/10">
-                    <table className="w-full min-w-[560px] text-left text-sm">
-                      <thead className="bg-black/[0.03] text-xs uppercase tracking-wide text-text-muted dark:bg-white/[0.04]">
-                        <tr>
-                          <th className="px-3 py-2 font-medium">Status</th>
-                          <th className="px-3 py-2 font-medium">Granted At</th>
-                          <th className="px-3 py-2 font-medium">Expires At</th>
-                          <th className="px-3 py-2 font-medium">Remaining</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {resetCreditsState.data.credits.map((credit, index) => (
-                          <tr key={`${credit.status}-${credit.expiresAt || index}`} className="border-t border-black/5 dark:border-white/5">
-                            <td className="px-3 py-2">
-                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                {credit.status || "unknown"}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-text-muted">{formatCreditDate(credit.grantedAt)}</td>
-                            <td className="px-3 py-2 text-text-primary">{formatCreditDate(credit.expiresAt)}</td>
-                            <td className="px-3 py-2 font-medium text-text-primary">{formatTimeRemaining(credit.expiresAt)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-black/10 bg-black/[0.02] px-3 py-8 text-center text-sm text-text-muted dark:border-white/10 dark:bg-white/[0.03]">
-                  {resetCreditsState.data?.kind === "claude" ? "No limit resets available for this account." : "No reset credit details returned for this account."}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+            <DialogContent sx={{ p: 2, bgcolor: "background.paper" }}>
+              <Box sx={{ maxHeight: "70vh", overflow: "auto" }}>
+                {resetCreditsState.loading ? (
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, py: 5, fontSize: 14, color: "text.secondary" }}>
+                    <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 20, animation: "spin 1s linear infinite" }}>progress_activity</Box>
+                    Loading reset credits...
+                  </Box>
+                ) : resetCreditsState.error ? (
+                  <Box
+                    sx={{
+                      borderRadius: 3,
+                      border: 1,
+                      borderColor: "rgba(239, 68, 68, 0.2)",
+                      bgcolor: "rgba(239, 68, 68, 0.1)",
+                      px: 1.5,
+                      py: 1,
+                      fontSize: 14,
+                      color: (theme) => (theme.palette.mode === "dark" ? "#fca5a5" : "#dc2626"),
+                    }}
+                  >
+                    {resetCreditsState.error}
+                  </Box>
+                ) : resetCreditsState.data?.kind === "claude" && resetCreditsState.data.grants?.length ? (
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        borderRadius: 3,
+                        border: 1,
+                        borderColor: borderSubtle,
+                        bgcolor: bgSubtle,
+                        px: 1.5,
+                        py: 1,
+                        fontSize: 12,
+                        color: "text.secondary",
+                      }}
+                    >
+                      <Box component="span">{resetCreditsState.data.availableCount ?? 0} reset{resetCreditsState.data.availableCount === 1 ? "" : "s"} left</Box>
+                      <Box component="span">Weekly reset day: {formatCreditDate(resetCreditsState.data.weeklyResetsAt)}</Box>
+                    </Box>
+                    <Box sx={{ overflowX: "auto", borderRadius: 3, border: 1, borderColor: borderSubtle }}>
+                      <Table size="small" sx={{ minWidth: 560 }}>
+                        <TableHead>
+                          <TableRow>
+                            {["Reset", "Left", "Refills", "Use By", "Remaining"].map((heading) => (
+                              <TableCell
+                                key={heading}
+                                sx={{
+                                  px: 1.5,
+                                  py: 1,
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.05em",
+                                  color: "text.secondary",
+                                  bgcolor: (theme) =>
+                                    theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)",
+                                  borderBottom: 1,
+                                  borderColor: borderFaint,
+                                }}
+                              >
+                                {heading}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {(resetCreditsState.data.grants || []).map((grant) => (
+                            <TableRow key={grant.id}>
+                              <TableCell sx={{ px: 1.5, py: 1, borderTop: 1, borderColor: borderFaint }}>
+                                <Box sx={{ color: "text.primary" }}>{grant.label || grant.id}</Box>
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    mt: 0.5,
+                                    display: "inline-block",
+                                    borderRadius: 999,
+                                    bgcolor: "rgba(229, 106, 74, 0.1)",
+                                    px: 1,
+                                    py: 0.25,
+                                    fontSize: 12,
+                                    fontWeight: 500,
+                                    color: "primary.main",
+                                  }}
+                                >
+                                  {claudeGrantStatus(grant)}
+                                </Box>
+                              </TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, whiteSpace: "nowrap", fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "text.primary", borderTop: 1, borderColor: borderFaint }}>{grant.resetsLeft} / {grant.resetsTotal}</TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, color: "text.secondary", borderTop: 1, borderColor: borderFaint }}>{formatClaudeResetClears(grant.clears)}</TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, color: "text.primary", borderTop: 1, borderColor: borderFaint }}>{formatCreditDate(grant.endsAt)}</TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, whiteSpace: "nowrap", fontWeight: 500, color: "text.primary", borderTop: 1, borderColor: borderFaint }}>{formatTimeRemaining(grant.endsAt)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  </Box>
+                ) : resetCreditsState.data?.credits?.length ? (
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        borderRadius: 3,
+                        border: 1,
+                        borderColor: borderSubtle,
+                        bgcolor: bgSubtle,
+                        px: 1.5,
+                        py: 1,
+                        fontSize: 12,
+                        color: "text.secondary",
+                      }}
+                    >
+                      <Box component="span">{resetCreditsState.data.credits.length} reset credit{resetCreditsState.data.credits.length === 1 ? "" : "s"}</Box>
+                      <Box component="span">{resetCreditsState.data.availableCount ?? 0} available</Box>
+                    </Box>
+                    <Box sx={{ overflowX: "auto", borderRadius: 3, border: 1, borderColor: borderSubtle }}>
+                      <Table size="small" sx={{ minWidth: 560 }}>
+                        <TableHead>
+                          <TableRow>
+                            {["Status", "Granted At", "Expires At", "Remaining"].map((heading) => (
+                              <TableCell
+                                key={heading}
+                                sx={{
+                                  px: 1.5,
+                                  py: 1,
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.05em",
+                                  color: "text.secondary",
+                                  bgcolor: (theme) =>
+                                    theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)",
+                                  borderBottom: 1,
+                                  borderColor: borderFaint,
+                                }}
+                              >
+                                {heading}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {resetCreditsState.data.credits.map((credit, index) => (
+                            <TableRow key={`${credit.status}-${credit.expiresAt || index}`}>
+                              <TableCell sx={{ px: 1.5, py: 1, borderTop: 1, borderColor: borderFaint }}>
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    borderRadius: 999,
+                                    bgcolor: "rgba(229, 106, 74, 0.1)",
+                                    px: 1,
+                                    py: 0.25,
+                                    fontSize: 12,
+                                    fontWeight: 500,
+                                    color: "primary.main",
+                                  }}
+                                >
+                                  {credit.status || "unknown"}
+                                </Box>
+                              </TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, color: "text.secondary", borderTop: 1, borderColor: borderFaint }}>{formatCreditDate(credit.grantedAt)}</TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, color: "text.primary", borderTop: 1, borderColor: borderFaint }}>{formatCreditDate(credit.expiresAt)}</TableCell>
+                              <TableCell sx={{ px: 1.5, py: 1, fontWeight: 500, color: "text.primary", borderTop: 1, borderColor: borderFaint }}>{formatTimeRemaining(credit.expiresAt)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      borderRadius: 3,
+                      border: 1,
+                      borderColor: borderSubtle,
+                      bgcolor: bgSubtle,
+                      px: 1.5,
+                      py: 4,
+                      textAlign: "center",
+                      fontSize: 14,
+                      color: "text.secondary",
+                    }}
+                  >
+                    {resetCreditsState.data?.kind === "claude" ? "No limit resets available for this account." : "No reset credit details returned for this account."}
+                  </Box>
+                )}
+              </Box>
+            </DialogContent>
+          </>
+        )}
+      </Dialog>
 
       <EditConnectionModal
         isOpen={showEditModal}
@@ -1661,6 +2106,6 @@ export default function ProviderLimits() {
           setSelectedConnection(null);
         }}
       />
-    </div>
+    </Box>
   );
 }

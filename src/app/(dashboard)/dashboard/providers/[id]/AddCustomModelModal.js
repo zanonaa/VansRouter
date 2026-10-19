@@ -2,6 +2,10 @@
 
 import { useState, useReducer } from "react";
 import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import TextField from "@mui/material/TextField";
 import { Button, Modal, Select, Toggle } from "@/shared/components";
 import { CAPACITY_META, STT_TRANSPORT_META, STT_TRANSPORTS } from "@/shared/constants/models";
 
@@ -82,18 +86,19 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add Custom Model">
-      <div className="flex flex-col gap-4">
-        <div>
-          <label htmlFor="add-custom-model-id" className="text-sm font-medium mb-1.5 block">Model ID</label>
-          <div className="flex gap-2">
-            <input
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box>
+          <Typography component="label" htmlFor="add-custom-model-id" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 0.75 }}>Model ID</Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <TextField
               id="add-custom-model-id"
               type="text"
+              size="small"
               value={modelId}
               onChange={(e) => dispatch({ type: "SET_MODEL", value: e.target.value })}
               onKeyDown={handleKeyDown}
               placeholder="e.g. claude-opus-4-5"
-              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={{ flex: 1 }}
             />
             <Button
               variant="secondary"
@@ -104,15 +109,15 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
             >
               {testStatus === "testing" ? "Testing..." : "Test"}
             </Button>
-          </div>
-          <p className="text-xs text-text-muted mt-1">
-            Sent to provider as: <code className="font-mono bg-sidebar px-1 rounded">{stripAlias(modelId.trim()) || "model-id"}</code>
-          </p>
-        </div>
+          </Box>
+          <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
+            Sent to provider as: <Box component="code" sx={{ fontFamily: "monospace", bgcolor: "var(--color-sidebar)", px: 0.5, borderRadius: "4px" }}>{stripAlias(modelId.trim()) || "model-id"}</Box>
+          </Typography>
+        </Box>
 
-        <div>
-          <label className="text-sm font-medium mb-1.5 block">Capabilities</label>
-          <div className="flex flex-wrap gap-4">
+        <Box>
+          <Typography component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 0.75 }}>Capabilities</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
             {Object.entries(CAPACITY_META).map(([key, meta]) => (
               <Toggle
                 key={key}
@@ -123,14 +128,14 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
                 size="sm"
               />
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* STT is a model TYPE, not a chat capability: the save flow turns this
             flag into type "stt" (the API honours a transport only on stt
             records). The select pins the realtime dispatch marker persisted
             with the model; the whitelist is the shared STT_TRANSPORT_META. */}
-        <div>
+        <Box>
           <Toggle
             checked={!!caps.stt}
             onChange={(v) => { setCaps((prev) => ({ ...prev, stt: v })); if (!v) setTransport(""); }}
@@ -139,7 +144,7 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
             size="sm"
           />
           {caps.stt && (
-            <div className="mt-3">
+            <Box sx={{ mt: 1.5 }}>
               <Select
                 label="Transport"
                 value={transport}
@@ -148,25 +153,25 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
                 options={STT_TRANSPORTS.map((t) => ({ value: t, label: STT_TRANSPORT_META[t].label }))}
                 hint="Realtime transport marker for the STT dispatcher. Empty keeps the provider's REST format."
               />
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
 
         {/* Test result */}
         {testStatus === "ok" && (
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <span className="material-symbols-outlined text-base">check_circle</span>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 14, color: "success.main" }}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 16 }}>check_circle</Icon>
             Model is reachable
-          </div>
+          </Box>
         )}
         {testStatus === "error" && (
-          <div className="flex items-start gap-2 text-sm text-red-500">
-            <span className="material-symbols-outlined text-base shrink-0">cancel</span>
-            <span>{testError || "Model not reachable"}</span>
-          </div>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, fontSize: 14, color: "error.main" }}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ flexShrink: 0, fontSize: 16 }}>cancel</Icon>
+            <Box component="span">{testError || "Model not reachable"}</Box>
+          </Box>
         )}
 
-        <div className="flex gap-2 pt-1">
+        <Box sx={{ display: "flex", gap: 1, pt: 0.5 }}>
           <Button onClick={onClose} variant="ghost" fullWidth size="sm">Cancel</Button>
           <Button
             onClick={handleSave}
@@ -176,9 +181,8 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
           >
             {saving ? "Adding..." : "Add Model"}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }
-

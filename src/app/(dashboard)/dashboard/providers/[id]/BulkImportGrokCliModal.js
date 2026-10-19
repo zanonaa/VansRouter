@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
 import { Modal, Button } from "@/shared/components";
 import { translate } from "@/i18n/runtime";
 
@@ -179,17 +182,18 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
 
   return (
     <Modal isOpen={isOpen} title={translate("Bulk Add Grok CLI Accounts")} onClose={handleClose}>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs text-text-muted">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
             {translate("Upload multiple .json files or paste JSON array / object.")}
-          </p>
-          <input
+          </Typography>
+          <Box
+            component="input"
             ref={fileInputRef}
             type="file"
             accept=".json,application/json"
             multiple
-            className="hidden"
+            sx={{ display: "none" }}
             onChange={handleFileInputChange}
           />
           <Button
@@ -202,20 +206,37 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
           >
             {translate("Upload JSON Files")}
           </Button>
-        </div>
+        </Box>
 
-        <div
+        <Box
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`relative rounded border transition-colors ${
-            isDragging
-              ? "border-primary bg-primary/10 ring-2 ring-primary/30"
-              : "border-accent/30 bg-sidebar"
-          }`}
+          sx={{
+            position: "relative",
+            borderRadius: "4px",
+            border: 1,
+            borderColor: isDragging ? "primary.main" : "rgba(229,106,74,0.3)",
+            bgcolor: isDragging ? "rgba(229,106,74,0.1)" : "var(--color-sidebar)",
+            transition: "border-color 150ms ease, background-color 150ms ease",
+            boxShadow: isDragging ? "0 0 0 2px rgba(229,106,74,0.3)" : "none",
+          }}
         >
-          <textarea
-            className="w-full rounded bg-transparent p-2.5 text-sm font-mono resize-y min-h-[240px] focus:outline-none focus:ring-1 focus:ring-primary"
+          <Box
+            component="textarea"
+            sx={{
+              width: "100%",
+              borderRadius: "4px",
+              bgcolor: "transparent",
+              p: 1.25,
+              fontSize: 14,
+              fontFamily: "monospace",
+              resize: "vertical",
+              minHeight: 240,
+              border: 0,
+              color: "inherit",
+              "&:focus": { outline: "none", boxShadow: "0 0 0 1px var(--color-primary)" },
+            }}
             placeholder={PLACEHOLDER}
             value={jsonText}
             onChange={(e) => {
@@ -226,47 +247,47 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
           />
 
           {isDragging && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-sidebar/90 rounded pointer-events-none backdrop-blur-xs">
-              <span className="material-symbols-outlined text-3xl text-primary mb-1">upload_file</span>
-              <span className="text-sm font-medium text-primary">
+            <Box sx={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.9)" : "rgba(244,241,236,0.9)"), borderRadius: "4px", pointerEvents: "none", backdropFilter: "blur(4px)" }}>
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 30, color: "primary.main", mb: 0.5 }}>upload_file</Icon>
+              <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "primary.main" }}>
                 {translate("Drop .json files here")}
-              </span>
-            </div>
+              </Box>
+            </Box>
           )}
-        </div>
+        </Box>
 
         {fileCountInfo && (
-          <div className="flex items-center gap-1.5 text-xs text-green-400 font-medium bg-green-500/10 border border-green-500/20 px-2.5 py-1.5 rounded">
-            <span className="material-symbols-outlined text-sm">check_circle</span>
-            <span>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 12, color: "#4ade80", fontWeight: 500, bgcolor: "rgba(34,197,94,0.1)", border: 1, borderColor: "rgba(34,197,94,0.2)", px: 1.25, py: 0.75, borderRadius: "4px" }}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>check_circle</Icon>
+            <Box component="span">
               {translate("Loaded")} {fileCountInfo.accountsCount} {translate("account(s) from")}{" "}
               {fileCountInfo.filesCount} {translate("file(s)")}
-            </span>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {parseError && (
-          <p className="text-xs text-red-500 break-words">{parseError}</p>
+          <Typography sx={{ fontSize: 12, color: "error.main", wordBreak: "break-word" }}>{parseError}</Typography>
         )}
 
         {result && result.failed > 0 && (
-          <div className="flex flex-col gap-2">
-            <div className="text-sm font-medium text-yellow-400">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box sx={{ fontSize: 14, fontWeight: 500, color: "#facc15" }}>
               ✗ {result.failed} {translate("failed")}
-            </div>
+            </Box>
             {failedItems.length > 0 && (
-              <ul className="rounded border border-accent/20 bg-sidebar/50 p-2 text-xs font-mono max-h-40 overflow-y-auto">
+              <Box component="ul" sx={{ borderRadius: "4px", border: 1, borderColor: "rgba(229,106,74,0.2)", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)"), p: 1, fontSize: 12, fontFamily: "monospace", maxHeight: 160, overflowY: "auto", m: 0, listStyle: "none" }}>
                 {failedItems.map((item) => (
-                  <li key={item.index} className="text-red-400">
+                  <Box component="li" key={item.index} sx={{ color: "#f87171" }}>
                     [{item.index}] {item.error}
-                  </li>
+                  </Box>
                 ))}
-              </ul>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             onClick={handleSubmit}
             fullWidth
@@ -277,8 +298,8 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
           <Button onClick={handleClose} variant="ghost" fullWidth disabled={submitting}>
             {translate("Close")}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }

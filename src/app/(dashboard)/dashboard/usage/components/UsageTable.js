@@ -1,6 +1,15 @@
 "use client";
 
 import { useState, useCallback, useMemo, Fragment, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import Icon from "@mui/material/Icon";
 import Card from "@/shared/components/Card";
 import Badge from "@/shared/components/Badge";
 
@@ -18,9 +27,12 @@ function fmtTime(iso) {
 }
 
 function SortIcon({ field, currentSort, currentOrder }) {
-  if (currentSort !== field) return <span className="ml-1 opacity-20">↕</span>;
-  return <span className="ml-1">{currentOrder === "asc" ? "↑" : "↓"}</span>;
+  if (currentSort !== field) return <Box component="span" sx={{ ml: 0.5, opacity: 0.2 }}>↕</Box>;
+  return <Box component="span" sx={{ ml: 0.5 }}>{currentOrder === "asc" ? "↑" : "↓"}</Box>;
 }
+
+const rightCellSx = { px: 3, py: 1.5, textAlign: "right", color: "text.secondary" };
+const totalCellSx = { px: 3, py: 1.5, textAlign: "right", fontWeight: 500 };
 
 /**
  * Render 3 token or cost cells based on viewMode
@@ -29,32 +41,47 @@ function ValueCells({ item, viewMode, isSummary = false }) {
   if (viewMode === "tokens") {
     return (
       <>
-        <td className="px-6 py-3 text-right text-text-muted">
+        <TableCell sx={rightCellSx}>
           {isSummary && item.promptTokens === undefined ? "—" : fmt(item.promptTokens)}
-        </td>
-        <td className="px-6 py-3 text-right text-text-muted">
+        </TableCell>
+        <TableCell sx={rightCellSx}>
           {isSummary && item.completionTokens === undefined ? "—" : fmt(item.completionTokens)}
-        </td>
-        <td className="px-6 py-3 text-right font-medium">
+        </TableCell>
+        <TableCell sx={totalCellSx}>
           {fmt(item.totalTokens)}
-        </td>
+        </TableCell>
       </>
     );
   }
   return (
     <>
-      <td className="px-6 py-3 text-right text-text-muted">
+      <TableCell sx={rightCellSx}>
         {isSummary && item.inputCost === undefined ? "—" : fmtCost(item.inputCost)}
-      </td>
-      <td className="px-6 py-3 text-right text-text-muted">
+      </TableCell>
+      <TableCell sx={rightCellSx}>
         {isSummary && item.outputCost === undefined ? "—" : fmtCost(item.outputCost)}
-      </td>
-      <td className="px-6 py-3 text-right font-medium text-warning">
+      </TableCell>
+      <TableCell sx={{ ...totalCellSx, color: "warning.main" }}>
         {fmtCost(item.totalCost || item.cost)}
-      </td>
+      </TableCell>
     </>
   );
 }
+
+const headCellSx = {
+  px: 3,
+  py: 1.5,
+  fontSize: 12,
+  textTransform: "uppercase",
+  color: "text.secondary",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+  "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.5)" : "rgba(244,244,245,0.5)") },
+};
+
+const rowHoverSx = {
+  "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.5)" : "rgba(244,244,245,0.5)") },
+};
 
 /**
  * Reusable sortable usage table with expandable group rows.
@@ -131,79 +158,91 @@ export default function UsageTable({
   const totalColSpan = columns.length + valueColumns.length;
 
   return (
-    <Card className="overflow-hidden">
-      <div className="p-4 border-b border-border bg-bg-subtle/50">
-        <h3 className="font-semibold">{title}</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-bg-subtle/30 text-text-muted uppercase text-xs">
-            <tr>
+    <Card sx={{ overflow: "hidden" }}>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.5)" : "rgba(244,244,245,0.5)") }}>
+        <Typography sx={{ fontWeight: 600 }}>{title}</Typography>
+      </Box>
+      <TableContainer sx={{ overflowX: "auto" }}>
+        <Table sx={{ width: "100%", fontSize: 14, textAlign: "left" }}>
+          <TableHead sx={{ bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.3)" : "rgba(244,244,245,0.3)") }}>
+            <TableRow>
               {columns.map((col) => (
-                <th
+                <TableCell
                   key={col.field}
-                  className={`px-6 py-3 cursor-pointer hover:bg-bg-subtle/50 ${col.align === "right" ? "text-right" : ""}`}
+                  sx={{ ...headCellSx, textAlign: col.align === "right" ? "right" : "left" }}
                   onClick={() => onToggleSort(tableType, col.field)}
                 >
                   {col.label}{" "}
                   <SortIcon field={col.field} currentSort={sortBy} currentOrder={sortOrder} />
-                </th>
+                </TableCell>
               ))}
               {valueColumns.map((col) => (
-                <th
+                <TableCell
                   key={col.field}
-                  className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                  sx={{ ...headCellSx, textAlign: "right" }}
                   onClick={() => onToggleSort(tableType, col.field)}
                 >
                   {col.label}{" "}
                   <SortIcon field={col.field} currentSort={sortBy} currentOrder={sortOrder} />
-                </th>
+                </TableCell>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {groupedData.map((group) => (
               <Fragment key={group.groupKey}>
                 {/* Group summary row */}
-                <tr
-                  className="group-summary cursor-pointer hover:bg-bg-subtle/50 transition-colors"
+                <TableRow
+                  sx={{ cursor: "pointer", transition: "background-color 150ms ease", ...rowHoverSx }}
                   onClick={() => toggleGroup(group.groupKey)}
                 >
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className={`material-symbols-outlined text-[18px] text-text-muted transition-transform ${expanded.has(group.groupKey) ? "rotate-90" : ""}`}>
+                  <TableCell sx={{ px: 3, py: 1.5 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Icon
+                        className="material-symbols-outlined"
+                        baseClassName=""
+                        sx={{
+                          fontSize: 18,
+                          color: "text.secondary",
+                          transition: "transform 150ms ease",
+                          transform: expanded.has(group.groupKey) ? "rotate(90deg)" : "none",
+                        }}
+                      >
                         chevron_right
-                      </span>
-                      <span className={`font-medium transition-colors ${group.summary.pending > 0 ? "text-primary" : ""}`}>
+                      </Icon>
+                      <Box
+                        component="span"
+                        sx={{ fontWeight: 500, transition: "color 150ms ease", color: group.summary.pending > 0 ? "primary.main" : "inherit" }}
+                      >
                         {group.groupKey}
-                      </span>
-                    </div>
-                  </td>
+                      </Box>
+                    </Box>
+                  </TableCell>
                   {summaryCells(group)}
                   <ValueCells item={group.summary} viewMode={viewMode} isSummary />
-                </tr>
+                </TableRow>
                 {/* Detail rows */}
                 {expanded.has(group.groupKey) && group.items.map((item) => (
-                  <tr
+                  <TableRow
                     key={`detail-${item.key}`}
-                    className="group-detail hover:bg-bg-subtle/20 transition-colors"
+                    sx={{ transition: "background-color 150ms ease", "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.2)" : "rgba(244,244,245,0.2)") } }}
                   >
                     {detailCells(item)}
                     <ValueCells item={item} viewMode={viewMode} />
-                  </tr>
+                  </TableRow>
                 ))}
               </Fragment>
             ))}
             {groupedData.length === 0 && (
-              <tr>
-                <td colSpan={totalColSpan} className="px-6 py-8 text-center text-text-muted">
+              <TableRow>
+                <TableCell colSpan={totalColSpan} sx={{ px: 3, py: 4, textAlign: "center", color: "text.secondary" }}>
                   {emptyMessage}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Card>
   );
 }

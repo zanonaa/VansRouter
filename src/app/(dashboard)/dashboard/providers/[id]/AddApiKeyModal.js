@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Button, Badge, Input, Modal, Select } from "@/shared/components";
 import { AI_PROVIDERS } from "@/shared/constants/providers";
 import { planBulkAdd } from "@/shared/utils/bulkAdd";
@@ -163,41 +165,54 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
 
   return (
     <Modal isOpen={isOpen} title={`Add ${providerName || provider} ${credentialLabel}`} onClose={onClose}>
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Mode switcher */}
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button size="sm" variant={mode === "single" ? "primary" : "ghost"} onClick={() => { setMode("single"); setBulkResult(null); }}>Single</Button>
           <Button size="sm" variant={mode === "bulk" ? "primary" : "ghost"} onClick={() => { setMode("bulk"); setBulkResult(null); }}>Bulk Add</Button>
-        </div>
+        </Box>
 
         {mode === "bulk" && (
-          <div className="flex flex-col gap-3">
-            <p className="text-xs text-text-muted">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               {isCloudflareAi
-                ? <>One key per line. Format: <code>name|apiKey|accountId</code> or just <code>apiKey</code> (auto-named by index).</>
+                ? <>One key per line. Format: <Box component="code">name|apiKey|accountId</Box> or just <Box component="code">apiKey</Box> (auto-named by index).</>
                 : provider === "exa"
-                  ? <>One Exa account per line: <code>name|apiKey</code> or <code>apiKey</code>. Keys are stored without a billable probe; runtime rotates on auth, quota, and rate-limit errors.</>
-                  : <>One key per line. Format: <code>name|apiKey</code> or just <code>apiKey</code> (auto-named by index).</>
+                  ? <>One Exa account per line: <Box component="code">name|apiKey</Box> or <Box component="code">apiKey</Box>. Keys are stored without a billable probe; runtime rotates on auth, quota, and rate-limit errors.</>
+                  : <>One key per line. Format: <Box component="code">name|apiKey</Box> or just <Box component="code">apiKey</Box> (auto-named by index).</>
               }
-            </p>
-            <textarea
-              className="w-full rounded border border-accent/30 bg-sidebar p-2 text-sm font-mono resize-y min-h-[140px] focus:outline-none focus:ring-1 focus:ring-primary"
+            </Typography>
+            <Box
+              component="textarea"
+              sx={{
+                width: "100%",
+                borderRadius: "4px",
+                border: 1,
+                borderColor: "rgba(229,106,74,0.3)",
+                bgcolor: "var(--color-sidebar)",
+                p: 1,
+                fontSize: 14,
+                fontFamily: "monospace",
+                resize: "vertical",
+                minHeight: 140,
+                "&:focus": { outline: "none", boxShadow: "0 0 0 1px var(--color-primary)" },
+              }}
               placeholder={bulkPlaceholder}
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
             />
             {bulkResult && (
-              <div className={`text-sm font-medium ${bulkResult.failed > 0 ? "text-yellow-400" : "text-green-400"}`}>
+              <Box sx={{ fontSize: 14, fontWeight: 500, color: bulkResult.failed > 0 ? "#facc15" : "#4ade80" }}>
                 ✓ {bulkResult.success} added{bulkResult.failed > 0 ? `, ✗ ${bulkResult.failed} failed` : ""}
-              </div>
+              </Box>
             )}
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleBulkSubmit} fullWidth disabled={saving || !bulkText.trim()}>
                 {saving ? "Adding..." : "Add All Keys"}
               </Button>
               <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {mode === "single" && (<>
@@ -208,55 +223,57 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
           placeholder={isOllamaLocal ? "Ollama Local" : "Production Key"}
         />
         {isOllamaLocal && (
-          <div className="flex gap-2">
-            <Input
-              label="Ollama Host URL"
-              value={formData.ollamaHostUrl}
-              onChange={(e) => setFormData({ ...formData, ollamaHostUrl: e.target.value })}
-              placeholder="http://localhost:11434"
-              className="flex-1"
-            />
-            <div className="pt-6">
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Input
+                label="Ollama Host URL"
+                value={formData.ollamaHostUrl}
+                onChange={(e) => setFormData({ ...formData, ollamaHostUrl: e.target.value })}
+                placeholder="http://localhost:11434"
+              />
+            </Box>
+            <Box sx={{ pt: 3 }}>
               <Button onClick={handleValidate} disabled={validating || saving} variant="secondary">
                 {validating ? "Checking..." : "Check"}
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
         {!isOllamaLocal && (
-          <div className="flex gap-2">
-            <Input
-              label={credentialLabel}
-              type={isCookie ? "text" : "password"}
-              value={formData.apiKey}
-              onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-              placeholder={credentialPlaceholder}
-              className="flex-1"
-            />
-            <div className="pt-6">
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Input
+                label={credentialLabel}
+                type={isCookie ? "text" : "password"}
+                value={formData.apiKey}
+                onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                placeholder={credentialPlaceholder}
+              />
+            </Box>
+            <Box sx={{ pt: 3 }}>
               <Button onClick={handleValidate} disabled={!formData.apiKey || validating || saving} variant="secondary">
                 {validating ? "Checking..." : "Check"}
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
         {isXaiApiKey && (
-          <p className="text-xs text-text-muted">
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
             Use a direct xAI API key from console.x.ai. This is separate from Grok Build OAuth.
-          </p>
+          </Typography>
         )}
         {isCookie && authHint && (
-          <p className="text-xs text-text-muted">
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
             {authHint}
             {website && (
               <>
                 {" "}
-                <a href={website} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                <Box component="a" href={website} target="_blank" rel="noopener noreferrer" sx={{ color: "primary.main", textDecoration: "underline" }}>
                   Open {website.replace(/^https?:\/\//, "")}
-                </a>
+                </Box>
               </>
             )}
-          </p>
+          </Typography>
         )}
         {providerRegions && (
           <Select
@@ -268,9 +285,9 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
         )}
 
         {isOllamaLocal && (
-          <p className="text-xs text-text-muted">
-            Leave blank to use <code>http://localhost:11434</code>. For remote Ollama, enter the full host URL (e.g. <code>http://192.168.1.10:11434</code>).
-          </p>
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+            Leave blank to use <Box component="code">http://localhost:11434</Box>. For remote Ollama, enter the full host URL (e.g. <Box component="code">http://192.168.1.10:11434</Box>).
+          </Typography>
         )}
         {validationResult && (
           <Badge variant={validationResult === "success" ? "success" : "error"}>
@@ -278,27 +295,27 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
           </Badge>
         )}
         {error && (
-          <p className="text-xs text-red-500 break-words">{error}</p>
+          <Typography sx={{ fontSize: 12, color: "error.main", wordBreak: "break-word" }}>{error}</Typography>
         )}
 
         {isCloudflareAi && (
-          <div className="bg-sidebar/50 p-4 rounded-lg border border-accent/20">
-            <h3 className="font-semibold mb-3 text-sm">Cloudflare Workers AI</h3>
+          <Box sx={{ bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)"), p: 2, borderRadius: "8px", border: 1, borderColor: "rgba(229,106,74,0.2)" }}>
+            <Typography component="h3" sx={{ fontWeight: 600, mb: 1.5, fontSize: 14 }}>Cloudflare Workers AI</Typography>
             <Input
               label="Account ID"
               value={cloudflareData.accountId}
               onChange={(e) => setCloudflareData({ ...cloudflareData, accountId: e.target.value })}
               placeholder="abc123def456..."
             />
-            <p className="text-xs text-text-muted mt-2">
-              Find your Account ID in the right sidebar of <a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">dash.cloudflare.com</a>
-            </p>
-          </div>
+            <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 1 }}>
+              Find your Account ID in the right sidebar of <Box component="a" href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" sx={{ color: "primary.main", textDecoration: "underline" }}>dash.cloudflare.com</Box>
+            </Typography>
+          </Box>
         )}
         {isAzure && (
-          <div className="bg-sidebar/50 p-4 rounded-lg border border-accent/20">
-            <h3 className="font-semibold mb-3 text-sm">Azure OpenAI Configuration</h3>
-            <div className="flex flex-col gap-3">
+          <Box sx={{ bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)"), p: 2, borderRadius: "8px", border: 1, borderColor: "rgba(229,106,74,0.2)" }}>
+            <Typography component="h3" sx={{ fontWeight: 600, mb: 1.5, fontSize: 14 }}>Azure OpenAI Configuration</Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               <Input
                 label="Azure Endpoint"
                 value={azureData.azureEndpoint}
@@ -323,8 +340,8 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
                 onChange={(e) => setAzureData({ ...azureData, organization: e.target.value })}
                 placeholder="Organization ID"
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         <Input
@@ -346,25 +363,25 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
         />
 
         {(proxyPools || []).length === 0 && (
-          <p className="text-xs text-text-muted">
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
             No active proxy pools available. Create one in Proxy Pools page first.
-          </p>
+          </Typography>
         )}
 
-        <p className="text-xs text-text-muted">
+        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
           Legacy manual proxy fields are still accepted by API for backward compatibility.
-        </p>
+        </Typography>
 
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={handleSubmit} fullWidth disabled={saving || (!isOllamaLocal && (!formData.name || !formData.apiKey)) || (isAzure && (!azureData.azureEndpoint || !azureData.deployment || !azureData.organization)) || (isCloudflareAi && !cloudflareData.accountId)}>
             {saving ? "Saving..." : "Save"}
           </Button>
           <Button onClick={onClose} variant="ghost" fullWidth>
             Cancel
           </Button>
-        </div>
+        </Box>
         </>)}
-      </div>
+      </Box>
     </Modal>
   );
 }

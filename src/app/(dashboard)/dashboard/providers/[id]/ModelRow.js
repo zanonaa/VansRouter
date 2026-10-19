@@ -1,11 +1,28 @@
+import Box from "@mui/material/Box";
+import Icon from "@mui/material/Icon";
+import Checkbox from "@mui/material/Checkbox";
 import { CapacityBadges } from "@/shared/components";
+
+const tooltipSx = {
+  pointerEvents: "none",
+  position: "absolute",
+  mt: 0.5,
+  top: 20,
+  left: "50%",
+  transform: "translateX(-50%)",
+  fontSize: 10,
+  color: "text.secondary",
+  whiteSpace: "nowrap",
+  opacity: 0,
+  transition: "opacity 150ms ease",
+};
 
 export default function ModelRow({ model, fullModel, alias, copied, onCopy, testStatus, isCustom, isFree, onDeleteAlias, onTest, isTesting, onDisable, caps, selected, onToggleSelect }) {
   const borderColor = testStatus === "ok"
-    ? "border-green-500/40"
+    ? "rgba(34,197,94,0.4)"
     : testStatus === "error"
-    ? "border-red-500/40"
-    : "border-border";
+    ? "rgba(239,68,68,0.4)"
+    : "divider";
 
   const iconColor = testStatus === "ok"
     ? "#22c55e"
@@ -14,78 +31,140 @@ export default function ModelRow({ model, fullModel, alias, copied, onCopy, test
     : undefined;
 
   return (
-    <div className={`group min-w-0 max-w-full rounded-lg border px-3 py-2 ${borderColor} hover:bg-sidebar/50 ${selected ? "ring-1 ring-primary/40 bg-primary/[0.03]" : ""}`}>
-      <div className="flex min-w-0 items-start gap-2 sm:items-center">
+    <Box
+      sx={{
+        minWidth: 0,
+        maxWidth: "100%",
+        borderRadius: "8px",
+        border: 1,
+        borderColor,
+        px: 1.5,
+        py: 1,
+        transition: "background-color 150ms ease",
+        "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(30,30,30,0.5)" : "rgba(244,241,236,0.5)") },
+        "&:hover .mr-hover": { opacity: 1 },
+        ...(selected ? { borderColor: "rgba(229,106,74,0.4)", bgcolor: "rgba(229,106,74,0.03)" } : {}),
+      }}
+    >
+      <Box sx={{ display: "flex", minWidth: 0, alignItems: { xs: "flex-start", sm: "center" }, gap: 1 }}>
         {onToggleSelect && (
-          <input
-            type="checkbox"
+          <Checkbox
             checked={!!selected}
             onChange={onToggleSelect}
-            className="h-3.5 w-3.5 shrink-0 rounded border-gray-300 text-primary focus:ring-primary"
-            aria-label={`Select ${model.id}`}
+            size="small"
+            inputProps={{ "aria-label": `Select ${model.id}` }}
+            sx={{ p: 0, flexShrink: 0 }}
           />
         )}
-        <span
-          className="material-symbols-outlined shrink-0 text-base"
-          style={iconColor ? { color: iconColor } : undefined}
+        <Icon
+          className="material-symbols-outlined"
+          baseClassName=""
+          sx={{ fontSize: 16, flexShrink: 0, color: iconColor }}
         >
           {testStatus === "ok" ? "check_circle" : testStatus === "error" ? "cancel" : "smart_toy"}
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <code className="max-w-[72vw] truncate rounded bg-sidebar px-1.5 py-0.5 font-mono text-xs text-text-muted sm:max-w-[360px]">{fullModel}</code>
-          <span className="flex min-w-0 items-center text-[9px] gap-1 pl-1">
-            {model.name && <span className="truncate text-[9px] italic text-text-muted/70">{model.name}</span>}
+        </Icon>
+        <Box sx={{ display: "flex", minWidth: 0, flex: 1, flexDirection: "column", gap: 0.5 }}>
+          <Box component="code" sx={{ maxWidth: { xs: "72vw", sm: 360 }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRadius: "4px", bgcolor: "var(--color-sidebar)", px: 0.75, py: 0.25, fontFamily: "monospace", fontSize: 12, color: "text.secondary" }}>{fullModel}</Box>
+          <Box component="span" sx={{ display: "flex", minWidth: 0, alignItems: "center", fontSize: 9, gap: 0.5, pl: 0.5 }}>
+            {model.name && <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 9, fontStyle: "italic", color: (t) => (t.palette.mode === "dark" ? "rgba(156,163,175,0.7)" : "rgba(107,114,128,0.7)") }}>{model.name}</Box>}
             <CapacityBadges caps={caps} colorOverride="text-text-muted/70" size={12} />
-          </span>
-        </div>
+          </Box>
+        </Box>
         {onTest && (
-          <div className="relative shrink-0 group/btn">
-            <button
+          <Box sx={{ position: "relative", flexShrink: 0, "&:hover .mr-tooltip": { opacity: 1 } }}>
+            <Box
+              component="button"
               onClick={onTest}
               disabled={isTesting}
-              className={`rounded p-0.5 text-text-muted transition-opacity hover:bg-sidebar hover:text-primary ${isTesting ? "opacity-100" : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100"}`}
+              className={isTesting ? undefined : "mr-hover"}
+              sx={{
+                borderRadius: "4px",
+                p: 0.25,
+                border: 0,
+                bgcolor: "transparent",
+                color: "text.secondary",
+                cursor: "pointer",
+                opacity: isTesting ? 1 : { xs: 1, sm: 0 },
+                transition: "opacity 150ms ease, background-color 150ms ease, color 150ms ease",
+                "&:hover": { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+              }}
             >
-              <span className="material-symbols-outlined text-sm" style={isTesting ? { animation: "spin 1s linear infinite" } : undefined}>
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14, animation: isTesting ? "spin 1s linear infinite" : undefined }}>
                 {isTesting ? "progress_activity" : "science"}
-              </span>
-            </button>
-            <span className="pointer-events-none absolute mt-1 top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-muted whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity">
+              </Icon>
+            </Box>
+            <Box component="span" className="mr-tooltip" sx={tooltipSx}>
               {isTesting ? "Testing..." : "Test"}
-            </span>
-          </div>
+            </Box>
+          </Box>
         )}
-        <div className="relative shrink-0 group/btn">
-          <button
+        <Box sx={{ position: "relative", flexShrink: 0, "&:hover .mr-tooltip": { opacity: 1 } }}>
+          <Box
+            component="button"
             onClick={() => onCopy(fullModel, `model-${model.id}`)}
-            className="rounded p-0.5 text-text-muted hover:bg-sidebar hover:text-primary"
+            sx={{
+              borderRadius: "4px",
+              p: 0.25,
+              border: 0,
+              bgcolor: "transparent",
+              color: "text.secondary",
+              cursor: "pointer",
+              transition: "background-color 150ms ease, color 150ms ease",
+              "&:hover": { bgcolor: "var(--color-sidebar)", color: "primary.main" },
+            }}
           >
-            <span className="material-symbols-outlined text-sm">
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>
               {copied === `model-${model.id}` ? "check" : "content_copy"}
-            </span>
-          </button>
-          <span className="pointer-events-none absolute mt-1 top-5 left-1/2 -translate-x-1/2 text-[10px] text-text-muted whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity">
+            </Icon>
+          </Box>
+          <Box component="span" className="mr-tooltip" sx={tooltipSx}>
             {copied === `model-${model.id}` ? "Copied!" : "Copy"}
-          </span>
-        </div>
+          </Box>
+        </Box>
         {isCustom ? (
-          <button
+          <Box
+            component="button"
             onClick={onDeleteAlias}
-            className="ml-auto rounded p-0.5 text-text-muted opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100"
+            className="mr-hover"
+            sx={{
+              ml: "auto",
+              borderRadius: "4px",
+              p: 0.25,
+              border: 0,
+              bgcolor: "transparent",
+              color: "text.secondary",
+              cursor: "pointer",
+              opacity: { xs: 1, sm: 0 },
+              transition: "opacity 150ms ease, background-color 150ms ease, color 150ms ease",
+              "&:hover": { bgcolor: "rgba(239,68,68,0.1)", color: "#ef4444" },
+            }}
             title="Remove custom model"
           >
-            <span className="material-symbols-outlined text-sm">close</span>
-          </button>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>close</Icon>
+          </Box>
         ) : onDisable ? (
-          <button
+          <Box
+            component="button"
             onClick={onDisable}
-            className="ml-auto rounded p-0.5 text-text-muted opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100"
+            className="mr-hover"
+            sx={{
+              ml: "auto",
+              borderRadius: "4px",
+              p: 0.25,
+              border: 0,
+              bgcolor: "transparent",
+              color: "text.secondary",
+              cursor: "pointer",
+              opacity: { xs: 1, sm: 0 },
+              transition: "opacity 150ms ease, background-color 150ms ease, color 150ms ease",
+              "&:hover": { bgcolor: "rgba(239,68,68,0.1)", color: "#ef4444" },
+            }}
             title="Disable this model"
           >
-            <span className="material-symbols-outlined text-sm">close</span>
-          </button>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>close</Icon>
+          </Box>
         ) : null}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
-

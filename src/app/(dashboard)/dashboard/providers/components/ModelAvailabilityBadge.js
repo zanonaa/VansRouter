@@ -8,6 +8,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
 import { Button } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -16,6 +19,18 @@ const STATUS_CONFIG = {
   cooldown: { icon: "schedule", color: "#f59e0b", label: "Cooldown" },
   unavailable: { icon: "error", color: "#ef4444", label: "Unavailable" },
   unknown: { icon: "help", color: "#6b7280", label: "Unknown" },
+};
+
+const iconButtonSx = {
+  p: 0.5,
+  border: 0,
+  bgcolor: "transparent",
+  borderRadius: "8px",
+  color: "text.secondary",
+  cursor: "pointer",
+  display: "inline-flex",
+  transition: "background-color 150ms ease, color 150ms ease",
+  "&:hover": { bgcolor: "action.hover", color: "text.primary" },
 };
 
 export default function ModelAvailabilityBadge() {
@@ -93,94 +108,117 @@ export default function ModelAvailabilityBadge() {
   });
 
   return (
-    <div className="relative" ref={ref}>
-      {/* <button
-        onClick={() => setExpanded(!expanded)}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-          isHealthy
-            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/15"
-            : "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/15"
-        }`}
-      >
-        <span className="material-symbols-outlined text-[14px]">
-          {isHealthy ? "verified" : "warning"}
-        </span>
-        {isHealthy
-          ? "All models operational"
-          : `${unavailableCount} model${unavailableCount !== 1 ? "s" : ""} with issues`}
-      </button> */}
-
+    <Box sx={{ position: "relative" }} ref={ref}>
       {expanded && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-surface border border-border rounded-xl shadow-2xl z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg">
-            <div className="flex items-center gap-2">
-              <span
-                className="material-symbols-outlined text-[16px]"
-                style={{ color: isHealthy ? "#22c55e" : "#f59e0b" }}
+        <Box
+          sx={{
+            position: "absolute",
+            top: "100%",
+            right: 0,
+            mt: 1,
+            width: 320,
+            bgcolor: "background.paper",
+            border: 1,
+            borderColor: "divider",
+            borderRadius: "12px",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+            zIndex: 50,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              px: 2,
+              py: 1.5,
+              borderBottom: 1,
+              borderColor: "divider",
+              bgcolor: "background.default",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Icon
+                className="material-symbols-outlined"
+                baseClassName=""
+                sx={{ fontSize: 16, color: isHealthy ? "#22c55e" : "#f59e0b" }}
               >
                 {isHealthy ? "verified" : "warning"}
-              </span>
-              <span className="text-sm font-semibold text-text-main">Model Status</span>
-            </div>
-            <button type="button"
+              </Icon>
+              <Box component="span" sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}>Model Status</Box>
+            </Box>
+            <Box
+              component="button"
+              type="button"
               onClick={fetchStatus}
-              className="p-1 rounded-lg hover:bg-surface text-text-muted hover:text-text-main transition-colors"
+              sx={iconButtonSx}
               title="Refresh"
             >
-              <span className="material-symbols-outlined text-[14px]">refresh</span>
-            </button>
-          </div>
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 14 }}>refresh</Icon>
+            </Box>
+          </Box>
 
-          <div className="px-4 py-3 max-h-60 overflow-y-auto">
+          <Box sx={{ px: 2, py: 1.5, maxHeight: 240, overflowY: "auto" }}>
             {isHealthy ? (
-              <p className="text-sm text-text-muted text-center py-2">
+              <Typography sx={{ fontSize: 14, color: "text.secondary", textAlign: "center", py: 1 }}>
                 All models are responding normally.
-              </p>
+              </Typography>
             ) : (
-              <div className="flex flex-col gap-2.5">
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
                 {Object.entries(byProvider).map(([provider, provModels]) => (
-                  <div key={provider}>
-                    <p className="text-xs font-semibold text-text-main mb-1.5 capitalize">{provider}</p>
-                    <div className="flex flex-col gap-1">
+                  <Box key={provider}>
+                    <Typography sx={{ fontSize: 12, fontWeight: 600, color: "text.primary", mb: 0.75, textTransform: "capitalize" }}>{provider}</Typography>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                       {provModels.map((m) => {
                         const status = STATUS_CONFIG[m.status] || STATUS_CONFIG.unknown;
                         const isClearing = clearing === `${m.provider}:${m.model}`;
                         return (
-                          <div
+                          <Box
                             key={`${m.provider}-${m.model}`}
-                            className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-surface/30"
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              px: 1.25,
+                              py: 0.75,
+                              borderRadius: "8px",
+                              bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(38,38,38,0.3)" : "rgba(255,255,255,0.3)"),
+                            }}
                           >
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span
-                                className="material-symbols-outlined text-[14px] shrink-0"
-                                style={{ color: status.color }}
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0 }}>
+                              <Icon
+                                className="material-symbols-outlined"
+                                baseClassName=""
+                                sx={{ fontSize: 14, flexShrink: 0, color: status.color }}
                               >
                                 {status.icon}
-                              </span>
-                              <span className="font-mono text-xs text-text-main truncate">{m.model}</span>
-                            </div>
+                              </Icon>
+                              <Box component="span" sx={{ fontFamily: "monospace", fontSize: 12, color: "text.primary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.model}</Box>
+                            </Box>
                             {m.status === "cooldown" && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleClearCooldown(m.provider, m.model)}
-                                disabled={isClearing}
-                                className="text-[10px] px-1.5! py-0.5! ml-2"
-                              >
-                                {isClearing ? "..." : "Clear"}
-                              </Button>
+                              <Box sx={{ ml: 1, "& .MuiButton-root": { fontSize: 10, px: 0.75, py: 0.25, minHeight: 0, height: "auto" } }}>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleClearCooldown(m.provider, m.model)}
+                                  disabled={isClearing}
+                                >
+                                  {isClearing ? "..." : "Clear"}
+                                </Button>
+                              </Box>
                             )}
-                          </div>
+                          </Box>
                         );
                       })}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

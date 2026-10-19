@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
 
 export default function CooldownTimer({ until }) {
   const [remaining, setRemaining] = useState("");
@@ -30,9 +31,8 @@ export default function CooldownTimer({ until }) {
   if (!remaining) return null;
 
   return (
-    <span className="text-xs text-orange-500 font-mono">
+    <Box component="span" sx={{ fontSize: 12, color: "#f97316", fontFamily: "monospace" }}>
       ⏱ {remaining}
-    </span>
+    </Box>
   );
 }
-

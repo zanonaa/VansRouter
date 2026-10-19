@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
+import Box from "@mui/material/Box";
+import ButtonBase from "@mui/material/ButtonBase";
 import Card from "@/shared/components/Card";
 import { fmtTokens } from "./format";
 
@@ -64,7 +66,7 @@ const RechartsChart = dynamic(() => import("recharts").then(mod => {
   }
   Chart.displayName = "RechartsChart";
   return { default: Chart };
-}), { ssr: false, loading: () => <div className="h-[220px] w-full rounded-lg border border-border bg-bg-subtle/30" aria-label="Loading chart" /> });
+}), { ssr: false, loading: () => <Box sx={{ height: 220, width: "100%", borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(42,42,42,0.3)" : "rgba(244,244,245,0.3)") }} aria-label="Loading chart" /> });
 
 const fmtCost = (n) => `$${(n || 0).toFixed(4)}`;
 const fmtRequests = (n) => String(n || 0);
@@ -80,6 +82,20 @@ const VIEW_CONFIG = {
   requests: { dataKey: "requests", color: "#14b8a6", gradId: "gradRequests", formatter: fmtRequests, label: "Requests" },
   cost:     { dataKey: "cost",     color: "#f59e0b", gradId: "gradCost",     formatter: fmtCost,     label: "Cost" },
 };
+
+const subtleBg = (t) => (t.palette.mode === "dark" ? "#2a2a2a" : "#f4f4f5");
+
+const viewBtnSx = (active) => ({
+  px: 1.5,
+  py: 0.5,
+  borderRadius: "6px",
+  fontSize: 14,
+  fontWeight: 500,
+  color: active ? "#fff" : "text.secondary",
+  bgcolor: active ? "primary.main" : "transparent",
+  transition: "background-color 150ms ease, color 150ms ease",
+  "&:hover": active ? {} : { color: "text.primary", bgcolor: "action.hover" },
+});
 
 export default function UsageChart({ period = "7d" }) {
   const [data, setData] = useState([]);
@@ -112,28 +128,44 @@ export default function UsageChart({ period = "7d" }) {
   const hasData = data.some((d) => (d[cfg.dataKey] || 0) > 0);
 
   return (
-    <Card className="flex min-w-0 flex-col gap-3 p-3 sm:p-4">
-      <div className="grid w-full grid-cols-3 items-center gap-1 rounded-lg border border-border bg-bg-subtle p-1 sm:w-auto sm:self-start">
+    <Card sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 1.5, p: { xs: 1.5, sm: 2 } }}>
+      <Box
+        sx={{
+          display: "grid",
+          width: { xs: "100%", sm: "auto" },
+          gridTemplateColumns: "repeat(3, 1fr)",
+          alignItems: "center",
+          gap: 0.5,
+          borderRadius: "8px",
+          border: 1,
+          borderColor: "divider",
+          bgcolor: subtleBg,
+          p: 0.5,
+          alignSelf: { sm: "flex-start" },
+        }}
+      >
         {VIEW_MODES.map((m) => (
-          <button type="button"
+          <ButtonBase
             key={m.value}
             onClick={() => setViewMode(m.value)}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${viewMode === m.value ? "bg-primary text-white shadow-sm" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
+            sx={viewBtnSx(viewMode === m.value)}
           >
             {m.label}
-          </button>
+          </ButtonBase>
         ))}
-      </div>
+      </Box>
 
       {loading ? (
-        <div className="h-48 flex items-center justify-center text-text-muted text-sm">Loading...</div>
+        <Box sx={{ height: 192, display: "flex", alignItems: "center", justifyContent: "center", color: "text.secondary", fontSize: 14 }}>
+          Loading...
+        </Box>
       ) : !hasData ? (
-        <div className="h-48 flex items-center justify-center text-text-muted text-sm">No data for this period</div>
+        <Box sx={{ height: 192, display: "flex", alignItems: "center", justifyContent: "center", color: "text.secondary", fontSize: 14 }}>
+          No data for this period
+        </Box>
       ) : (
         <RechartsChart data={data} cfg={VIEW_CONFIG[viewMode]} />
       )}
     </Card>
   );
 }
-
-

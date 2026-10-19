@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import IconButton from "@mui/material/IconButton";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
 import {
   Card,
   CardSkeleton,
@@ -48,7 +55,7 @@ function getStatusDisplay(connected, error, errorCode) {
     );
   }
   if (parts.length === 0) {
-    return <span className="text-text-muted">No connections</span>;
+    return <Box component="span" sx={{ color: "text.secondary" }}>No connections</Box>;
   }
   return parts;
 }
@@ -96,6 +103,58 @@ function getConnectionErrorTag(connection) {
 }
 
 const APIKEY_INITIAL_VISIBLE = 20;
+
+const cardGridSx = {
+  display: "grid",
+  gridTemplateColumns: {
+    xs: "repeat(1, minmax(0,1fr))",
+    sm: "repeat(2, minmax(0,1fr))",
+    lg: "repeat(3, minmax(0,1fr))",
+    xl: "repeat(4, minmax(0,1fr))",
+  },
+  gap: { xs: 1.5, sm: 2 },
+};
+
+const sectionSx = { display: "flex", flexDirection: "column", gap: 2 };
+
+const sectionHeaderSx = {
+  display: "flex",
+  flexDirection: { xs: "column", sm: "row" },
+  alignItems: { sm: "center" },
+  justifyContent: { sm: "space-between" },
+  gap: 1.5,
+};
+
+const sectionTitleSx = {
+  fontSize: { xs: 18, sm: 20 },
+  fontWeight: 600,
+  display: "flex",
+  alignItems: "center",
+  gap: 1,
+  lineHeight: 1.25,
+  m: 0,
+};
+
+const testButtonSx = (active, disabled) => ({
+  display: "flex",
+  width: { xs: "100%", sm: "auto" },
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 0.75,
+  borderRadius: "8px",
+  border: 1,
+  px: 1.5,
+  py: { xs: 1, sm: 0.75 },
+  fontSize: 12,
+  fontWeight: 500,
+  cursor: disabled ? "not-allowed" : "pointer",
+  transition: "background-color 150ms ease, border-color 150ms ease, color 150ms ease",
+  bgcolor: active ? "rgba(229,106,74,0.2)" : "background.default",
+  borderColor: active ? "rgba(229,106,74,0.4)" : "divider",
+  color: active ? "primary.main" : "text.secondary",
+  animation: active ? "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" : "none",
+  "&:hover": active || disabled ? {} : { color: "text.primary", borderColor: "rgba(229,106,74,0.4)" },
+});
 
 export default function ProvidersPage() {
   const [connections, setConnections] = useState([]);
@@ -363,10 +422,10 @@ export default function ProvidersPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-8">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <CardSkeleton />
         <CardSkeleton />
-      </div>
+      </Box>
     );
   }
 
@@ -380,28 +439,27 @@ export default function ProvidersPage() {
     anthropicCompatibleProviders.length > 0;
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 px-1 sm:px-0">
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 3, px: { xs: 0.5, sm: 0 } }}>
       {!hasAnyResult && (
-        <div className="text-center py-8 border border-dashed border-border rounded-xl">
-          <span className="material-symbols-outlined text-[32px] text-text-muted mb-2">
+        <Box sx={{ textAlign: "center", py: 4, border: "1px dashed", borderColor: "divider", borderRadius: "14px" }}>
+          <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 32, color: "text.secondary", mb: 1 }}>
             search_off
-          </span>
-          <p className="text-text-muted text-sm">No providers match your search</p>
-        </div>
+          </Icon>
+          <Typography sx={{ color: "text.secondary", fontSize: 14 }}>No providers match your search</Typography>
+        </Box>
       )}
 
       {/* Custom Providers (OpenAI/Anthropic Compatible) — dynamic */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-tight">
+      <Box sx={sectionSx}>
+        <Box sx={sectionHeaderSx}>
+          <Typography component="h2" sx={sectionTitleSx}>
             Custom Providers (OpenAI/Anthropic Compatible){" "}
-          </h2>
-          <div className="grid grid-cols-1 gap-2 sm:flex sm:w-auto">
+          </Typography>
+          <Box sx={{ display: { xs: "grid", sm: "flex" }, gridTemplateColumns: "1fr", gap: 1, width: { sm: "auto" }, "& .MuiButton-root": { width: { xs: "100%", sm: "auto" } } }}>
             <Button
               size="sm"
               icon="add"
               onClick={() => setShowAddAnthropicCompatibleModal(true)}
-              className="w-full sm:w-auto"
             >
               Add Anthropic Compatible
             </Button>
@@ -410,20 +468,19 @@ export default function ProvidersPage() {
               variant="secondary"
               icon="add"
               onClick={() => setShowAddCompatibleModal(true)}
-              className="w-full sm:w-auto"
             >
               Add OpenAI Compatible
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
         {compatibleProviders.length === 0 &&
         anthropicCompatibleProviders.length === 0 ? (
-          <div className="flex items-center justify-center gap-2 py-2 border border-dashed border-border rounded-xl text-text-muted text-sm">
-            <span className="material-symbols-outlined text-[18px]">extension</span>
-            <span>No custom providers — use buttons above to add OpenAI/Anthropic compatible endpoints</span>
-          </div>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, py: 1, border: "1px dashed", borderColor: "divider", borderRadius: "14px", color: "text.secondary", fontSize: 14 }}>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>extension</Icon>
+            <Box component="span">No custom providers — use buttons above to add OpenAI/Anthropic compatible endpoints</Box>
+          </Box>
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          <Box sx={cardGridSx}>
             {[...compatibleProviders, ...anthropicCompatibleProviders].map(
               (info) => (
                 <ApiKeyProviderCard
@@ -440,40 +497,39 @@ export default function ProvidersPage() {
                 />
               ),
             )}
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {/* OAuth Providers */}
       {oauthEntries.length > 0 && (
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-tight">
+      <Box sx={sectionSx}>
+        <Box sx={sectionHeaderSx}>
+          <Typography component="h2" sx={sectionTitleSx}>
             OAuth Providers
-          </h2>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          </Typography>
+          <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, gap: 1 }}>
             <ModelAvailabilityBadge />
-            <button
+            <Box
+              component="button"
               onClick={() => handleBatchTest("oauth")}
               disabled={!!testingMode}
-              className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:w-auto sm:py-1.5 ${
-                testingMode === "oauth"
-                  ? "bg-primary/20 border-primary/40 text-primary animate-pulse"
-                  : "bg-bg border-border text-text-muted hover:text-text-main hover:border-primary/40"
-              }`}
+              sx={testButtonSx(testingMode === "oauth", !!testingMode)}
               title="Test all OAuth connections"
               aria-label="Test all OAuth connections"
             >
-              <span
-                className={`material-symbols-outlined text-[14px]${testingMode === "oauth" ? " animate-spin" : ""}`}
+              <Icon
+                className="material-symbols-outlined"
+                baseClassName=""
+                sx={{ fontSize: 14, animation: testingMode === "oauth" ? "spin 1s linear infinite" : "none" }}
               >
                 play_arrow
-              </span>
+              </Icon>
               {testingMode === "oauth" ? "Testing..." : "Test All"}
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+            </Box>
+          </Box>
+        </Box>
+        <Box sx={cardGridSx}>
           {oauthEntries.map(([key, info]) => (
             <ProviderCard
               key={key}
@@ -486,37 +542,36 @@ export default function ProvidersPage() {
               onToggle={(active) => handleToggleProvider(key, "oauth", active)}
             />
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
       )}
 
       {/* Free Tier Providers */}
       {(freeEntries.length > 0 || freeTierEntries.length > 0) && (
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-tight">
+      <Box sx={sectionSx}>
+        <Box sx={sectionHeaderSx}>
+          <Typography component="h2" sx={sectionTitleSx}>
             Free Tier Providers
-          </h2>
-          <button
+          </Typography>
+          <Box
+            component="button"
             onClick={() => handleBatchTest("free")}
             disabled={!!testingMode}
-            className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:w-auto sm:py-1.5 ${
-              testingMode === "free"
-                ? "bg-primary/20 border-primary/40 text-primary animate-pulse"
-                : "bg-bg border-border text-text-muted hover:text-text-main hover:border-primary/40"
-            }`}
+            sx={testButtonSx(testingMode === "free", !!testingMode)}
             title="Test all Free connections"
             aria-label="Test all Free provider connections"
           >
-            <span
-              className={`material-symbols-outlined text-[14px]${testingMode === "free" ? " animate-spin" : ""}`}
+            <Icon
+              className="material-symbols-outlined"
+              baseClassName=""
+              sx={{ fontSize: 14, animation: testingMode === "free" ? "spin 1s linear infinite" : "none" }}
             >
               play_arrow
-            </span>
+            </Icon>
             {testingMode === "free" ? "Testing..." : "Test All"}
-          </button>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          </Box>
+        </Box>
+        <Box sx={cardGridSx}>
           {freeEntries.map(([key, info]) => {
             // Kiro accepts both OAuth and api-key connections; count/toggle both
             // so the card total matches the provider detail page (#kiro-apikey).
@@ -552,37 +607,36 @@ export default function ProvidersPage() {
               />
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
       )}
 
       {/* API Key Providers — fixed list */}
       {apikeyEntries.length > 0 && (
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-tight">
+      <Box sx={sectionSx}>
+        <Box sx={sectionHeaderSx}>
+          <Typography component="h2" sx={sectionTitleSx}>
             API Key Providers{" "}
-          </h2>
-          <button
+          </Typography>
+          <Box
+            component="button"
             onClick={() => handleBatchTest("apikey")}
             disabled={!!testingMode}
-            className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors sm:w-auto sm:py-1.5 ${
-              testingMode === "apikey"
-                ? "bg-primary/20 border-primary/40 text-primary animate-pulse"
-                : "bg-bg border-border text-text-muted hover:text-text-main hover:border-primary/40"
-            }`}
+            sx={testButtonSx(testingMode === "apikey", !!testingMode)}
             title="Test all API Key connections"
             aria-label="Test all API Key connections"
           >
-            <span
-              className={`material-symbols-outlined text-[14px]${testingMode === "apikey" ? " animate-spin" : ""}`}
+            <Icon
+              className="material-symbols-outlined"
+              baseClassName=""
+              sx={{ fontSize: 14, animation: testingMode === "apikey" ? "spin 1s linear infinite" : "none" }}
             >
               play_arrow
-            </span>
+            </Icon>
             {testingMode === "apikey" ? "Testing..." : "Test All"}
-          </button>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          </Box>
+        </Box>
+        <Box sx={cardGridSx}>
           {visibleApikeyEntries.map(([key, info]) => (
             <ApiKeyProviderCard
               key={key}
@@ -593,28 +647,29 @@ export default function ProvidersPage() {
               onToggle={(active) => handleToggleProvider(key, "apikey", active)}
             />
           ))}
-        </div>
+        </Box>
         {!isApikeySearching && !showAllApikey && hiddenApikeyCount > 0 && (
-          <button
+          <Box
+            component="button"
             onClick={() => setShowAllApikey(true)}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/40 px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:border-primary hover:bg-primary/5"
+            sx={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center", gap: 0.75, borderRadius: "8px", border: "1px dashed", borderColor: "rgba(229,106,74,0.4)", px: 1.5, py: 1.25, fontSize: 14, fontWeight: 500, color: "primary.main", bgcolor: "transparent", cursor: "pointer", transition: "border-color 150ms ease, background-color 150ms ease", "&:hover": { borderColor: "primary.main", bgcolor: "rgba(229,106,74,0.05)" } }}
           >
-            <span className="material-symbols-outlined text-[16px]">expand_more</span>
+            <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 16 }}>expand_more</Icon>
             Show all {apikeyEntries.length} providers
-          </button>
+          </Box>
         )}
-      </div>
+      </Box>
       )}
 
       {/* Web Cookie Providers — use browser subscription cookie instead of API key */}
       {webCookieEntries.length > 0 && (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 leading-tight">
+      <Box sx={sectionSx}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Typography component="h2" sx={sectionTitleSx}>
             Web Cookie Providers{" "}
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          </Typography>
+        </Box>
+        <Box sx={cardGridSx}>
           {webCookieEntries.map(([key, info]) => (
             <ApiKeyProviderCard
               key={key}
@@ -625,8 +680,8 @@ export default function ProvidersPage() {
               onToggle={(active) => handleToggleProvider(key, "cookie", active)}
             />
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
       )}
 
       <AddCompatibleModal
@@ -650,32 +705,40 @@ export default function ProvidersPage() {
 
       {/* Test Results Modal */}
       {testResults && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center px-3 pt-[6vh] sm:pt-[10vh]"
-          onClick={() => setTestResults(null)}
+        <Dialog
+          open
+          onClose={() => setTestResults(null)}
+          maxWidth="sm"
+          fullWidth
+          slotProps={{
+            paper: {
+              sx: {
+                bgcolor: "background.paper",
+                border: 1,
+                borderColor: "divider",
+                borderRadius: "12px",
+                maxHeight: { xs: "86vh", sm: "80vh" },
+                backgroundImage: "none",
+              },
+            },
+          }}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div
-            className="relative bg-surface border border-border rounded-xl w-full max-w-[600px] max-h-[86vh] sm:max-h-[80vh] overflow-y-auto shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3 border-b border-border bg-surface/95 backdrop-blur-sm rounded-t-xl">
-              <h3 className="font-semibold">Test Results</h3>
-              <button
-                onClick={() => setTestResults(null)}
-                className="p-1 rounded-lg hover:bg-bg text-text-muted hover:text-text-main transition-colors"
-                aria-label="Close test results"
-              >
-                <span className="material-symbols-outlined text-lg">close</span>
-              </button>
-            </div>
-            <div className="p-5">
-              <ProviderTestResultsView results={testResults} />
-            </div>
-          </div>
-        </div>
+          <DialogTitle sx={{ position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "space-between", px: 2.5, py: 1.5, borderBottom: 1, borderColor: "divider", bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(38,38,38,0.95)" : "rgba(255,255,255,0.95)"), backdropFilter: "blur(4px)" }}>
+            <Box component="h3" sx={{ fontWeight: 600, fontSize: 16 }}>Test Results</Box>
+            <IconButton
+              onClick={() => setTestResults(null)}
+              aria-label="Close test results"
+              sx={{ color: "text.secondary", p: 0.5, "&:hover": { bgcolor: "background.default", color: "text.primary" } }}
+            >
+              <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18 }}>close</Icon>
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 2.5 }}>
+            <ProviderTestResultsView results={testResults} />
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -697,16 +760,36 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle, circuit
   };
 
   return (
-    <Link href={`/dashboard/providers/${providerId}`} className="group min-w-0">
+    <Box
+      component={Link}
+      href={`/dashboard/providers/${providerId}`}
+      sx={{
+        minWidth: 0,
+        display: "block",
+        "&:hover .pc-toggle": { opacity: 1 },
+      }}
+    >
       <Card
         padding="xs"
-        className={`h-full hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors cursor-pointer ${allDisabled ? "opacity-50" : ""}`}
+        sx={{
+          height: "100%",
+          transition: "background-color 150ms ease",
+          cursor: "pointer",
+          opacity: allDisabled ? 0.5 : 1,
+          "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)") },
+        }}
       >
-        <div className="flex min-w-0 items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className="size-8 shrink-0 rounded-lg flex items-center justify-center"
-              style={{
+        <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+          <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                flexShrink: 0,
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 backgroundColor: `${provider.color?.length > 7 ? provider.color : provider.color + "15"}`,
               }}
             >
@@ -714,24 +797,23 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle, circuit
                 src={`/providers/${provider.id}.webp`}
                 alt={provider.name}
                 size={30}
-                className="object-contain rounded-lg max-w-[32px] max-h-[32px]"
                 fallbackText={
                   provider.textIcon || provider.id.slice(0, 2).toUpperCase()
                 }
                 fallbackColor={provider.color}
               />
-            </div>
-            <div className="min-w-0">
-              <h3 className="truncate font-semibold">{provider.name}</h3>
-              <div className="flex min-w-0 items-center gap-1.5 text-xs flex-wrap">
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h3" sx={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{provider.name}</Typography>
+              <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 0.75, fontSize: 12, flexWrap: "wrap" }}>
                 {allDisabled ? (
                   <Badge variant="default" size="sm">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">
+                    <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 12 }}>
                         pause_circle
-                      </span>
+                      </Icon>
                       Disabled
-                    </span>
+                    </Box>
                   </Badge>
                 ) : isNoAuth ? (
                   <Badge variant="success" size="sm" dot>Ready</Badge>
@@ -742,17 +824,18 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle, circuit
                       <CircuitBreakerBadge status={circuitBreaker} onReset={() => onResetCircuit(circuitBreaker?.name || providerId)} />
                     )}
                     {errorTime && (
-                      <span className="text-text-muted">{errorTime}</span>
+                      <Box component="span" sx={{ color: "text.secondary" }}>{errorTime}</Box>
                     )}
                   </>
                 )}
-              </div>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={{ display: "flex", flexShrink: 0, alignItems: "center", gap: 1 }}>
             {stats.total > 0 && (
-              <div
-                className="opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+              <Box
+                className="pc-toggle"
+                sx={{ opacity: { xs: 1, sm: 0 }, transition: "opacity 150ms ease" }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -765,12 +848,12 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle, circuit
                   onChange={() => {}}
                   title={allDisabled ? "Enable provider" : "Disable provider"}
                 />
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Card>
-    </Link>
+    </Box>
   );
 }
 
@@ -814,16 +897,36 @@ function ApiKeyProviderCard({
   };
 
   return (
-    <Link href={`/dashboard/providers/${providerId}`} className="group min-w-0">
+    <Box
+      component={Link}
+      href={`/dashboard/providers/${providerId}`}
+      sx={{
+        minWidth: 0,
+        display: "block",
+        "&:hover .pc-toggle": { opacity: 1 },
+      }}
+    >
       <Card
         padding="xs"
-        className={`h-full hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors cursor-pointer ${allDisabled ? "opacity-50" : ""}`}
+        sx={{
+          height: "100%",
+          transition: "background-color 150ms ease",
+          cursor: "pointer",
+          opacity: allDisabled ? 0.5 : 1,
+          "&:hover": { bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)") },
+        }}
       >
-        <div className="flex min-w-0 items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className="size-8 shrink-0 rounded-lg flex items-center justify-center"
-              style={{
+        <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+          <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                flexShrink: 0,
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 backgroundColor: `${provider.color?.length > 7 ? provider.color : provider.color + "15"}`,
               }}
             >
@@ -831,24 +934,23 @@ function ApiKeyProviderCard({
                 src={getIconPath()}
                 alt={provider.name}
                 size={30}
-                className="object-contain rounded-lg max-w-[30px] max-h-[30px]"
                 fallbackText={
                   provider.textIcon || provider.id.slice(0, 2).toUpperCase()
                 }
                 fallbackColor={provider.color}
               />
-            </div>
-            <div className="min-w-0">
-              <h3 className="truncate font-semibold">{provider.name}</h3>
-              <div className="flex min-w-0 items-center gap-1.5 text-xs flex-wrap">
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h3" sx={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{provider.name}</Typography>
+              <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 0.75, fontSize: 12, flexWrap: "wrap" }}>
                 {allDisabled ? (
                   <Badge variant="default" size="sm">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">
+                    <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 12 }}>
                         pause_circle
-                      </span>
+                      </Icon>
                       Disabled
-                    </span>
+                    </Box>
                   </Badge>
                 ) : (
                   <>
@@ -866,17 +968,18 @@ function ApiKeyProviderCard({
                       </Badge>
                     )}
                     {errorTime && (
-                      <span className="text-text-muted">{errorTime}</span>
+                      <Box component="span" sx={{ color: "text.secondary" }}>{errorTime}</Box>
                     )}
                   </>
                 )}
-              </div>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={{ display: "flex", flexShrink: 0, alignItems: "center", gap: 1 }}>
             {stats.total > 0 && (
-              <div
-                className="opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+              <Box
+                className="pc-toggle"
+                sx={{ opacity: { xs: 1, sm: 0 }, transition: "opacity 150ms ease" }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -889,12 +992,12 @@ function ApiKeyProviderCard({
                   onChange={() => {}}
                   title={allDisabled ? "Enable provider" : "Disable provider"}
                 />
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Card>
-    </Link>
+    </Box>
   );
 }
 
@@ -903,12 +1006,12 @@ function ApiKeyProviderCard({
 function ProviderTestResultsView({ results }) {
   if (results.error && !results.results) {
     return (
-      <div className="text-center py-6">
-        <span className="material-symbols-outlined text-red-500 text-[32px] mb-2 block">
+      <Box sx={{ textAlign: "center", py: 3 }}>
+        <Icon className="material-symbols-outlined" baseClassName="" sx={{ color: "#ef4444", fontSize: 32, mb: 1, display: "block", mx: "auto" }}>
           error
-        </span>
-        <p className="text-sm text-red-400">{results.error}</p>
-      </div>
+        </Icon>
+        <Typography sx={{ fontSize: 14, color: "#f87171" }}>{results.error}</Typography>
+      </Box>
     );
   }
 
@@ -924,64 +1027,83 @@ function ProviderTestResultsView({ results }) {
     }[mode] || mode;
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 1.5 }}>
       {summary && (
-        <div className="flex flex-wrap items-center gap-2 text-xs mb-1 sm:gap-3">
-          <span className="text-text-muted">{modeLabel} Test</span>
-          <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-medium">
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: { xs: 1, sm: 1.5 }, fontSize: 12, mb: 0.5 }}>
+          <Box component="span" sx={{ color: "text.secondary" }}>{modeLabel} Test</Box>
+          <Box component="span" sx={{ px: 1, py: 0.25, borderRadius: "4px", bgcolor: "rgba(16,185,129,0.15)", color: "#34d399", fontWeight: 500 }}>
             {summary.passed} passed
-          </span>
+          </Box>
           {summary.failed > 0 && (
-            <span className="px-2 py-0.5 rounded bg-red-500/15 text-red-400 font-medium">
+            <Box component="span" sx={{ px: 1, py: 0.25, borderRadius: "4px", bgcolor: "rgba(239,68,68,0.15)", color: "#f87171", fontWeight: 500 }}>
               {summary.failed} failed
-            </span>
+            </Box>
           )}
-          <span className="text-text-muted sm:ml-auto">
+          <Box component="span" sx={{ color: "text.secondary", sm: { ml: "auto" } }}>
             {summary.total} tested
-          </span>
-        </div>
+          </Box>
+        </Box>
       )}
       {items.map((r, i) => (
-        <div
+        <Box
           key={r.connectionId || i}
-          className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg bg-black/[0.03] px-3 py-2 text-xs dark:bg-white/[0.03] sm:flex-nowrap"
+          sx={{
+            display: "flex",
+            minWidth: 0,
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 1,
+            borderRadius: "8px",
+            bgcolor: (t) => (t.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"),
+            px: 1.5,
+            py: 1,
+            fontSize: 12,
+            flexWrap: { sm: "nowrap" },
+          }}
         >
-          <span
-            className={`material-symbols-outlined text-[16px] ${r.valid ? "text-emerald-500" : "text-red-500"}`}
+          <Icon
+            className="material-symbols-outlined"
+            baseClassName=""
+            sx={{ fontSize: 16, color: r.valid ? "#10b981" : "#ef4444" }}
           >
             {r.valid ? "check_circle" : "error"}
-          </span>
-          <div className="min-w-0 flex-[1_1_160px]">
-            <span className="block truncate font-medium sm:inline">
+          </Icon>
+          <Box sx={{ minWidth: 0, flex: "1 1 160px" }}>
+            <Box component="span" sx={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, sm: { display: "inline" } }}>
               {r.connectionName}
-            </span>
-            <span className="block truncate text-text-muted sm:ml-1.5 sm:inline">
+            </Box>
+            <Box component="span" sx={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "text.secondary", sm: { display: "inline", ml: 0.75 } }}>
               ({r.provider})
-            </span>
-          </div>
+            </Box>
+          </Box>
           {r.latencyMs !== undefined && (
-            <span className="shrink-0 text-text-muted font-mono tabular-nums">
+            <Box component="span" sx={{ flexShrink: 0, color: "text.secondary", fontFamily: "monospace", fontVariantNumeric: "tabular-nums" }}>
               {r.latencyMs}ms
-            </span>
+            </Box>
           )}
-          <span
-            className={`shrink-0 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-              r.valid
-                ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-red-500/15 text-red-400"
-            }`}
+          <Box
+            component="span"
+            sx={{
+              flexShrink: 0,
+              fontSize: 10,
+              textTransform: "uppercase",
+              fontWeight: 700,
+              px: 0.75,
+              py: 0.25,
+              borderRadius: "4px",
+              bgcolor: r.valid ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+              color: r.valid ? "#34d399" : "#f87171",
+            }}
           >
             {r.valid ? "OK" : r.diagnosis?.type || "ERROR"}
-          </span>
-        </div>
+          </Box>
+        </Box>
       ))}
       {items.length === 0 && (
-        <div className="text-center py-4 text-text-muted text-sm">
+        <Box sx={{ textAlign: "center", py: 2, color: "text.secondary", fontSize: 14 }}>
           No active connections found for this group.
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
-
-

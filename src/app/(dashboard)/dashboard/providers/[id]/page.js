@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Box, Checkbox, Typography } from "@mui/material";
 import { getProviderIconSrc, markProviderIconMissing } from "@/shared/utils/providerIcon";
 import ProviderIcon from "@/shared/components/ProviderIcon";
 import ModelImportModal from "@/shared/components/ModelImportModal.js";
@@ -36,6 +37,54 @@ const AUTO_PING_SETTINGS_KEYS = {
   claude: "claudeAutoPing",
   codex: "codexAutoPing",
 };
+
+const dividerFaint = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.03)";
+const dividerSoft = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)";
+const panelSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.02)";
+const hoverSubtle = (theme) =>
+  theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+
+const proxyOptionSx = {
+  display: "flex",
+  alignItems: "center",
+  gap: 1.5,
+  borderRadius: 2,
+  px: 1.5,
+  py: 1,
+  textAlign: "left",
+  border: 0,
+  bgcolor: "transparent",
+  cursor: "pointer",
+  transition: "background-color 150ms ease",
+  "&:hover": { bgcolor: "action.hover" },
+  "&:disabled": { cursor: "not-allowed", opacity: 0.5 },
+};
+
+const modelChipSx = {
+  display: "flex",
+  alignItems: "center",
+  gap: 0.5,
+  borderRadius: 2,
+  border: 1,
+  borderColor: dividerSoft,
+  px: 1.25,
+  py: 0.75,
+  fontSize: 12,
+  bgcolor: "transparent",
+  color: "text.secondary",
+  cursor: "pointer",
+  transition: "color 150ms ease, border-color 150ms ease, background-color 150ms ease",
+  "&:hover": {
+    color: "primary.main",
+    borderColor: "rgba(229, 106, 74, 0.4)",
+    bgcolor: "rgba(229, 106, 74, 0.05)",
+  },
+};
+
+const modelChipDashedSx = { ...modelChipSx, borderStyle: "dashed" };
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -1108,20 +1157,27 @@ export default function ProviderDetailPage() {
   const isSelected = (connectionId) => selectedConnectionIds.includes(connectionId);
 
   const connectionsList = (
-    <div className="flex min-w-0 flex-col divide-y divide-black/[0.03] dark:divide-white/[0.03]">
+    <Box
+      sx={{
+        display: "flex",
+        minWidth: 0,
+        flexDirection: "column",
+        "& > * + *": { borderTop: 1, borderColor: dividerFaint },
+      }}
+    >
       {pagedConnections.map((conn, pageIndex) => {
         const index = pagedStart + pageIndex;
         return (
-          <div key={conn.id} className="flex min-w-0 items-stretch">
-            <div className="flex shrink-0 items-center pl-1 sm:pl-2">
-              <input
-                type="checkbox"
+          <Box key={conn.id} sx={{ display: "flex", minWidth: 0, alignItems: "stretch" }}>
+            <Box sx={{ display: "flex", flexShrink: 0, alignItems: "center", pl: { xs: 0.5, sm: 1 } }}>
+              <Checkbox
                 checked={isSelected(conn.id)}
                 onChange={() => toggleSelectConnection(conn.id)}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                size="small"
+                sx={{ p: 0.5 }}
               />
-            </div>
-            <div className="flex-1 min-w-0">
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <ConnectionRow
                 connection={conn}
                 proxyPools={proxyPools}
@@ -1179,8 +1235,8 @@ export default function ProviderDetailPage() {
                 onModelAssignmentChange={providerId === "freebuff" ? (model) => handleModelAssignment(conn.id, model) : null}
                 strictModelAssignment={strictModelAssignment}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
         );
       })}
       {connections.length > CONNECTIONS_PER_PAGE && (
@@ -1191,7 +1247,7 @@ export default function ProviderDetailPage() {
           onPageChange={setConnectionPage}
         />
       )}
-    </div>
+    </Box>
   );
 
   const activePools = proxyPools.filter((p) => p.isActive === true);
@@ -1202,87 +1258,149 @@ export default function ProviderDetailPage() {
       onClose={closeBulkProxyModal}
       title={selectedConnectionIds.length > 0 ? `Apply Proxy (${selectedConnectionIds.length} selected)` : `Apply Proxy (All ${connections.length} connections)`}
     >
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {selectedProxySummary && (
-          <p className="text-xs text-text-muted bg-surface-2 px-3 py-2 rounded-lg border border-border/50">
+          <Box
+            component="p"
+            sx={{
+              m: 0,
+              fontSize: 12,
+              color: "text.secondary",
+              bgcolor: (theme) => (theme.palette.mode === "dark" ? "#303030" : "#f4f4f5"),
+              px: 1.5,
+              py: 1,
+              borderRadius: 2,
+              border: 1,
+              borderColor: dividerSoft,
+            }}
+          >
             {selectedProxySummary}
-          </p>
+          </Box>
         )}
-        <div className="flex flex-col divide-y divide-border/30 border border-border/50 rounded-xl overflow-hidden bg-surface">
-          <div className="p-3 flex flex-col gap-1">
-            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Dynamic Strategies</p>
-            <button
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            border: 1,
+            borderColor: dividerSoft,
+            borderRadius: 3,
+            overflow: "hidden",
+            bgcolor: "background.paper",
+            "& > * + *": { borderTop: 1, borderColor: dividerFaint },
+          }}
+        >
+          <Box sx={{ p: 1.5, display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Box
+              component="p"
+              sx={{
+                m: 0,
+                px: 1.5,
+                pb: 0.5,
+                fontSize: 10,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "text.secondary",
+              }}
+            >
+              Dynamic Strategies
+            </Box>
+            <Box
+              component="button"
               type="button"
               onClick={handleApplyOneToOne}
               disabled={bulkUpdatingProxy || activePools.length === 0}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
+              sx={proxyOptionSx}
             >
-              <span className="material-symbols-outlined text-text-muted text-[20px]">sync_alt</span>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-text-main">One-to-one (rotate)</span>
-                <span className="text-[10px] text-text-muted mt-0.5">Distribute active proxy pools round-robin</span>
-              </div>
-            </button>
+              <Box component="span" className="material-symbols-outlined" sx={{ color: "text.secondary", fontSize: 20 }}>sync_alt</Box>
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>One-to-one (rotate)</Box>
+                <Box component="span" sx={{ fontSize: 10, color: "text.secondary", mt: 0.25 }}>Distribute active proxy pools round-robin</Box>
+              </Box>
+            </Box>
             {["fill-first", "round-robin", "random", "smart"].map((strategy) => (
-              <button
+              <Box
+                component="button"
                 type="button"
                 key={strategy}
                 onClick={() => handleApplyAdvancedProxy(strategy, activePools.map((p) => p.id))}
                 disabled={bulkUpdatingProxy || activePools.length === 0}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
+                sx={proxyOptionSx}
               >
-                <span className="material-symbols-outlined text-text-muted text-[20px]">autorenew</span>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-text-main capitalize">{strategy} strategy</span>
-                  <span className="text-[10px] text-text-muted mt-0.5">
+                <Box component="span" className="material-symbols-outlined" sx={{ color: "text.secondary", fontSize: 20 }}>autorenew</Box>
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary", textTransform: "capitalize" }}>{strategy} strategy</Box>
+                  <Box component="span" sx={{ fontSize: 10, color: "text.secondary", mt: 0.25 }}>
                     {strategy === "smart" ? "Bypass pools marked unfit for provider/model" : `Rotate over all active pools using ${strategy}`}
-                  </span>
-                </div>
-              </button>
+                  </Box>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
 
-          <div className="p-3 flex flex-col gap-1">
-            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">Static Assignment</p>
-            <button
+          <Box sx={{ p: 1.5, display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Box
+              component="p"
+              sx={{
+                m: 0,
+                px: 1.5,
+                pb: 0.5,
+                fontSize: 10,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "text.secondary",
+              }}
+            >
+              Static Assignment
+            </Box>
+            <Box
+              component="button"
               type="button"
               onClick={() => handleApplySinglePool(null)}
               disabled={bulkUpdatingProxy}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
+              sx={proxyOptionSx}
             >
-              <span className="material-symbols-outlined text-text-muted text-[20px]">link_off</span>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-text-main">None (unbind all)</span>
-                <span className="text-[10px] text-text-muted mt-0.5">Direct routing without proxy</span>
-              </div>
-            </button>
+              <Box component="span" className="material-symbols-outlined" sx={{ color: "text.secondary", fontSize: 20 }}>link_off</Box>
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>None (unbind all)</Box>
+                <Box component="span" sx={{ fontSize: 10, color: "text.secondary", mt: 0.25 }}>Direct routing without proxy</Box>
+              </Box>
+            </Box>
             {proxyPools.map((pool) => (
-              <button
+              <Box
+                component="button"
                 type="button"
                 key={pool.id}
                 onClick={() => handleApplySinglePool(pool.id)}
                 disabled={bulkUpdatingProxy || pool.isActive !== true}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
+                sx={proxyOptionSx}
               >
-                <span className="material-symbols-outlined text-text-muted text-[20px]">lan</span>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="truncate text-sm font-medium text-text-main">{pool.name}</span>
-                  <span className="text-[10px] text-text-muted truncate mt-0.5">{pool.proxyUrl}</span>
-                </div>
+                <Box component="span" className="material-symbols-outlined" sx={{ color: "text.secondary", fontSize: 20 }}>lan</Box>
+                <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
+                  <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 500, color: "text.primary" }}>{pool.name}</Box>
+                  <Box component="span" sx={{ fontSize: 10, color: "text.secondary", mt: 0.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pool.proxyUrl}</Box>
+                </Box>
                 {pool.isActive !== true && (
-                  <Badge variant="secondary" size="sm" className="ml-auto shrink-0">inactive</Badge>
+                  <Box sx={{ ml: "auto", flexShrink: 0 }}>
+                    <Badge variant="secondary" size="sm">inactive</Badge>
+                  </Box>
                 )}
-              </button>
+              </Box>
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        {bulkUpdatingProxy && <p className="text-xs text-text-muted animate-pulse px-1">Applying proxy configuration...</p>}
+        {bulkUpdatingProxy && (
+          <Box component="p" sx={{ m: 0, px: 0.5, fontSize: 12, color: "text.secondary", animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}>
+            Applying proxy configuration...
+          </Box>
+        )}
 
         <Button onClick={closeBulkProxyModal} variant="ghost" fullWidth disabled={bulkUpdatingProxy}>
           Cancel
         </Button>
-      </div>
+      </Box>
     </Modal>
   );
 
@@ -1385,7 +1503,7 @@ export default function ProviderDetailPage() {
     });
 
     return (
-      <div className="flex flex-wrap gap-3">
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
         {/* Custom models first */}
         {customModelRows.map((model) => (
           <ModelRow
@@ -1443,13 +1561,30 @@ export default function ProviderDetailPage() {
         })}
 
         {/* Add model button — inline, same style as model chips */}
-        <button
+        <Button
           onClick={() => setShowAddCustomModel(true)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/40 px-3 py-2 text-xs text-primary transition-colors hover:border-primary hover:bg-primary/5 sm:w-auto"
+          variant="outline"
+          sx={{
+            width: { xs: "100%", sm: "auto" },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.75,
+            borderRadius: 2,
+            borderStyle: "dashed",
+            borderColor: "rgba(229, 106, 74, 0.4)",
+            px: 1.5,
+            py: 1,
+            minHeight: 34,
+            fontSize: 12,
+            textTransform: "none",
+            color: "primary.main",
+            "&:hover": { borderColor: "primary.main", bgcolor: "rgba(229, 106, 74, 0.05)" },
+          }}
         >
-          <span className="material-symbols-outlined text-sm">add</span>
+          <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14 }}>add</Box>
           Add Model
-        </button>
+        </Button>
 
         {/* Suggested models from provider API — show only models not yet added */}
         {suggestedModels.length > 0 && (() => {
@@ -1463,67 +1598,69 @@ export default function ProviderDetailPage() {
           );
           if (notAdded.length === 0) return null;
           return (
-            <div className="w-full mt-2">
-              <p className="text-xs text-text-muted mb-2">Suggested free models (≥200k context):</p>
-              <div className="flex flex-wrap gap-2">
+            <Box sx={{ width: "100%", mt: 1 }}>
+              <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 1 }}>Suggested free models (≥200k context):</Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {notAdded.map((m) => (
-                  <button
+                  <Box
+                    component="button"
                     key={m.id}
                     onClick={async () => {
                       await handleAddCustomModel(m.id, "llm", providerStorageAlias);
                     }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-black/10 dark:border-white/10 text-xs text-text-muted hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                    sx={modelChipSx}
                     title={`${m.name} · ${(m.contextLength / 1000).toFixed(0)}k ctx`}
                   >
-                    <span className="material-symbols-outlined text-[13px]">add</span>
+                    <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 13 }}>add</Box>
                     {m.id.split("/").pop()}
-                  </button>
+                  </Box>
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           );
         })()}
 
         {/* Disabled models — restorable */}
         {disabledDisplayModels.length > 0 && (
-          <div className="w-full mt-2">
-            <p className="text-xs text-text-muted mb-2">Disabled models ({disabledDisplayModels.length}):</p>
-            <div className="flex flex-wrap gap-2">
+          <Box sx={{ width: "100%", mt: 1 }}>
+            <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 1 }}>Disabled models ({disabledDisplayModels.length}):</Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {disabledDisplayModels.map((m) => (
-                <button
+                <Box
+                  component="button"
                   key={m.id}
                   onClick={() => handleEnableModel(m.id)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-dashed border-black/10 dark:border-white/10 text-xs text-text-muted hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  sx={modelChipDashedSx}
                   title="Restore model"
                 >
-                  <span className="material-symbols-outlined text-[13px]">add</span>
+                  <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 13 }}>add</Box>
                   {m.id}
-                </button>
+                </Box>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
     );
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-8">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <CardSkeleton />
         <CardSkeleton />
-      </div>
+      </Box>
     );
 }
 
   if (!providerInfo) {
     return (
-      <div className="text-center py-20">
-        <p className="text-text-muted">Provider not found</p>
-        <Link href="/dashboard/providers" className="text-primary mt-4 inline-block">
+      <Box sx={{ textAlign: "center", py: 10 }}>
+        <Typography sx={{ color: "text.secondary" }}>Provider not found</Typography>
+        <Box component={Link} href="/dashboard/providers" sx={{ color: "primary.main", mt: 2, display: "inline-block" }}>
           Back to Providers
-        </Link>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
@@ -1539,82 +1676,173 @@ export default function ProviderDetailPage() {
   };
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 px-1 sm:gap-8 sm:px-0">
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: { xs: 3, sm: 4 }, px: { xs: 0.5, sm: 0 } }}>
       {/* Header */}
-      <div className="min-w-0">
-        <Link
+      <Box sx={{ minWidth: 0 }}>
+        <Box
+          component={Link}
           href="/dashboard/providers"
-          className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-primary transition-colors mb-4"
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            fontSize: 14,
+            color: "text.secondary",
+            textDecoration: "none",
+            mb: 2,
+            transition: "color 150ms ease",
+            "&:hover": { color: "primary.main" },
+          }}
         >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 18 }}>arrow_back</Box>
           Back to Providers
-        </Link>
-        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-          <ProviderIcon
-            providerId={providerInfo.id}
-            size={48}
-            alt={providerInfo.name}
-            className="shrink-0 rounded-lg"
-            fallbackText={providerInfo.textIcon || providerInfo.id.slice(0, 2).toUpperCase()}
-            fallbackColor={providerInfo.color}
-          />
-          <div className="min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">{providerInfo.name}</h1>
+        </Box>
+        <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: { xs: 1.5, sm: 2 } }}>
+          <Box sx={{ flexShrink: 0, "& img": { borderRadius: 2 } }}>
+            <ProviderIcon
+              providerId={providerInfo.id}
+              size={48}
+              alt={providerInfo.name}
+              fallbackText={providerInfo.textIcon || providerInfo.id.slice(0, 2).toUpperCase()}
+              fallbackColor={providerInfo.color}
+            />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+              <Typography
+                component="h1"
+                sx={{
+                  fontSize: { xs: 24, sm: 30 },
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {providerInfo.name}
+              </Typography>
               {(providerInfo.notice?.apiKeyUrl || providerInfo.notice?.signupUrl || providerInfo.website) && (
-                <a
+                <Box
+                  component="a"
                   href={providerInfo.notice?.apiKeyUrl || providerInfo.notice?.signupUrl || providerInfo.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  sx={{
+                    fontSize: 12,
+                    color: "primary.main",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    "&:hover": { textDecoration: "underline" },
+                  }}
                 >
-                  <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 14 }}>open_in_new</Box>
                   {providerInfo.notice?.apiKeyUrl ? "Get API Key" : "Sign up / Learn more"}
-                </a>
+                </Box>
               )}
-            </div>
-            <p className="text-text-muted">
+            </Box>
+            <Typography sx={{ color: "text.secondary" }}>
               {connections.length} connection{connections.length === 1 ? "" : "s"}
-            </p>
-          </div>
-        </div>
-      </div>
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
       {providerInfo.deprecated && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-          <span className="material-symbols-outlined text-[16px] text-yellow-500 mt-0.5 shrink-0">warning</span>
-          <p className="text-xs text-red-600 dark:text-yellow-400 leading-relaxed">{providerInfo.deprecationNotice}</p>
-        </div>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            px: 1.5,
+            py: 1,
+            borderRadius: 2,
+            bgcolor: "rgba(234, 179, 8, 0.1)",
+            border: 1,
+            borderColor: "rgba(234, 179, 8, 0.3)",
+          }}
+        >
+          <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16, color: "#eab308", mt: 0.25, flexShrink: 0 }}>warning</Box>
+          <Typography sx={{ fontSize: 12, lineHeight: 1.6, color: (theme) => (theme.palette.mode === "dark" ? "#facc15" : "#dc2626") }}>
+            {providerInfo.deprecationNotice}
+          </Typography>
+        </Box>
       )}
 
       {providerInfo.notice?.text && !providerInfo.deprecated && (
-        <div className="flex flex-col gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 sm:flex-row sm:items-center">
-          <span className="material-symbols-outlined text-[16px] text-blue-500 shrink-0">info</span>
-          <p className="min-w-0 flex-1 text-xs leading-relaxed text-blue-600 dark:text-blue-400">{providerInfo.notice.text}</p>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { sm: "center" },
+            gap: 1,
+            borderRadius: 2,
+            border: 1,
+            borderColor: "rgba(59, 130, 246, 0.3)",
+            bgcolor: "rgba(59, 130, 246, 0.1)",
+            px: 1.5,
+            py: 1,
+          }}
+        >
+          <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 16, color: "#3b82f6", flexShrink: 0 }}>info</Box>
+          <Typography sx={{ minWidth: 0, flex: 1, fontSize: 12, lineHeight: 1.6, color: (theme) => (theme.palette.mode === "dark" ? "#60a5fa" : "#2563eb") }}>
+            {providerInfo.notice.text}
+          </Typography>
           {providerInfo.notice.apiKeyUrl && (
-            <a
+            <Box
+              component="a"
               href={providerInfo.notice.apiKeyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex justify-center rounded bg-blue-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-600 sm:py-0.5"
+              sx={{
+                display: "inline-flex",
+                justifyContent: "center",
+                borderRadius: 1,
+                bgcolor: "#3b82f6",
+                px: 1,
+                py: { xs: 0.5, sm: 0.25 },
+                fontSize: 12,
+                fontWeight: 500,
+                color: "#ffffff",
+                textDecoration: "none",
+                transition: "background-color 150ms ease",
+                "&:hover": { bgcolor: "#2563eb" },
+              }}
             >
               Get API Key →
-            </a>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
 
       {isCompatible && providerNode && (
         <Card>
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold">{isAnthropicCompatible ? "Anthropic Compatible Details" : "OpenAI Compatible Details"}</h2>
-              <p className="break-all text-sm text-text-muted">
+          <Box
+            sx={{
+              mb: 2,
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1.5,
+              alignItems: { sm: "flex-start" },
+              justifyContent: { sm: "space-between" },
+            }}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>{isAnthropicCompatible ? "Anthropic Compatible Details" : "OpenAI Compatible Details"}</Typography>
+              <Typography sx={{ wordBreak: "break-all", fontSize: 14, color: "text.secondary" }}>
                 {isAnthropicCompatible ? "Messages API" : (providerNode.apiType === "responses" ? "Responses API" : "Chat Completions")} · {(providerNode.baseUrl || "").replace(/\/$/, "")}/
                 {isAnthropicCompatible ? "messages" : (providerNode.apiType === "responses" ? "responses" : "chat/completions")}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: { xs: "grid", sm: "flex" },
+                gridTemplateColumns: { xs: "1fr" },
+                gap: 1,
+                alignItems: { sm: "center" },
+              }}
+            >
               <Button
                 size="sm"
                 icon="add"
@@ -1622,7 +1850,6 @@ export default function ProviderDetailPage() {
                   setAddConnectionError("");
                   setShowAddApiKeyModal(true);
                 }}
-                className="w-full sm:w-auto"
               >
                 Add API Key
               </Button>
@@ -1631,7 +1858,6 @@ export default function ProviderDetailPage() {
                 variant="secondary"
                 icon="edit"
                 onClick={() => setShowEditNodeModal(true)}
-                className="w-full sm:w-auto"
               >
                 Edit
               </Button>
@@ -1656,12 +1882,11 @@ export default function ProviderDetailPage() {
                     }
                   });
                 }}
-                className="w-full sm:w-auto"
               >
                 Delete
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </Card>
       )}
 
@@ -1670,9 +1895,18 @@ export default function ProviderDetailPage() {
         <NoAuthProxyCard providerId={providerId} />
       ) : (
         <Card>
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold">Connections</h2>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <Box
+            sx={{
+              mb: 2,
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1.5,
+              alignItems: { sm: "center" },
+              justifyContent: { sm: "space-between" },
+            }}
+          >
+            <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>Connections</Typography>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, alignItems: { sm: "center" } }}>
               {connections.length > 0 && proxyPools.length > 0 && (
                 <Button
                   size="sm"
@@ -1718,54 +1952,97 @@ export default function ProviderDetailPage() {
                 </>
               )}
               {/* Round Robin toggle */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-text-muted font-medium">Round Robin</span>
+              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+                <Typography component="span" sx={{ fontSize: 12, color: "text.secondary", fontWeight: 500 }}>Round Robin</Typography>
                 <Toggle
                   checked={providerStrategy === "round-robin"}
                   onChange={handleRoundRobinToggle}
                 />
                 {providerStrategy === "round-robin" && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-text-muted">Sticky:</span>
-                    <input
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <Typography component="span" sx={{ fontSize: 12, color: "text.secondary" }}>Sticky:</Typography>
+                    <Box
+                      component="input"
                       type="number"
                       min={1}
                       value={providerStickyLimit}
                       onChange={(e) => handleStickyLimitChange(e.target.value)}
                       placeholder="1"
-                      className="w-14 px-2 py-1 text-xs border border-border rounded-md bg-background focus:outline-none focus:border-primary"
+                      sx={{
+                        width: 56,
+                        px: 1,
+                        py: 0.5,
+                        fontSize: 12,
+                        border: 1,
+                        borderColor: "divider",
+                        borderRadius: 1,
+                        bgcolor: "background.default",
+                        color: "text.primary",
+                        outline: "none",
+                        "&:focus": { borderColor: "primary.main" },
+                      }}
                     />
-                  </div>
+                  </Box>
                 )}
-              </div>
+              </Box>
               {providerId === "freebuff" && (
-                <div className="flex flex-wrap items-center gap-2 border-t border-black/[0.03] pt-2 dark:border-white/[0.03]">
-                  <div>
-                    <span className="text-xs text-text-muted font-medium">Strict Model Assignment</span>
-                    <p className="text-[10px] text-text-muted">Only assigned accounts can serve each Freebuff model.</p>
-                  </div>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    gap: 1,
+                    borderTop: 1,
+                    borderColor: dividerFaint,
+                    pt: 1,
+                  }}
+                >
+                  <Box>
+                    <Typography component="span" sx={{ fontSize: 12, color: "text.secondary", fontWeight: 500 }}>Strict Model Assignment</Typography>
+                    <Typography sx={{ fontSize: 10, color: "text.secondary" }}>Only assigned accounts can serve each Freebuff model.</Typography>
+                  </Box>
                   <Toggle checked={strictModelAssignment} onChange={handleStrictAssignmentToggle} />
-                </div>
+                </Box>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {connections.length === 0 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 text-primary shrink-0">
-                  <span className="material-symbols-outlined text-[18px]">{isOAuth ? "lock" : "key"}</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm text-text-muted">No connections yet</p>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 1.5,
+                alignItems: { sm: "center" },
+                justifyContent: { sm: "space-between" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(229, 106, 74, 0.1)",
+                    color: "primary.main",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 18 }}>{isOAuth ? "lock" : "key"}</Box>
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 14, color: "text.secondary" }}>No connections yet</Typography>
                   {hasDualAuthModes && (
-                    <p className="text-xs text-text-muted">
+                    <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                       Choose {oauthConnectionLabel} or {apiKeyConnectionLabel}.
-                    </p>
+                    </Typography>
                   )}
-                </div>
-              </div>
-              <div className="flex gap-2">
+                </Box>
+              </Box>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 {hasDualAuthModes ? (
                   <>
                     <Button size="sm" icon="lock" variant="secondary" onClick={triggerOAuthConnection}>
@@ -1801,42 +2078,76 @@ export default function ProviderDetailPage() {
                     </Button>
                   </>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           ) : (
             <>
               {oneByOneSummary && (
-                <div className="mb-4 rounded-lg border border-black/10 bg-black/[0.02] px-3 py-2 text-xs text-text-muted dark:border-white/10 dark:bg-white/[0.03]">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span>Total: {oneByOneSummary.total}</span>
-                    <span>Completed: {oneByOneSummary.completed}</span>
-                    <span>Passed: {oneByOneSummary.passed}</span>
-                    <span>Failed: {oneByOneSummary.failed}</span>
+                <Box
+                  sx={{
+                    mb: 2,
+                    borderRadius: 2,
+                    border: 1,
+                    borderColor: dividerSoft,
+                    bgcolor: panelSubtle,
+                    px: 1.5,
+                    py: 1,
+                    fontSize: 12,
+                    color: "text.secondary",
+                  }}
+                >
+                  <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1.5 }}>
+                    <Box component="span">Total: {oneByOneSummary.total}</Box>
+                    <Box component="span">Completed: {oneByOneSummary.completed}</Box>
+                    <Box component="span">Passed: {oneByOneSummary.passed}</Box>
+                    <Box component="span">Failed: {oneByOneSummary.failed}</Box>
                     {oneByOneSummary.stopped && (
-                      <span className="text-amber-600 dark:text-amber-400">Stopped</span>
+                      <Box component="span" sx={{ color: (theme) => (theme.palette.mode === "dark" ? "#fbbf24" : "#d97706") }}>Stopped</Box>
                     )}
                     {oneByOneRunning && oneByOneCurrentConnectionId && (
-                      <span>Running: {connections.find((conn) => conn.id === oneByOneCurrentConnectionId)?.name || oneByOneCurrentConnectionId}</span>
+                      <Box component="span">Running: {connections.find((conn) => conn.id === oneByOneCurrentConnectionId)?.name || oneByOneCurrentConnectionId}</Box>
                     )}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
               {connections.length > 0 && (
-                <div className="mb-3 flex items-center gap-2 border-b border-black/[0.03] pb-2 dark:border-white/[0.03]">
-                  <label className="flex cursor-pointer items-center gap-1.5 text-xs text-text-muted hover:text-primary">
-                    <input
-                      type="checkbox"
+                <Box
+                  sx={{
+                    mb: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    borderBottom: 1,
+                    borderColor: dividerFaint,
+                    pb: 1,
+                  }}
+                >
+                  <Box
+                    component="label"
+                    sx={{
+                      display: "flex",
+                      cursor: "pointer",
+                      alignItems: "center",
+                      gap: 0.75,
+                      fontSize: 12,
+                      color: "text.secondary",
+                      transition: "color 150ms ease",
+                      "&:hover": { color: "primary.main" },
+                    }}
+                  >
+                    <Checkbox
                       checked={allSelected}
                       onChange={toggleSelectAllConnections}
-                      className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
+                      size="small"
+                      sx={{ p: 0.25 }}
                     />
                     Select All
-                  </label>
-                </div>
+                  </Box>
+                </Box>
               )}
               {connectionsList}
               {!isCompatible && (
-                <div className="mt-4 grid grid-cols-1 gap-2 sm:flex">
+                <Box sx={{ mt: 2, display: { xs: "grid", sm: "flex" }, gridTemplateColumns: { xs: "1fr" }, gap: 1 }}>
                   {providerId === "iflow" && (
                     <Button
                       size="sm"
@@ -1844,7 +2155,6 @@ export default function ProviderDetailPage() {
                       variant="secondary"
                       onClick={() => setShowIFlowCookieModal(true)}
                       title="Add connection using browser cookie"
-                      className="w-full sm:w-auto"
                     >
                       Cookie
                     </Button>
@@ -1856,7 +2166,6 @@ export default function ProviderDetailPage() {
                       variant="secondary"
                       onClick={() => setShowBulkImportCodex(true)}
                       title={translate("Bulk import codex accounts from JSON")}
-                      className="w-full sm:w-auto"
                     >
                       {translate("Bulk Add")}
                     </Button>
@@ -1868,7 +2177,6 @@ export default function ProviderDetailPage() {
                       variant="secondary"
                       onClick={() => setShowBulkImportGrokCli(true)}
                       title={translate("Bulk import Grok CLI accounts from JSON")}
-                      className="w-full sm:w-auto"
                     >
                       {translate("Bulk Add")}
                     </Button>
@@ -1880,7 +2188,6 @@ export default function ProviderDetailPage() {
                         icon="lock"
                         variant="secondary"
                         onClick={triggerOAuthConnection}
-                        className="w-full sm:w-auto"
                       >
                         {oauthConnectionLabel}
                       </Button>
@@ -1888,7 +2195,6 @@ export default function ProviderDetailPage() {
                         size="sm"
                         icon="key"
                         onClick={triggerApiKeyConnection}
-                        className="w-full sm:w-auto"
                       >
                         {apiKeyConnectionLabel}
                       </Button>
@@ -1898,12 +2204,11 @@ export default function ProviderDetailPage() {
                       size="sm"
                       icon="add"
                       onClick={triggerAddConnection}
-                      className="w-full sm:w-auto"
                     >
                       Add
                     </Button>
                   )}
-                </div>
+                </Box>
               )}
             </>
           )}
@@ -1915,23 +2220,45 @@ export default function ProviderDetailPage() {
 
       {/* Models */}
       <Card>
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">
+        <Box
+          sx={{
+            mb: 2,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            alignItems: { sm: "center" },
+            justifyContent: { sm: "space-between" },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>
               {"Available Models"}
-            </h2>
+            </Typography>
             {deletableModelRows.length > 0 && (
-              <label className="flex cursor-pointer select-none items-center gap-2 text-xs text-text-muted hover:text-primary">
-                <input
-                  type="checkbox"
+              <Box
+                component="label"
+                sx={{
+                  display: "flex",
+                  cursor: "pointer",
+                  userSelect: "none",
+                  alignItems: "center",
+                  gap: 1,
+                  fontSize: 12,
+                  color: "text.secondary",
+                  transition: "color 150ms ease",
+                  "&:hover": { color: "primary.main" },
+                }}
+              >
+                <Checkbox
                   checked={allDeletableSelected}
-                  ref={(el) => { if (el) el.indeterminate = selectedModelIds.length > 0 && !allDeletableSelected; }}
+                  indeterminate={selectedModelIds.length > 0 && !allDeletableSelected}
                   onChange={toggleSelectAllModels}
-                  className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
-                  aria-label="Select all added models"
+                  size="small"
+                  sx={{ p: 0.25 }}
+                  inputProps={{ "aria-label": "Select all added models" }}
                 />
-                <span>{selectedModelIds.length > 0 ? `${selectedModelIds.length} selected` : `Select all (${deletableModelRows.length})`}</span>
-              </label>
+                <Box component="span">{selectedModelIds.length > 0 ? `${selectedModelIds.length} selected` : `Select all (${deletableModelRows.length})`}</Box>
+              </Box>
             )}
             {selectedModelIds.length > 0 && (
               <>
@@ -1951,19 +2278,32 @@ export default function ProviderDetailPage() {
               </>
             )}
             {providerThinkingLevels && (
-              <select
+              <Box
+                component="select"
                 value={thinkingMode}
                 onChange={(e) => handleThinkingModeChange(e.target.value)}
                 title="Appends (level) suffix to copied model names"
-                className="rounded-md border border-border bg-background px-2 py-1 text-xs focus:border-primary focus:outline-none"
+                sx={{
+                  borderRadius: 1,
+                  border: 1,
+                  borderColor: "divider",
+                  bgcolor: "background.default",
+                  color: "text.primary",
+                  px: 1,
+                  py: 0.5,
+                  fontSize: 12,
+                  outline: "none",
+                  "&:focus": { borderColor: "primary.main" },
+                  "& option": { bgcolor: "background.paper", color: "text.primary" },
+                }}
               >
                 {providerThinkingLevels.map((opt) => (
                   <option key={opt} value={opt}>{`Thinking: ${opt.charAt(0).toUpperCase() + opt.slice(1)}`}</option>
                 ))}
-              </select>
+              </Box>
             )}
             {!isCompatible && (
-              <div className="relative" ref={importMenuRef}>
+              <Box sx={{ position: "relative" }} ref={importMenuRef}>
                 <Button
                   size="sm"
                   variant="secondary"
@@ -1972,33 +2312,85 @@ export default function ProviderDetailPage() {
                   onClick={() => setShowImportMenu((prev) => !prev)}
                 >
                   {translate("Import models")}
-                  <span className="material-symbols-outlined ml-1 text-[18px]">
+                  <Box component="span" className="material-symbols-outlined" sx={{ ml: 0.5, fontSize: 18 }}>
                     {showImportMenu ? "expand_less" : "expand_more"}
-                  </span>
+                  </Box>
                 </Button>
                 {showImportMenu && (
-                  <div className="absolute left-0 top-full z-50 mt-1 min-w-[210px] rounded-xl border border-black/10 bg-white p-1 shadow-xl dark:border-white/10 dark:bg-zinc-900 sm:left-auto sm:right-0">
-                    <button
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      left: { xs: 0, sm: "auto" },
+                      right: { sm: 0 },
+                      top: "100%",
+                      zIndex: 50,
+                      mt: 0.5,
+                      minWidth: 210,
+                      borderRadius: 3,
+                      border: 1,
+                      borderColor: dividerSoft,
+                      bgcolor: "background.paper",
+                      p: 0.5,
+                      boxShadow: 6,
+                    }}
+                  >
+                    <Box
+                      component="button"
                       type="button"
                       onClick={() => { setShowImportMenu(false); handleImportProviderModels("all"); }}
-                      className="flex w-full items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                      sx={{
+                        display: "flex",
+                        width: "100%",
+                        alignItems: "center",
+                        gap: 1,
+                        whiteSpace: "nowrap",
+                        borderRadius: 2,
+                        px: 1.5,
+                        py: 1,
+                        textAlign: "left",
+                        fontSize: 14,
+                        border: 0,
+                        bgcolor: "transparent",
+                        color: "text.primary",
+                        cursor: "pointer",
+                        transition: "background-color 150ms ease",
+                        "&:hover": { bgcolor: hoverSubtle },
+                      }}
                     >
-                      <span className="material-symbols-outlined shrink-0 text-[20px] leading-none text-primary">download</span>
-                      <span className="min-w-0 flex-1 truncate">{"Import all"}</span>
-                    </button>
-                    <button
+                      <Box component="span" className="material-symbols-outlined" sx={{ flexShrink: 0, fontSize: 20, lineHeight: 1, color: "primary.main" }}>download</Box>
+                      <Box component="span" sx={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{"Import all"}</Box>
+                    </Box>
+                    <Box
+                      component="button"
                       type="button"
                       onClick={() => { setShowImportMenu(false); handleImportProviderModels("batch"); }}
-                      className="flex w-full items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                      sx={{
+                        display: "flex",
+                        width: "100%",
+                        alignItems: "center",
+                        gap: 1,
+                        whiteSpace: "nowrap",
+                        borderRadius: 2,
+                        px: 1.5,
+                        py: 1,
+                        textAlign: "left",
+                        fontSize: 14,
+                        border: 0,
+                        bgcolor: "transparent",
+                        color: "text.primary",
+                        cursor: "pointer",
+                        transition: "background-color 150ms ease",
+                        "&:hover": { bgcolor: hoverSubtle },
+                      }}
                     >
-                      <span className="material-symbols-outlined shrink-0 text-[20px] leading-none text-emerald-500">checklist</span>
-                      <span className="min-w-0 flex-1 truncate">{"Import batch"}</span>
-                    </button>
-                  </div>
+                      <Box component="span" className="material-symbols-outlined" sx={{ flexShrink: 0, fontSize: 20, lineHeight: 1, color: "#10b981" }}>checklist</Box>
+                      <Box component="span" sx={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{"Import batch"}</Box>
+                    </Box>
+                  </Box>
                 )}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
           {!isCompatible && (() => {
             const allIds = [
               ...models,
@@ -2006,7 +2398,7 @@ export default function ProviderDetailPage() {
             ].filter((m) => { const k = getModelKind(m); return !k || k === "llm"; }).map((m) => m.id);
             const activeIds = allIds.filter((id) => !disabledModelIds.includes(id));
             return (
-              <div className="flex gap-2">
+              <Box sx={{ display: "flex", gap: 1 }}>
                 {disabledModelIds.length > 0 && (
                   <Button size="sm" variant="secondary" icon="restart_alt" onClick={handleEnableAll}>
                     Active All
@@ -2017,12 +2409,12 @@ export default function ProviderDetailPage() {
                     Disable All
                   </Button>
                 )}
-              </div>
+              </Box>
             );
           })()}
-        </div>
+        </Box>
         {!!modelsTestError && (
-          <p className="text-xs text-red-500 mb-3 break-words">{modelsTestError}</p>
+          <Typography sx={{ fontSize: 12, color: "#ef4444", mb: 1.5, wordBreak: "break-word" }}>{modelsTestError}</Typography>
         )}
         {renderModelsSection()}
       </Card>
@@ -2191,19 +2583,19 @@ export default function ProviderDetailPage() {
           </>
         }
       >
-        <div className="flex items-start gap-3">
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
           {noticeState?.variant === "success" && (
-            <span className="material-symbols-outlined text-[20px] text-green-500 mt-0.5 shrink-0">check_circle</span>
+            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 20, color: "#22c55e", mt: 0.25, flexShrink: 0 }}>check_circle</Box>
           )}
           {noticeState?.variant === "error" && (
-            <span className="material-symbols-outlined text-[20px] text-red-500 mt-0.5 shrink-0">error</span>
+            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 20, color: "#ef4444", mt: 0.25, flexShrink: 0 }}>error</Box>
           )}
           {noticeState?.variant === "info" && (
-            <span className="material-symbols-outlined text-[20px] text-blue-500 mt-0.5 shrink-0">info</span>
+            <Box component="span" className="material-symbols-outlined" sx={{ fontSize: 20, color: "#3b82f6", mt: 0.25, flexShrink: 0 }}>info</Box>
           )}
-          <p className="text-sm text-text-muted leading-relaxed break-words">{noticeState?.message}</p>
-        </div>
+          <Typography sx={{ fontSize: 14, color: "text.secondary", lineHeight: 1.6, wordBreak: "break-word" }}>{noticeState?.message}</Typography>
+        </Box>
       </Modal>
-    </div>
+    </Box>
   );
 }
