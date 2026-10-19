@@ -56,28 +56,6 @@ RUN npm ci --ignore-scripts --no-audit --no-fund && \
   test -f node_modules/better-sqlite3/build/Release/better_sqlite3.node
 RUN node -e "const Database = require('better-sqlite3'); const db = new Database(':memory:'); db.prepare('SELECT 1').get(); db.close(); console.log('native dependency stage: better-sqlite3')"
 
-# Tailscale static binaries for Alpine Linux (bundled so tunnel works in Docker).
-# The archive checksum is verified before extraction.
-FROM alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 AS tailscale
-ARG TARGETARCH
-RUN apk add --no-cache curl ca-certificates && \
-  mkdir -p /out && \
-  TS_VERSION=1.102.4 && \
-  TS_SHA_AMD64=50748df1045e60b5b695f19f4c56b0da36c019948b440fb456b6584a50f0d8b9 && \
-  TS_SHA_ARM64=9dd1e6a592a014bbaea0103167ffe299adeda4ba14e078ce9c2895364f6c4c3f && \
-  TARCH=${TARGETARCH:-amd64} && \
-  case "$TARCH" in \
-    amd64) TS_ARCH=amd64; TS_SHA="$TS_SHA_AMD64" ;; \
-    arm64) TS_ARCH=arm64; TS_SHA="$TS_SHA_ARM64" ;; \
-    *) echo "Unsupported arch: $TARCH"; exit 1 ;; \
-  esac && \
-  curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TS_VERSION}_${TS_ARCH}.tgz" -o /tmp/tailscale.tgz && \
-  echo "${TS_SHA}  /tmp/tailscale.tgz" | sha256sum -c - && \
-  tar -xzf /tmp/tailscale.tgz -C /tmp && \
-  cp /tmp/tailscale_${TS_VERSION}_${TS_ARCH}/tailscale /out/tailscale && \
-  cp /tmp/tailscale_${TS_VERSION}_${TS_ARCH}/tailscaled /out/tailscaled && \
-  chmod +x /out/tailscale /out/tailscaled
-
 FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS runner
 ARG APP_VERSION
 ARG VCS_REF
@@ -105,8 +83,6 @@ COPY --from=builder /app/runtime-deps/ ./node_modules/
 COPY --from=builder /app/custom-server.js ./custom-server.js
 COPY runtime-secrets.cjs ./runtime-secrets.cjs
 COPY --from=builder /app/open-sse ./open-sse
-# Next file tracing can omit sibling files; MITM runs server.js as a separate process.
-COPY --from=builder /app/src/mitm ./src/mitm
 # Standalone tracing may omit packages loaded through dynamic imports.
 COPY --from=builder /app/node_modules/node-forge ./node_modules/node-forge
 # SQLite is loaded dynamically by src/lib/db/driver.js; keep the target-architecture
@@ -118,17 +94,12 @@ COPY --from=native-deps /app/node_modules/file-uri-to-path ./node_modules/file-u
 COPY --from=builder /app/node_modules/next ./node_modules/next
 COPY --from=builder /app/node_modules/sql.js ./node_modules/sql.js
 RUN node -e "const Database = require('better-sqlite3'); const db = new Database(':memory:'); db.prepare('SELECT 1').get(); db.close(); console.log('SQLite native driver: better-sqlite3')"
-# Bundle Tailscale binaries into /usr/local/bin so they survive the /app/data volume mount.
-COPY --from=tailscale /out/tailscale /usr/local/bin/tailscale
-COPY --from=tailscale /out/tailscaled /usr/local/bin/tailscaled
-
 RUN mkdir -p /app/data /app/data-home && \
   chown -R node:node /app/data /app/data-home /app/.next && \
   ln -sf /app/data-home /root/.9router 2>/dev/null || true
 
-# Tailscale Funnel requires CAP_NET_ADMIN for TUN mode; keep su-exec for dropping privileges.
-# When using host socket mode (TAILSCALE_USE_HOST_SOCKET=true), no extra capability is needed.
-RUN apk --no-cache add su-exec ip6tables iptables
+# Drop privileges before starting the web gateway.
+RUN apk --no-cache add su-exec
 COPY docker/migrate-legacy-volume.cjs /usr/local/bin/migrate-legacy-volume.cjs
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

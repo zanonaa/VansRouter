@@ -27,7 +27,6 @@ export const OAuthModal = lazyModal(() => import("./OAuthModal"));
 export const ModelSelectModal = lazyModal(() => import("./ModelSelectModal"));
 export const ManualConfigModal = lazyModal(() => import("./ManualConfigModal"));
 export const ComboFormModal = lazyModal(() => import("./ComboFormModal"));
-export const McpMarketplaceModal = lazyModal(() => import("./McpMarketplaceModal"));
 export const KiroAuthModal = lazyModal(() => import("./KiroAuthModal"));
 export const KiroOAuthWrapper = lazyModal(() => import("./KiroOAuthWrapper"));
 export const KiroSocialOAuthModal = lazyModal(() => import("./KiroSocialOAuthModal"));

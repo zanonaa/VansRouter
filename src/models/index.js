@@ -35,8 +35,6 @@ export {
   addCustomModel,
   addCustomModelsBulk,
   deleteCustomModel,
-  getMitmAlias,
-  setMitmAliasAll,
   getApiKeys,
   createApiKey,
   deleteApiKey,

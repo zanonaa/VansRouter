@@ -45,13 +45,10 @@ describe("normalizeHostname", () => {
 
 describe("public-host auth model (no anonymous bypass)", () => {
   // The middleware must NOT turn a trusted hostname into an unconditional
-  // anonymous API bypass. Remote /v1 access on a trusted host still requires
-  // a valid API key, unless the operator explicitly opts into open access
-  // (requireApiKey !== true AND allowRemoteNoApiKey === true).
+  // anonymous API bypass. Remote /v1 access always requires a valid API key.
   function evaluate(host, hasValidKey, settings) {
     if (host === "localhost" || host === "127.0.0.1") return true; // local
     if (hasValidKey) return true;
-    if (settings && settings.requireApiKey !== true && settings.allowRemoteNoApiKey === true) return true;
     return false;
   }
 
@@ -67,12 +64,8 @@ describe("public-host auth model (no anonymous bypass)", () => {
     expect(evaluate("vr.example.com", false, { requireApiKey: true })).toBe(false);
   });
 
-  it("trusted host + requireApiKey off + allowRemoteNoApiKey off → blocked", () => {
-    expect(evaluate("vr.example.com", false, { requireApiKey: false, allowRemoteNoApiKey: false })).toBe(false);
-  });
-
-  it("trusted host + requireApiKey off + allowRemoteNoApiKey on → allowed (explicit opt-in)", () => {
-    expect(evaluate("vr.example.com", false, { requireApiKey: false, allowRemoteNoApiKey: true })).toBe(true);
+  it("legacy anonymous-access setting does not bypass the API key", () => {
+    expect(evaluate("vr.example.com", false, { requireApiKey: false, allowRemoteNoApiKey: true })).toBe(false);
   });
 
   it("untrusted host + valid key → allowed (API key is the authority)", () => {

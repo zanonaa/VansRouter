@@ -93,9 +93,7 @@ export function ExaSearchExampleCard({ providerId }) {
   );
 
   const [apiKey, setApiKey] = useState("");
-  const [useTunnel, setUseTunnel] = useState(false);
   const [localEndpoint, setLocalEndpoint] = useState("");
-  const [tunnelEndpoint, setTunnelEndpoint] = useState("");
   const [result, setResult] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
@@ -114,13 +112,6 @@ export function ExaSearchExampleCard({ providerId }) {
         setApiKey((d.keys || []).find((k) => k.isActive !== false)?.key || "");
       })
       .catch(() => {});
-    fetch("/api/tunnel/status")
-      .then((r) => r.json())
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch callback.
-      .then((d) => {
-        if (d.publicUrl) setTunnelEndpoint(d.publicUrl);
-      })
-      .catch(() => {});
     fetch("/api/providers/client")
       .then((r) => r.json())
       // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch callback.
@@ -133,7 +124,7 @@ export function ExaSearchExampleCard({ providerId }) {
       .catch(() => {});
   }, [providerId]);
 
-  const endpoint = useTunnel ? tunnelEndpoint : localEndpoint;
+  const endpoint = localEndpoint;
   const apiPath = kindConfig?.endpoint?.path || "/v1/search";
 
   const handleSelectPreset = (presetId) => {
@@ -272,20 +263,6 @@ export function ExaSearchExampleCard({ providerId }) {
             <span className="w-full min-w-0 flex-1 px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate">
               {endpoint}{apiPath}
             </span>
-            {tunnelEndpoint && (
-              <button
-                onClick={() => setUseTunnel((v) => !v)}
-                title={useTunnel ? "Using tunnel" : "Using local"}
-                className={`flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg border shrink-0 transition-colors ${
-                  useTunnel
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border text-text-muted hover:text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[14px]">wifi_tethering</span>
-                Tunnel
-              </button>
-            )}
           </div>
         </Row>
 
