@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Drawer from "@mui/material/Drawer";
@@ -12,6 +13,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Icon from "@mui/material/Icon";
 import Divider from "@mui/material/Divider";
+import { APP_CONFIG } from "@/shared/constants/config";
 
 const NAV = [
   { href: "/dashboard/endpoint", label: "Endpoint & Key", icon: "api" },
@@ -73,6 +75,18 @@ function NavSection({ title, items, pathname, onNavigate }) {
 
 export default function MuiSidebar({ open, onClose }) {
   const pathname = usePathname();
+  const [updateInfo, setUpdateInfo] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetch("/api/version")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => { if (!cancelled && data?.hasUpdate) setUpdateInfo(data); })
+        .catch(() => {});
+    }, 2500);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, []);
 
   const content = (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%", py: 1.5 }}>
@@ -119,6 +133,16 @@ export default function MuiSidebar({ open, onClose }) {
             </ListItemButton>
           </ListItem>
         </List>
+        <Box sx={{ px: 2.5, pb: 1.5, pt: 1 }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", fontVariantNumeric: "tabular-nums" }}>
+            v{APP_CONFIG.version}
+          </Typography>
+          {updateInfo?.latestVersion && (
+            <Typography variant="caption" sx={{ display: "block", color: "primary.main" }}>
+              ↑ New version available: v{updateInfo.latestVersion}
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );
@@ -138,13 +162,19 @@ export default function MuiSidebar({ open, onClose }) {
       >
         {content}
       </Drawer>
-      {/* Desktop: persistent drawer */}
+      {/* Desktop: fixed drawer */}
       <Drawer
         variant="permanent"
         open
         sx={{
           display: { xs: "none", lg: "block" },
-          "& .MuiDrawer-paper": { width: DRAWER_WIDTH, boxSizing: "border-box" },
+          "& .MuiDrawer-paper": {
+            width: DRAWER_WIDTH,
+            boxSizing: "border-box",
+            position: "fixed",
+            height: "100vh",
+            overflowX: "hidden",
+          },
         }}
       >
         {content}
