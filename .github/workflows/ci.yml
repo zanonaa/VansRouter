@@ -62,7 +62,7 @@ jobs:
 
       - name: Read version
         id: version
-        run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+        run: node -e 'console.log(`version=${require("./package.json").version}`)' >> "$GITHUB_OUTPUT"
 
       - name: Build and publish multi-architecture image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
