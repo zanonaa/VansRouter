@@ -36,6 +36,7 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	database.SetDataDir(cfg.DataDir)
 	sessions, err := auth.LoadSessions(cfg.DataDir, os.Getenv("JWT_SECRET"))
 	if err != nil {
 		return err
@@ -54,7 +55,21 @@ func run() error {
 		ChangeP: func(ctx context.Context, hash string) (map[string]any, error) {
 			return database.ChangePassword(ctx, db, hash)
 		},
-		Machine:           auth.NewMachineID(cfg.DataDir),
+		Machine:     auth.NewMachineID(cfg.DataDir),
+		ListAPIKeys: func(ctx context.Context) ([]map[string]any, error) { return database.GetApiKeys(ctx, db) },
+		GetAPIKey: func(ctx context.Context, id string) (map[string]any, error) {
+			return database.GetApiKeyById(ctx, db, id)
+		},
+		CreateAPIKey: func(ctx context.Context, name, machineId string) (map[string]any, error) {
+			return database.CreateApiKey(ctx, db, name, machineId)
+		},
+		UpdateAPIKey: func(ctx context.Context, id string, data map[string]any) (map[string]any, error) {
+			return database.UpdateApiKey(ctx, db, id, data)
+		},
+		DeleteAPIKey: func(ctx context.Context, id string) (bool, error) { return database.DeleteApiKey(ctx, db, id) },
+		ValidateAPIKey: func(ctx context.Context, key string) (map[string]any, error) {
+			return database.ValidateApiKey(ctx, db, key)
+		},
 		Initial:           initial,
 		InitialValid:      valid,
 		ForceSecure:       os.Getenv("AUTH_COOKIE_SECURE") == "true",

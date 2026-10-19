@@ -91,6 +91,13 @@ func (m *MachineID) cliSecret() string {
 	return m.secret
 }
 
+// MachineID reproduz getConsistentMachineId() (salt padrão 'endpoint-proxy-salt').
+func (m *MachineID) MachineID() string {
+	raw := m.rawID()
+	sum := sha256.Sum256([]byte(raw + "endpoint-proxy-salt"))
+	return hex.EncodeToString(sum[:])[:16]
+}
+
 // CLIToken reproduz getConsistentMachineId('9r-cli-auth').
 func (m *MachineID) CLIToken() string {
 	raw := m.rawID()
