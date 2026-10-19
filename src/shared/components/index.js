@@ -42,7 +42,6 @@ export const ChangelogModal = lazyModal(() => import("./ChangelogModal"));
 export const ProviderInfoCard = lazyModal(() => import("./ProviderInfoCard"));
 
 export { default as LanguageSwitcher } from "./LanguageSwitcher";
-export { default as NineRemoteButton } from "./NineRemoteButton";
 export { default as HeaderMenu } from "./HeaderMenu";
 export { default as RequestLogger } from "./RequestLogger";
 export { default as SegmentedControl } from "./SegmentedControl";
