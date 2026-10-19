@@ -1,3 +1,126 @@
+# v0.91.70 (2026-10-18)
+
+## Changes (fork-only)
+
+- Remove the "Available free tiers" catalog card from the quota page. It was a
+  static registry reference with no per-account data; the quota page now shows
+  only provider limits.
+
+# v0.91.69 (2026-10-18)
+
+## Fixes
+
+- **Catalog import 401**: any provider with a `modelsFetcher` was treated as a
+  public catalog and fetched without the connection key, so authenticated
+  catalogs (e.g. Token Harbor) answered 401. Only catalogs explicitly declared
+  `modelsFetcher.public === true` (OpenCode Free, Dahl) are now fetched
+  anonymously; the others send the stored key.
+
+# v0.91.68 (2026-10-18)
+
+## Fixes
+
+- **Import dropdown icons**: `select_all`/`done_all` are not in the Material
+  Symbols subset font, so they rendered as literal text. Use `download` and
+  `checklist`, which exist in the subset, keeping each item on one line.
+
+# v0.91.67 (2026-10-18)
+
+## Fixes
+
+- **Import dropdown layout**: the `Import all` / `Import batch` menu items
+  wrapped onto two lines and the `done_all` glyph overflowed. Items now stay on
+  a single line with `select_all`/`checklist` icons and a min-width menu.
+
+# v0.91.66 (2026-10-18)
+
+## Features
+
+- **Split provider model import** (#168, PR #170): the `Import models` button is
+  now a dropdown with `Import all` and `Import batch`, matching the proxy-pools
+  pattern. The batch dialog offers search, `Select all` (visible results),
+  `Clear`, individual selection, and `Test connection` against the active
+  connection, then `Import N models` or `Close`. Available on standard and
+  OpenAI/Anthropic-compatible nodes; nothing is written before confirmation.
+- **Inline batch model removal** (#169, PR #171): the deletion flow now mirrors
+  the combos page instead of opening a dialog. Each user-added model row has a
+  checkbox, with a `Select all (N)` toggle that reveals `Remove (N)` and
+  `Clear`. Removal is confirmed, scoped by provider and model kind (including
+  matching aliases), and leaves built-in models and connections untouched.
+
+## Compatibility
+
+- Supersedes the first-pass UX shipped conceptually in v0.91.65. Retains the
+  fork's proxy import (#158), OpenCode Free contract (#165), and catalog
+  discovery (#167 plus PROVIDER_MEDIA/public-catalog corrections) from 0.91.64.
+  These remain separate upstream pull requests.
+
+## Tests
+
+- 10 targeted tests across the import/removal helpers and custom-model repo
+  passed, plus ESLint on the changed files. Browser interaction coverage is not
+  automated; no Dev deployment is included in this release.
+
+# v0.91.65 (2026-10-18)
+
+## Features
+
+- **Provider model import** (#168, PR #170): discovered models now open a
+  selection preview on standard and compatible provider pages. Search, select
+  individual entries or visible results, clear selection, and confirm only the
+  desired batch. Cancelling does not write registrations; failed imports stay
+  visible in the dialog instead of reporting success.
+- **Batch model removal** (#169, PR #171): search and select user-added models,
+  review the exact batch, then confirm removal. Deletes are scoped by provider
+  and model kind, including matching aliases. Built-in models and provider
+  connections are not deleted. Requests are sequential, so an error explicitly
+  warns that earlier deletions may already have completed.
+
+## Compatibility
+
+- Retains the fork's proxy import (#158), OpenCode Free contract (#165), and
+  catalog discovery (#167 plus PROVIDER_MEDIA/public-catalog corrections) from
+  0.91.64. These remain separate upstream pull requests.
+
+## Tests
+
+- 98 targeted tests passed across eight files covering both new batch helpers,
+  proxy import, OpenCode identity/tool-choice, catalog filters, and SSRF guards.
+- ESLint passed on all six changed implementation files. Browser interaction
+  coverage is not automated; no Dev deployment is included in this release.
+
+# v0.91.64 (2026-10-18)
+
+- **Import models**: the connection route looked for `modelsFetcher` on the
+  transport object. The registry keeps it on `PROVIDER_MEDIA`, so OpenCode Free
+  still answered "does not support models listing" and the button requested
+  `https://opencode.ai/models` (404). The route now reads the declared catalog,
+  `https://opencode.ai/zen/v1/models`. Carries forward the free-tier session,
+  Responses body, retired-model, proxy-pool, and catalog-error fixes.
+
+# v0.91.63 (2026-10-18)
+
+- **Import models**: a saved OpenCode Free account made the button request
+  `https://opencode.ai/models`, which answers 404. The import now uses the
+  catalog the provider declares (`/zen/v1/models`). A failed public catalog
+  returns 502 with the reason instead of an empty list cached for 10 minutes.
+
+# v0.91.62 (2026-10-18)
+
+Local build while #158 and #165 wait on the upstream. Both branches merge
+cleanly onto v0.91.61; neither is in the official main yet.
+
+- **OpenCode Free**: the free tier rejects a session id whose 12 hex are not the
+  client's inverted timestamp (403) and a User-Agent below opencode/1.18.0 (426).
+  A foreign session is now one minted inverted id. The Responses lane clamps
+  `max_output_tokens` up to 16, rewrites a tool name the lane rejects, and pairs
+  an orphan `function_call`. `muse-spark-1.3-contributor-free` (410) and
+  `union-alpha` (unavailable) leave the seed; the auto-only `tool_choice` quirk
+  moves to `muse-spark-1.2-contributor-free`, the Responses model still served.
+- **Proxy pools**: import proxies from the public FreeProxyDB and VPSLab lists,
+  with the dashboard modal, explicit ordering, exact import counts, and a
+  multi-target health check.
+
 # v0.91.61 (2026-10-02)
 
 128 commits over the v0.91.51 tag: an upstream sync to decolua/9router v0.5.95

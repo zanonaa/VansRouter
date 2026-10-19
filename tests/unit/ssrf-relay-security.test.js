@@ -79,13 +79,25 @@ describe("generated relay source", () => {
     expect(RELAY_TARGET_GUARD_SOURCE).toContain("[4026531840, 4]");
   });
 
+  it("reads a provider catalog from modelsFetcher before deriving one from the chat base", () => {
+    const source = fs.readFileSync(
+      path.join(projectRoot, "src/app/api/providers/[id]/models/route.js"),
+      "utf8"
+    );
+    const catalog = source.indexOf("PROVIDER_MEDIA[connection.provider]?.modelsFetcher?.url");
+    const derived = source.indexOf("deriveValidateUrl(regCfg)");
+    expect(catalog).toBeGreaterThan(-1);
+    expect(derived).toBeGreaterThan(catalog);
+  });
+
   it("uses the SSRF guard and bounded timeout for suggested models", () => {
     const source = fs.readFileSync(
       path.join(projectRoot, "src/app/api/providers/suggested-models/route.js"),
       "utf8"
     );
-    expect(source).toContain("assertPublicUrl(url)");
+    expect(source).toContain("guardedFetch(url");
     expect(source).toMatch(/AbortSignal\.timeout\(\d+\)/);
+    expect(source).not.toMatch(/return NextResponse\.json\(\{ data: \[\] \}\)/);
   });
 });
 

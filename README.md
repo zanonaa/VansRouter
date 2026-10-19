@@ -108,6 +108,7 @@ Send standard OpenAI requests to Anthropic Claude or Google Gemini models, or vi
 - **Combo Routing**: Combine multiple providers under a single virtual model name with customizable fallback strategies (Priority Fallback, Round-Robin, Fusion Judge, and Capacity Auto-Switch).
 - **Circuit Breakers**: Tracks consecutive upstream failures and temporary 429 rate limits, automatically routing traffic to healthy standby accounts or proxy pools.
 - **Proxy Pool Integration**: Bind specific providers or accounts to SOCKS5/HTTP proxy pools with health scoring.
+- **Public Proxy Import**: One-click import of free proxy lists into the pool from [FreeProxyDB](https://freeproxydb.com/) (verified HTTP/SOCKS5 with country/anonymity/speed filters) and [VPSLab](https://github.com/VPSLabCloud/VPSLab-Free-Proxy-List) (plain ip:port lists by protocol/anonymity/SSL), with automatic dedupe against existing entries.
 
 ### 5. Multi-Tenant Access Control (ACL)
 Issue scoped API keys with granular permissions:
