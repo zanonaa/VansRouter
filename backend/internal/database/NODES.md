@@ -6,7 +6,9 @@ O pacote está ligado a GET/POST /api/provider-nodes, além de HEAD/OPTIONS, sob
 
 PUT/DELETE /api/provider-nodes/{id} agora estão registrados: atualização propaga prefix/baseUrl/nodeName/apiType às connections preservando campos específicos adicionais; exclusão remove as connections associadas antes do nó. Como na origem, as operações usam transações separadas e podem deixar alterações parciais quando uma escrita falha; erro retorna 500, não sucesso fictício.
 
-Connections porta consulta por ID, listagem/filtro/ordenação, mesclagem com reset de saúde quando testStatus=active, reordenação ao atualizar prioridade e exclusão por provider. Ainda faltam criação/deduplicação OAuth/API key, bulk, exclusão individual, limpeza e demais contratos HTTP de providers. A rota de validação de nós, catálogo/normalização de providers e proxyPoolsRepo também seguem pendentes.
+Connections porta consulta por ID, listagem/filtro/ordenação, mesclagem com reset de saúde quando testStatus=active, reordenação ao atualizar prioridade e exclusão por provider. Ainda faltam criação/deduplicação OAuth/API key, bulk, exclusão individual, limpeza e demais contratos HTTP de providers. A rota de validação de nós e catálogo/normalização de providers também seguem pendentes.
+
+ProxyPools agora porta o repositório de persistência: CRUD, filtros isActive/testStatus, ordenação por updatedAt, defaults e mesclagem preservando extras. Delete remove fitness e pool na mesma transação. Testes com falha sintética confirmam rollback da exclusão de fitness. Não registra rotas HTTP de proxyPools, não testa proxies reais nem cria schema. Endpoints, fitness repo completo e migrations seguem pendentes.
 
 Correção do acompanhamento: rotação de segredo JWT não é requisito de paridade identificado no backend original; não será acrescentada sem requisito específico. Limpeza global do limiter também não existe na origem e é melhoria opcional, não bloqueio da migração. Isso não elimina as divergências e pendências já documentadas em `../auth/README.md`, nem equivale a uma auditoria de autenticação aprovada.
 
