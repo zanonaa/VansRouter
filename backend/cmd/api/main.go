@@ -54,6 +54,7 @@ func run() error {
 		ChangeP: func(ctx context.Context, hash string) (map[string]any, error) {
 			return database.ChangePassword(ctx, db, hash)
 		},
+		Machine:           auth.NewMachineID(cfg.DataDir),
 		Initial:           initial,
 		InitialValid:      valid,
 		ForceSecure:       os.Getenv("AUTH_COOKIE_SECURE") == "true",

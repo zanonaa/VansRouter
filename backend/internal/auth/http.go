@@ -20,6 +20,7 @@ type HTTP struct {
 	Settings SettingsReader
 	ChangeP  PasswordWriter
 	Limiter  *Limiter
+	Machine  *MachineID
 	Initial  string
 	// InitialValid reproduz a política de INITIAL_PASSWORD em produção.
 	InitialValid bool
@@ -29,6 +30,14 @@ type HTTP struct {
 	// Bandeiras de ambiente consumidas por GET /api/settings.
 	EnableRequestLogs bool
 	EnableTranslator  bool
+}
+
+// CLIToken expõe o token do operador local para o middleware e testes.
+func (h *HTTP) CLIToken() string {
+	if h == nil || h.Machine == nil {
+		return ""
+	}
+	return h.Machine.CLIToken()
 }
 
 const resetHint = "Forgot password? Use the VansRouter CLI on the host to set a new dashboard password."
