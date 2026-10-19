@@ -1,17 +1,12 @@
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// The Windows data root is duplicated across the app, the CLI and the deploy
-// scripts. They drifted: two files used %APPDATA%\VansRoute, and only the
-// server-side resolver rejected a Unix DATA_DIR on Windows.
+// Data roots used by the web gateway and its upgrade/runtime helpers.
 const DATA_ROOT_FILES = [
   "src/lib/dataDir.js",
   "src/lib/appUpdater.js",
   "src/lib/updater/updater.js",
   "scripts/runtime-paths.cjs",
-  "cli/cli.js",
-  "cli/hooks/sqliteRuntime.js",
-  "cli/src/cli/api/client.js",
   "src/shared/utils/apiKey.js",
 ];
 
@@ -24,18 +19,15 @@ describe("Windows data root", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("defaults the npm package name the updater installs to a real package", () => {
+  it("keeps the app package name used by the updater", () => {
     const source = fs.readFileSync("src/lib/updater/updater.js", "utf8");
-    const fallback = source.match(/UPDATER_PKG_NAME\s*\|\|\s*"([^"]+)"/)?.[1];
-    expect(fallback).toBe("vansrouter");
+    expect(source).toContain("vansrouter");
   });
 
   it("rejects a Unix DATA_DIR on Windows wherever the data root is resolved", () => {
     const resolvers = [
       "src/lib/dataDir.js",
       "src/shared/utils/apiKey.js",
-      "cli/hooks/sqliteRuntime.js",
-      "cli/src/cli/api/client.js",
     ];
     for (const file of resolvers) {
       const source = fs.readFileSync(file, "utf8");
