@@ -1,3 +1,11 @@
+# v0.91.71 (2026-10-19)
+
+## Changes (fork-only)
+
+- Remove the Skills, CLI Tools and Remote promo UI plus their nav/header entries,
+  and prune the orphaned free-tier catalog. Shared cli-tools components and
+  `/api/cli-tools/*` routes stay because MITM/Cowork depend on them.
+
 # v0.91.70 (2026-10-18)
 
 ## Changes (fork-only)
