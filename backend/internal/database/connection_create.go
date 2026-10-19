@@ -50,7 +50,13 @@ func (c Connections) Create(ctx context.Context, data map[string]any) (map[strin
 		return nil, err
 	}
 	defer tx.Rollback()
-	rows, err := tx.QueryContext(ctx, "SELECT "+connectionColumns+" FROM providerConnections WHERE provider = ?", data["provider"])
+	query := "SELECT " + connectionColumns + " FROM providerConnections WHERE provider = ?"
+	args := []any{data["provider"]}
+	if data["authType"] == "apikey" && jsonTruthy(data["name"]) {
+		query += " AND authType = ? AND name = ?"
+		args = append(args, "apikey", data["name"])
+	}
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
