@@ -10,7 +10,8 @@ import (
 )
 
 // Connections porta as operações necessárias à propagação de providerNodes.
-// Criação/deduplicação/bulk/reordenação explícita ainda não foram portadas.
+// Criação/deduplicação também estão disponíveis; bulk/reordenação explícita
+// e exclusão individual ainda não foram portados.
 type Connections struct{ DB *sql.DB }
 
 const connectionColumns = "id, provider, authType, name, email, priority, isActive, data, createdAt, updatedAt"
@@ -162,6 +163,26 @@ func (c Connections) Update(ctx context.Context, id string, patch map[string]any
 		return nil, err
 	}
 	provider := existing["provider"]
+	normalized := healthPatch(existing, patch)
+	for k, v := range normalized {
+		existing[k] = v
+	}
+	existing["updatedAt"] = time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
+	if err = writeConnection(ctx, tx, existing); err != nil {
+		return nil, err
+	}
+	if _, ok := patch["priority"]; ok {
+		if err = reorderConnections(ctx, tx, provider); err != nil {
+			return nil, err
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	return existing, nil
+}
+
+func healthPatch(existing, patch map[string]any) map[string]any {
 	normalized := map[string]any{}
 	for k, v := range patch {
 		normalized[k] = v
@@ -182,22 +203,7 @@ func (c Connections) Update(ctx context.Context, id string, patch map[string]any
 			}
 		}
 	}
-	for k, v := range normalized {
-		existing[k] = v
-	}
-	existing["updatedAt"] = time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
-	if err = writeConnection(ctx, tx, existing); err != nil {
-		return nil, err
-	}
-	if _, ok := patch["priority"]; ok {
-		if err = reorderConnections(ctx, tx, provider); err != nil {
-			return nil, err
-		}
-	}
-	if err = tx.Commit(); err != nil {
-		return nil, err
-	}
-	return existing, nil
+	return normalized
 }
 func (c Connections) DeleteByProvider(ctx context.Context, provider string) (int64, error) {
 	// O total de linhas removidas corresponde ao contador retornado pela origem.
