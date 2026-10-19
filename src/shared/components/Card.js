@@ -1,15 +1,28 @@
 "use client";
 
+import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
 import { cn } from "@/shared/utils/cn";
 
 const CARD_PADDINGS = {
-  none: "",
-  xs: "p-3",
-  sm: "p-4",
-  md: "p-6",
-  lg: "p-8",
+  none: 0,
+  xs: 1.5,
+  sm: 2,
+  md: 3,
+  lg: 4,
 };
 
+function MsIcon({ children }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 20 }}>
+      {children}
+    </Icon>
+  );
+}
+
+// MUI-backed Card. Same API (title, subtitle, icon, action, padding, hover, elev).
 export default function Card({
   children,
   title,
@@ -20,98 +33,123 @@ export default function Card({
   hover = false,
   elev = false,
   className,
+  sx,
   ...props
 }) {
-
   return (
-    <div
-      className={cn(
-        "bg-surface border border-border-subtle",
-        elev ? "rounded-[14px] shadow-[var(--shadow-elev)]" : "rounded-[14px] shadow-[var(--shadow-soft)]",
-        hover && "hover:shadow-[var(--shadow-warm)] hover:border-brand-500/30 transition-all cursor-pointer",
-        CARD_PADDINGS[padding],
-        className
-      )}
+    <Paper
+      elevation={0}
+      variant="outlined"
+      className={cn(className)}
+      sx={{
+        p: CARD_PADDINGS[padding] ?? 3,
+        borderRadius: "14px",
+        bgcolor: "background.paper",
+        borderColor: "divider",
+        boxShadow: elev ? "var(--shadow-elev)" : "var(--shadow-soft)",
+        transition: "box-shadow 150ms ease, border-color 150ms ease",
+        ...(hover
+          ? {
+              cursor: "pointer",
+              "&:hover": { boxShadow: "var(--shadow-warm)", borderColor: "primary.main" },
+            }
+          : {}),
+        ...sx,
+      }}
       {...props}
     >
       {(title || action) && (
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
             {icon && (
-              <div className="p-2 rounded-[10px] bg-bg text-text-muted">
-                <span className="material-symbols-outlined text-[20px]">{icon}</span>
-              </div>
+              <Box sx={{ p: 1, borderRadius: "10px", bgcolor: "action.hover", color: "text.secondary", display: "grid", placeItems: "center" }}>
+                <MsIcon>{icon}</MsIcon>
+              </Box>
             )}
-            <div>
+            <Box sx={{ minWidth: 0 }}>
               {title && (
-                <h3 className="text-text-main font-semibold">{title}</h3>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "text.primary" }}>
+                  {title}
+                </Typography>
               )}
               {subtitle && (
-                <p className="text-sm text-text-muted">{subtitle}</p>
+                <Typography variant="body2" color="text.secondary">
+                  {subtitle}
+                </Typography>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
           {action}
-        </div>
+        </Box>
       )}
       {children}
-    </div>
+    </Paper>
   );
 }
 
 Card.Section = function CardSection({ children, className, ...props }) {
   return (
-    <div
-      className={cn(
-        "p-4 rounded-[10px]",
-        "bg-bg border border-border-subtle",
-        className
-      )}
+    <Box
+      className={cn(className)}
+      sx={{ p: 2, borderRadius: "10px", bgcolor: "action.hover", border: 1, borderColor: "divider" }}
       {...props}
     >
       {children}
-    </div>
+    </Box>
   );
 };
 
 Card.Row = function CardRow({ children, className, ...props }) {
   return (
-    <div
-      className={cn(
-        "p-3 -mx-3 px-3 transition-colors",
-        "border-b border-border-subtle last:border-b-0",
-        "hover:bg-surface-2/50",
-        className
-      )}
+    <Box
+      className={cn(className)}
+      sx={{
+        p: 1.5,
+        borderBottom: 1,
+        borderColor: "divider",
+        transition: "background-color 150ms ease",
+        "&:last-of-type": { borderBottom: 0 },
+        "&:hover": { bgcolor: "action.hover" },
+      }}
       {...props}
     >
       {children}
-    </div>
+    </Box>
   );
 };
 
-Card.ListItem = function CardListItem({
-  children,
-  actions,
-  className,
-  ...props
-}) {
+Card.ListItem = function CardListItem({ children, actions, className, ...props }) {
   return (
-    <div
-      className={cn(
-        "group flex items-center justify-between p-3 -mx-3 px-3",
-        "border-b border-border-subtle last:border-b-0",
-        "hover:bg-surface-2/50 transition-colors",
-        className
-      )}
+    <Box
+      className={cn("group", className)}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        p: 1.5,
+        borderBottom: 1,
+        borderColor: "divider",
+        transition: "background-color 150ms ease",
+        "&:last-of-type": { borderBottom: 0 },
+        "&:hover": { bgcolor: "action.hover" },
+      }}
       {...props}
     >
-      <div className="flex-1 min-w-0">{children}</div>
+      <Box sx={{ flex: 1, minWidth: 0 }}>{children}</Box>
       {actions && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            opacity: 0,
+            transition: "opacity 150ms ease",
+            ".group:hover &": { opacity: 1 },
+          }}
+        >
           {actions}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
