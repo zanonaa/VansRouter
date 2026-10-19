@@ -36,8 +36,11 @@ func run() error {
 	}
 	defer db.Close()
 	server := &http.Server{
-		Addr:              cfg.Address,
-		Handler:           router.New(),
+		Addr: cfg.Address,
+		Handler: router.New(func(ctx context.Context) error {
+			var ok int
+			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
+		}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.
