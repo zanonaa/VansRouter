@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-// Derived from the Kimchi CLI reference audit (.docs/audit/kimchi-cli-reference.md).
+// Derived from the provider's documented model and quota behavior.
 // The official CLI catalog (https://models.dev/api.json) lists kimi-k2.6 output limit
 // as 16384 tokens, so 9router now matches that ceiling for NVIDIA-hosted k2.6 while
 // still protecting against the >=~32k degeneration observed in the original audit.

@@ -18,7 +18,6 @@ const eslintConfig = defineConfig([
       "open-sse/**/*.js",
       "src/lib/**/*.js",
       "src/sse/**/*.js",
-      "cli/**/*.js",
     ],
     languageOptions: {
       globals: {
@@ -47,15 +46,6 @@ const eslintConfig = defineConfig([
       "no-undef": "error",
     },
   },
-  // Service Worker script uses the `clients` global.
-  {
-    files: ["cli/app/public/sw.js"],
-    languageOptions: {
-      globals: {
-        clients: "readonly",
-      },
-    },
-  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -64,15 +54,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // CLI shipped/bundled artifacts and dependencies (lint the source, not output):
-    "cli/node_modules/**",
-    "cli/app/_nm/**",
-    "cli/app/.next/**",
-    "cli/app/.next-cli-build/**",
-    "cli/app/src/mitm/server.js",
-    // Agent worktrees are independent copies, not project source.
-    ".kilo/**",
-    ".kilocode/**",
   ]),
 ]);
 

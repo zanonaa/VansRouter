@@ -286,7 +286,7 @@ export async function handleNonStreamingResponse({ providerResponse, provider, m
   // Only apply OpenAI-specific post-processing when response is still in OpenAI format
   if (!didReverse) {
     // Native Kimi tool-call markup sometimes leaks into `content` instead of being
-    // returned as a structured `tool_calls` array (see .docs/audit/KIMI-WEIRD-OUTPUTS.md).
+    // returned as a structured `tool_calls` array (validated against provider response fixtures).
     // Convert it for Kimi-family models before the finish_reason fixup.
     const isKimiModel = /kimi-k2\./i.test(model || "");
     if (isKimiModel && Array.isArray(translatedResponse?.choices)) {

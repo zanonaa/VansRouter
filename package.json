@@ -21,9 +21,7 @@
     "preflight:upgrade": "node scripts/preflight-upgrade.cjs",
     "dev:bun": "bun --bun next dev --webpack --port 20127",
     "build:bun": "bun --bun next build --webpack",
-    "start:bun": "bun ./.next/standalone/custom-server.js",
-    "cli:pack": "npm --prefix cli run pack:cli",
-    "cli:publish": "npm --prefix cli run publish:cli"
+    "start:bun": "bun ./.next/standalone/custom-server.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

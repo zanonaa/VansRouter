@@ -9,7 +9,7 @@ export const APP_CONFIG = {
 
 // GitHub configuration
 export const GITHUB_CONFIG = {
-  changelogUrl: "https://raw.githubusercontent.com/Vanszs/VansRouter/refs/heads/main/CHANGELOG.md",
+  changelogUrl: "https://raw.githubusercontent.com/zanonaa/VansRouter/refs/heads/main/CHANGELOG.md",
   donateUrl: "",
 };
 

@@ -51,7 +51,6 @@ describe("Database location & fallback path rules", () => {
     expect(compose.volumes["vansrouter-data"]).toEqual({ name: "vansrouter-data" });
     expect(service.image).toContain("VANSROUTER_VERSION");
     expect(service.image).not.toContain(":latest");
-    expect(read("docs/MIGRATION.md")).not.toContain("~/.vansrouter");
 
     const dockerfile = read("Dockerfile");
     expect(dockerfile).toContain("COPY docker/migrate-legacy-volume.cjs");

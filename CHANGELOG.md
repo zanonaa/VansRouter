@@ -2,13 +2,12 @@
 
 ## 1.2.0
 
-- Simplified CI to one Linux job that tests, builds the application, and builds Docker images for AMD64 and ARM64.
-- Published Docker tags from `main` to GHCR.
+- Remove CLI Tools, MITM, MCP bridge, bundled Tunnel/Tailscale, and generated Cursor/Claude combo presets. Manual combo creation remains.
+- Require API keys for remote gateway requests; local loopback access remains available.
+- Keep the product focused on the self-hosted web dashboard and API gateway.
 
 ## 0.91.70
 
-- Removed the static “Available free tiers” catalog from the Quota page.
-- Removed the Skills, CLI Tools, and Remote promotional pages from the fork.
-- Fixed authenticated provider model discovery so providers such as TokenHarbor use their saved API key; only explicitly public catalogs are fetched anonymously.
-
-Earlier release history from the upstream project is intentionally omitted from this web-gateway fork.
+- Remove the static “Available free tiers” catalog from the Quota page.
+- Remove Skills, CLI Tools, and the Remote promotion from the fork UI.
+- Fix authenticated provider model discovery while preserving anonymous access only for explicitly public catalogs.

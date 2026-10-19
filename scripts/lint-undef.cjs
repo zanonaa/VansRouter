@@ -6,7 +6,7 @@ const { spawnSync } = require("child_process");
 // react-hooks/import/style violations.
 const result = spawnSync(
   "./node_modules/.bin/eslint",
-  ["--ext", ".js", "src/", "open-sse/", "cli/", "--ignore-pattern", "cli/app/**", "--ignore-pattern", "cli/_nm/**", "--ignore-pattern", "cli/.build-home/**"],
+  ["--ext", ".js", "src/", "open-sse/"],
   { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
 );
 

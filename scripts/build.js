@@ -6,7 +6,7 @@
 //   user profile (HOME / USERPROFILE / APPDATA / LOCALAPPDATA). The legacy
 //   compatibility junctions there ("Application Data", "Local Settings", ...)
 //   are reparse points that throw `EPERM: scandir` and crash the build with an
-//   unhandledRejection. The fix (mirrors cli/scripts/build-cli.js) is to point
+//   unhandledRejection. The fix in this build is to point
 //   those env vars at an empty local `.fakehome` dir for the duration of the
 //   build, so the globs scan a clean, junction-free directory.
 //
