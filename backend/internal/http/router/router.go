@@ -58,6 +58,13 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 		r.Head("/api/settings", withoutBody(authentication.SettingsGuard(authentication.SettingsGet)))
 		r.Patch("/api/settings", authentication.SettingsGuard(authentication.SettingsPatch))
 		r.Options("/api/settings", authentication.SettingsGuard(options("GET, HEAD, PATCH, OPTIONS")))
+		r.Route("/api/keys", func(r chi.Router) {
+			r.Get("/", authentication.APIKeysGet)
+			r.Post("/", authentication.APIKeysPost)
+			r.Get("/{id}", authentication.APIKeyGet)
+			r.Put("/{id}", authentication.APIKeyPut)
+			r.Delete("/{id}", authentication.APIKeyDelete)
+		})
 	}
 	return r
 }

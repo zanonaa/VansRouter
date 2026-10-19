@@ -61,6 +61,19 @@ func (h *HTTP) canAccessLocalOnlyRoute(r *http.Request) bool {
 	return ok && local(r)
 }
 
+func extractAPIKey(r *http.Request) string {
+	if auth := r.Header.Get("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+		return strings.TrimSpace(auth[7:])
+	}
+	if v := r.Header.Get("x-api-key"); v != "" {
+		return strings.TrimSpace(v)
+	}
+	if v := r.Header.Get("x-goog-api-key"); v != "" {
+		return strings.TrimSpace(v)
+	}
+	return strings.TrimSpace(r.URL.Query().Get("key"))
+}
+
 func (h *HTTP) canAccessPublicLLMAPI(r *http.Request) bool {
 	if local(r) {
 		return true
@@ -68,7 +81,15 @@ func (h *HTTP) canAccessPublicLLMAPI(r *http.Request) bool {
 	if h.hasValidCLIToken(r) {
 		return true
 	}
-	// Validação de API key ainda não migrada; recusa remoto sem CLI token.
+	// Validação real de API key.
+	if h.ValidateAPIKey != nil {
+		key := extractAPIKey(r)
+		if key != "" {
+			if rec, _ := h.ValidateAPIKey(r.Context(), key); rec != nil {
+				return true
+			}
+		}
+	}
 	return false
 }
 

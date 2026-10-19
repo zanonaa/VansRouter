@@ -21,7 +21,14 @@ type HTTP struct {
 	ChangeP  PasswordWriter
 	Limiter  *Limiter
 	Machine  *MachineID
-	Initial  string
+	// API keys
+	ListAPIKeys    func(context.Context) ([]map[string]any, error)
+	GetAPIKey      func(context.Context, string) (map[string]any, error)
+	CreateAPIKey   func(context.Context, string, string) (map[string]any, error)
+	UpdateAPIKey   func(context.Context, string, map[string]any) (map[string]any, error)
+	DeleteAPIKey   func(context.Context, string) (bool, error)
+	ValidateAPIKey func(context.Context, string) (map[string]any, error)
+	Initial        string
 	// InitialValid reproduz a política de INITIAL_PASSWORD em produção.
 	InitialValid bool
 	ForceSecure  bool
@@ -30,6 +37,14 @@ type HTTP struct {
 	// Bandeiras de ambiente consumidas por GET /api/settings.
 	EnableRequestLogs bool
 	EnableTranslator  bool
+}
+
+// MachineID expõe o identificador usado em API keys.
+func (h *HTTP) MachineID() string {
+	if h == nil || h.Machine == nil {
+		return ""
+	}
+	return h.Machine.MachineID()
 }
 
 // CLIToken expõe o token do operador local para o middleware e testes.
