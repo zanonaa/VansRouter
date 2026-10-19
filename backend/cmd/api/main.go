@@ -55,6 +55,13 @@ func run() error {
 		ChangeP: func(ctx context.Context, hash string) (map[string]any, error) {
 			return database.ChangePassword(ctx, db, hash)
 		},
+		WriteSettings: func(ctx context.Context, updates map[string]any) (map[string]any, error) {
+			raw, err := database.UpdateSettings(ctx, db, updates)
+			if err != nil {
+				return nil, err
+			}
+			return database.MergeWithDefaults(raw), nil
+		},
 		Machine:     auth.NewMachineID(cfg.DataDir),
 		ListAPIKeys: func(ctx context.Context) ([]map[string]any, error) { return database.GetApiKeys(ctx, db) },
 		GetAPIKey: func(ctx context.Context, id string) (map[string]any, error) {
