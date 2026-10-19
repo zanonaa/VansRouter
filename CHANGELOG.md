@@ -1,3 +1,11 @@
+# v0.91.70 (2026-10-18)
+
+## Changes (fork-only)
+
+- Remove the "Available free tiers" catalog card from the quota page. It was a
+  static registry reference with no per-account data; the quota page now shows
+  only provider limits.
+
 # v0.91.69 (2026-10-18)
 
 ## Fixes
