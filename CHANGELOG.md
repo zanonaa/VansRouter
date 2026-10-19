@@ -1,3 +1,21 @@
+# v1.0.0 (2026-10-19)
+
+## Highlights (fork-only)
+
+- **Major release.** The fork is now maintained independently of upstream; the
+  open upstream pull requests were closed and all work happens here.
+- **MUI dashboard shell pilot**: sidebar + header rebuilt with MUI (Material),
+  themed with the 9Router palette. Enabled in the image via
+  `NEXT_PUBLIC_MUI_SHELL=1`. Pages are unchanged; the Tailwind shell remains as
+  a fallback when the flag is off.
+- Build memory: MUI/emotion raise `next build` usage, so the image now builds
+  with `NODE_OPTIONS=--max-old-space-size=6144`.
+
+## Earlier 0.91.x
+
+- Removed Skills, CLI Tools and Remote promo UI; pruned the orphaned free-tier
+  catalog; fixed the authenticated-catalog 401 (Token Harbor).
+
 # v0.91.71 (2026-10-19)
 
 ## Changes (fork-only)

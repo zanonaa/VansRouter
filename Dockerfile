@@ -22,7 +22,9 @@ RUN --mount=type=cache,target=/pnpm/store \
   pnpm install --frozen-lockfile --store-dir=/pnpm/store
 
 COPY . ./
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_OPTIONS="--max-old-space-size=6144" \
+    NEXT_PUBLIC_MUI_SHELL=1
 RUN pnpm run build && \
   node scripts/package-closure.cjs open /app/node_modules /app/runtime-deps
 
