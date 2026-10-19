@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import IconButton from "@mui/material/IconButton";
+import MuiButton from "@mui/material/Button";
 import { Card, Button, Input, Modal, CardSkeleton, Toggle, ConfirmModal } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { getCurrentLocale, onLocaleChange } from "@/i18n/runtime";
@@ -21,6 +27,96 @@ import StatusAlert from "./components/StatusAlert";
 import Tooltip from "./components/Tooltip";
 import SecurityWarning from "./components/SecurityWarning";
 import { buildProviderList } from "@/shared/utils/aclProviderList";
+
+function MsIcon({ children, sx, className = "" }) {
+  return (
+    <Icon className={`material-symbols-outlined ${className}`.trim()} baseClassName="" sx={sx}>
+      {children}
+    </Icon>
+  );
+}
+
+function Spinner({ size = 14 }) {
+  return <MsIcon sx={{ fontSize: size, animation: "mui-spinner-rotate 1s linear infinite", "@keyframes mui-spinner-rotate": { to: { transform: "rotate(360deg)" } } }}>progress_activity</MsIcon>;
+}
+
+function SectionTitle({ icon, children, sx }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, ...sx }}>
+      <MsIcon sx={{ color: "primary.main", fontSize: 24 }}>{icon}</MsIcon>
+      <Typography sx={{ fontSize: 18, fontWeight: 600 }}>{children}</Typography>
+    </Box>
+  );
+}
+
+function SubtleLink({ href, children, sx }) {
+  return (
+    <Box
+      component="a"
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      sx={{ fontSize: 12, fontWeight: 400, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 }, ...sx }}
+    >
+      {children}
+    </Box>
+  );
+}
+
+// Inline status banner matching the original Tailwind tones.
+function Banner({ tone = "neutral", children, sx }) {
+  return (
+    <Box
+      sx={(theme) => ({
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        px: 1.5,
+        py: 0.75,
+        borderRadius: "6px",
+        border: 1,
+        fontSize: 14,
+        minWidth: 0,
+        ...(tone === "neutral" && {
+          borderColor: theme.palette.divider,
+          bgcolor: "var(--color-surface-2)",
+          color: theme.palette.text.secondary,
+        }),
+        ...(tone === "warn" && {
+          borderColor: theme.palette.mode === "dark" ? "#92400e" : "#fcd34d",
+          bgcolor: "rgba(245,158,11,0.05)",
+          color: theme.palette.mode === "dark" ? "#fbbf24" : "#d97706",
+        }),
+        ...(tone === "error" && {
+          borderColor: theme.palette.mode === "dark" ? "#991b1b" : "#fca5a5",
+          bgcolor: "rgba(239,68,68,0.05)",
+          color: theme.palette.mode === "dark" ? "#f87171" : "#dc2626",
+        }),
+        ...(typeof sx === "function" ? sx(theme) : sx),
+      })}
+    >
+      {children}
+    </Box>
+  );
+}
+
+const LABEL_CHIP = (active) => ({
+  fontSize: 12,
+  fontFamily: "ui-monospace, monospace",
+  px: 0.75,
+  py: 0.25,
+  borderRadius: "4px",
+  flexShrink: 0,
+  minWidth: 88,
+  textAlign: "center",
+  bgcolor: active ? "rgba(229,106,74,0.10)" : "var(--color-surface-2)",
+  color: active ? "primary.main" : "text.secondary",
+});
+
+const POWER_BUTTON_SX = { color: "#dc2626", "&:hover": { bgcolor: "rgba(239,68,68,0.10)" } };
+const COPY_BUTTON_SX = { color: "text.secondary", "&:hover": { color: "primary.main", bgcolor: "var(--color-surface-2)" } };
+
 export default function APIPageClient() {
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -990,10 +1086,10 @@ export default function APIPageClient() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-8">
+      <Stack spacing={4}>
         <CardSkeleton />
         <CardSkeleton />
-      </div>
+      </Stack>
     );
   }
 
@@ -1013,16 +1109,13 @@ export default function APIPageClient() {
           : "Unreachable";
 
   return (
-    <div className="flex flex-col gap-8">
+    <Stack spacing={4}>
       {/* Endpoint Card */}
       <Card>
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">api</span>
-          API Endpoint
-        </h2>
+        <SectionTitle icon="api" sx={{ mb: 2 }}>API Endpoint</SectionTitle>
 
         {/* Endpoint rows */}
-        <div className="flex flex-col gap-2">
+        <Stack spacing={1}>
           {/* Local */}
           <EndpointRow
             label="Local"
@@ -1032,76 +1125,69 @@ export default function APIPageClient() {
             onCopy={copy}
           />
           {/* Cloudflare Tunnel */}
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-mono px-1.5 py-0.5 rounded shrink-0 min-w-[88px] text-center ${
-              tunnelEnabled ? "bg-primary/10 text-primary" : "bg-surface-2 text-text-muted"
-            }`}>Tunnel</span>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box component="span" sx={LABEL_CHIP(tunnelEnabled)}>Tunnel</Box>
             {tunnelEnabled && !tunnelLoading && tunnelReachable ? (
               <>
-                <Input value={`${tunnelPublicUrl || tunnelUrl}/v1`} readOnly className="flex-1 font-mono text-sm" />
-                <button
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Input value={`${tunnelPublicUrl || tunnelUrl}/v1`} readOnly className="" />
+                </Box>
+                <IconButton
                   onClick={() => copy(`${tunnelPublicUrl || tunnelUrl}/v1`, "tunnel_url")}
-                  className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors shrink-0"
+                  sx={COPY_BUTTON_SX}
+                  aria-label="Copy tunnel URL"
                 >
-                  <span className="material-symbols-outlined text-[18px]">{copied === "tunnel_url" ? "check" : "content_copy"}</span>
-                </button>
-                <button
-                  onClick={() => setShowDisableTunnelModal(true)}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
-                  title="Disable Tunnel"
-                >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                  <MsIcon sx={{ fontSize: 18 }}>{copied === "tunnel_url" ? "check" : "content_copy"}</MsIcon>
+                </IconButton>
+                <IconButton onClick={() => setShowDisableTunnelModal(true)} title="Disable Tunnel" sx={POWER_BUTTON_SX}>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : tunnelEnabled && !tunnelLoading && !tunnelReachable ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-amber-300 dark:border-amber-800 bg-amber-500/5 text-sm text-amber-600 dark:text-amber-400">
-                  <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                <Banner tone="warn">
+                  <Spinner />
                   {tunnelEverReachable ? "Tunnel reconnecting..." : "Tunnel checking..."}
-                </div>
-                <button
-                  onClick={() => setShowDisableTunnelModal(true)}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
-                  title="Disable Tunnel"
-                >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                </Banner>
+                <IconButton onClick={() => setShowDisableTunnelModal(true)} title="Disable Tunnel" sx={POWER_BUTTON_SX}>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : tunnelLoading ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-input text-sm text-text-muted">
-                  <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                <Banner tone="neutral">
+                  <Spinner />
                   {tunnelProgress || "Creating tunnel..."}
-                </div>
-                <button
+                </Banner>
+                <IconButton
                   onClick={() => { setTunnelLoading(false); setTunnelProgress(""); }}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
                   title="Stop"
+                  sx={POWER_BUTTON_SX}
                 >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : tunnelStatus?.type === "error" ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-red-300 dark:border-red-800 bg-red-500/5 text-sm text-red-600 dark:text-red-400">
-                  <span className="material-symbols-outlined text-sm">error</span>
+                <Banner tone="error">
+                  <MsIcon sx={{ fontSize: 14 }}>error</MsIcon>
                   {tunnelStatus.message}
-                </div>
+                </Banner>
                 <Button size="sm" icon="cloud_upload" onClick={() => setShowEnableTunnelModal(true)}>Enable</Button>
               </>
             ) : tunnelChecking ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-input text-sm text-text-muted">
-                  <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                <Banner tone="neutral">
+                  <Spinner />
                   Checking...
-                </div>
-                <button
+                </Banner>
+                <IconButton
                   onClick={() => setTunnelChecking(false)}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
                   title="Stop"
+                  sx={POWER_BUTTON_SX}
                 >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : (
               <Button
@@ -1122,49 +1208,42 @@ export default function APIPageClient() {
                 Enable
               </Button>
             )}
-          </div>
+          </Box>
           {/* Tailscale */}
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-mono px-1.5 py-0.5 rounded shrink-0 min-w-[88px] text-center ${
-              tsEnabled ? "bg-primary/10 text-primary" : "bg-surface-2 text-text-muted"
-            }`}>Tailscale</span>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box component="span" sx={LABEL_CHIP(tsEnabled)}>Tailscale</Box>
             {tsEnabled && !tsLoading && tsReachable ? (
               <>
-                <Input value={`${tsUrl}/v1`} readOnly className="flex-1 font-mono text-sm" />
-                <button
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Input value={`${tsUrl}/v1`} readOnly className="" />
+                </Box>
+                <IconButton
                   onClick={() => copy(`${tsUrl}/v1`, "ts_url")}
-                  className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors shrink-0"
+                  sx={COPY_BUTTON_SX}
+                  aria-label="Copy Tailscale URL"
                 >
-                  <span className="material-symbols-outlined text-[18px]">{copied === "ts_url" ? "check" : "content_copy"}</span>
-                </button>
-                <button
-                  onClick={() => setShowDisableTsModal(true)}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
-                  title="Disable Tailscale"
-                >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                  <MsIcon sx={{ fontSize: 18 }}>{copied === "ts_url" ? "check" : "content_copy"}</MsIcon>
+                </IconButton>
+                <IconButton onClick={() => setShowDisableTsModal(true)} title="Disable Tailscale" sx={POWER_BUTTON_SX}>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : tsEnabled && !tsLoading && !tsReachable ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-amber-300 dark:border-amber-800 bg-amber-500/5 text-sm text-amber-600 dark:text-amber-400">
-                  <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                <Banner tone="warn">
+                  <Spinner />
                   {tsEverReachable ? "Tailscale reconnecting..." : "Tailscale checking..."}
-                </div>
-                <button
-                  onClick={() => setShowDisableTsModal(true)}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
-                  title="Disable Tailscale"
-                >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                </Banner>
+                <IconButton onClick={() => setShowDisableTsModal(true)} title="Disable Tailscale" sx={POWER_BUTTON_SX}>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : (tsLoading || tsConnecting) ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-input text-sm text-text-muted">
-                  <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                <Banner tone="neutral">
+                  <Spinner />
                   {tsProgress || "Connecting..."}
-                </div>
+                </Banner>
                 {tsAuthUrl && (
                   <Button
                     size="sm"
@@ -1174,26 +1253,27 @@ export default function APIPageClient() {
                     {tsAuthLabel || "Open"}
                   </Button>
                 )}
-                <button
+                <IconButton
                   onClick={() => { setTsLoading(false); setTsConnecting(false); setTsProgress(""); clearUserAuth(); }}
-                  className="p-2 hover:bg-red-500/10 rounded text-red-500 transition-colors shrink-0"
                   title="Stop"
+                  sx={POWER_BUTTON_SX}
                 >
-                  <span className="material-symbols-outlined text-[18px]">power_settings_new</span>
-                </button>
+                  <MsIcon sx={{ fontSize: 18 }}>power_settings_new</MsIcon>
+                </IconButton>
               </>
             ) : tsStatus?.type === "error" ? (
               <>
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded border border-red-300 dark:border-red-800 bg-red-500/5 text-sm text-red-600 dark:text-red-400">
-                  <span className="material-symbols-outlined text-sm">error</span>
+                <Banner tone="error">
+                  <MsIcon sx={{ fontSize: 14 }}>error</MsIcon>
                   {tsStatus.message}
-                </div>
+                </Banner>
                 <Button size="sm" icon="vpn_lock" onClick={handleOpenTsModal}>Enable</Button>
               </>
             ) : (
-              <Button
-                size="sm"
-                icon="vpn_lock"
+              <MuiButton
+                size="small"
+                variant="contained"
+                disableElevation
                 onClick={() => {
                   if (isLoginUnsafe) {
                     setTsStatus({ type: "error", message: `Security required: ${unsafeReason}` });
@@ -1201,27 +1281,34 @@ export default function APIPageClient() {
                   }
                   handleOpenTsModal();
                 }}
-                className="bg-linear-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white!"
+                startIcon={<MsIcon sx={{ fontSize: 18 }}>vpn_lock</MsIcon>}
+                sx={{
+                  background: "linear-gradient(to right, #6366f1, #a855f7)",
+                  color: "#fff",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": { background: "linear-gradient(to right, #4f46e5, #9333ea)" },
+                }}
               >
                 Enable
-              </Button>
+              </MuiButton>
             )}
-          </div>
-        </div>
+          </Box>
+        </Stack>
 
         {/* Pre-enable security gate banner */}
         {isLoginUnsafe && !tunnelEnabled && !tsEnabled && (
-          <div className="mt-4">
+          <Box sx={{ mt: 2 }}>
             <SecurityWarning
               message={unsafeReason}
               action={{ label: "Open settings", href: "/dashboard/profile" }}
             />
-          </div>
+          </Box>
         )}
 
         {/* Security warnings when tunnel or tailscale is active */}
         {(tunnelEnabled || tsEnabled) && (
-          <div className="mt-4 flex flex-col gap-2">
+          <Stack spacing={1} sx={{ mt: 2 }}>
             {!requireApiKey && (
               <SecurityWarning
                 message="Require API key is disabled — your endpoint is publicly accessible without authentication."
@@ -1241,291 +1328,297 @@ export default function APIPageClient() {
                 }}
               />
             )}
-          </div>
+          </Stack>
         )}
 
         {/* Tunnel dashboard access option */}
         {(tunnelEnabled || tsEnabled) && (
-          <div className="mt-4 pt-4 border-t border-border flex items-center gap-3">
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: "divider", display: "flex", alignItems: "center", gap: 1.5 }}>
             <Toggle
               checked={tunnelDashboardAccess}
               onChange={() => handleTunnelDashboardAccess(!tunnelDashboardAccess)}
             />
-            <div className="flex items-center gap-1.5">
-              <p className="font-medium text-sm">Allow dashboard access via tunnel</p>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <Typography sx={{ fontWeight: 500, fontSize: 14 }}>Allow dashboard access via tunnel</Typography>
               <Tooltip text="When enabled, the dashboard can be accessed through your tunnel or Tailscale URL (login still required). When disabled, dashboard access via tunnel/Tailscale is completely blocked." />
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
       </Card>
 
       {/* Token Saver (RTK + Caveman + Ponytail + Headroom) */}
       <Card id="rtk">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">bolt</span>
-            Token Saver
-          </h2>
-        </div>
-        <div className="flex items-center justify-between pt-2 pb-4 border-b border-border gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+          <SectionTitle icon="bolt">Token Saver</SectionTitle>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1, pb: 2, borderBottom: 1, borderColor: "divider", gap: 2 }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 500 }}>
               Compress tool output{" "}
-              <a
-                href="https://github.com/rtk-ai/rtk"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-normal text-primary underline hover:opacity-80"
-              >
-                (RTK)
-              </a>
-            </p>
-            <p className="text-sm text-text-muted">
+              <SubtleLink href="https://github.com/rtk-ai/rtk">(RTK)</SubtleLink>
+            </Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               git/grep/ls/tree/logs → 60-90% fewer input tokens
-            </p>
-          </div>
+            </Typography>
+          </Box>
           <Toggle
             checked={rtkEnabled}
             onChange={() => handleRtkEnabled(!rtkEnabled)}
           />
-        </div>
-        <div className="flex items-center justify-between py-4 border-b border-border gap-4 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 flex-wrap">
-              <p className="font-medium">
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, borderBottom: 1, borderColor: "divider", gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+              <Typography sx={{ fontWeight: 500 }}>
                 Compress context{" "}
-                <a
-                  href="https://github.com/chopratejas/headroom"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-normal text-primary underline hover:opacity-80"
-                >
-                  (Headroom)
-                </a>
-              </p>
-              <span className={`text-xs px-2 py-0.5 rounded ${headroomRunning ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
+                <SubtleLink href="https://github.com/chopratejas/headroom">(Headroom)</SubtleLink>
+              </Typography>
+              <Box
+                component="span"
+                sx={{
+                  fontSize: 12,
+                  px: 1,
+                  py: 0.25,
+                  borderRadius: "4px",
+                  bgcolor: headroomRunning ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
+                  color: headroomRunning ? "#10b981" : "#f59e0b",
+                }}
+              >
                 {headroomStatusLabel}
-              </span>
-              <button
+              </Box>
+              <Box
+                component="button"
                 type="button"
                 onClick={() => setShowHeadroomInstallModal(true)}
-                className="text-xs text-primary underline hover:opacity-80"
+                sx={{
+                  fontSize: 12,
+                  color: "primary.main",
+                  textDecoration: "underline",
+                  background: "none",
+                  border: 0,
+                  p: 0,
+                  cursor: "pointer",
+                  "&:hover": { opacity: 0.8 },
+                }}
               >
-                  {headroomRunning ? "Manage" : "Setup"}
-              </button>
-            </div>
-            <p className="text-sm text-text-muted mt-1">
+                {headroomRunning ? "Manage" : "Setup"}
+              </Box>
+            </Box>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
               Compress prompts via /v1/compress before routing to the model
-            </p>
-          </div>
+            </Typography>
+          </Box>
           <Toggle
             checked={headroomEnabled}
             onChange={() => handleHeadroomEnabled(!headroomEnabled)}
           />
-        </div>
-        <div className="flex items-center justify-between pt-4 gap-4 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium">
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 2, gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 500 }}>
               Compress LLM output{" "}
-              <a
-                href="https://github.com/JuliusBrussee/caveman"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-normal text-primary underline hover:opacity-80"
-              >
-                (Caveman)
-              </a>
-            </p>
-            <p className="text-sm text-text-muted">
+              <SubtleLink href="https://github.com/JuliusBrussee/caveman">(Caveman)</SubtleLink>
+            </Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Terse-style system prompt → ~65% fewer output tokens (up to 87%)
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, shrink: 0 }}>
             {cavemanEnabled && (
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-1.5">
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                   {visibleCavemanLevels.map((lvl) => (
-                    <button
+                    <Button
                       key={lvl.id}
+                      size="sm"
+                      variant={cavemanLevel === lvl.id ? "primary" : "secondary"}
                       onClick={() => handleCavemanLevel(lvl.id)}
-                      className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
-                        cavemanLevel === lvl.id
-                          ? "bg-primary text-white border-primary"
-                          : "bg-transparent border-border text-text-muted hover:bg-surface-2"
-                      }`}
                       title={lvl.desc}
                     >
                       {lvl.label}
-                    </button>
+                    </Button>
                   ))}
-                </div>
-                <p className="text-xs text-primary">
+                </Box>
+                <Typography sx={{ fontSize: 12, color: "primary.main" }}>
                   {CAVEMAN_LEVELS.find((lvl) => lvl.id === cavemanLevel)?.desc}
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
             <Toggle
               checked={cavemanEnabled}
               onChange={() => handleCavemanEnabled(!cavemanEnabled)}
             />
-          </div>
-        </div>
-        <div className="flex items-center justify-between pt-4 mt-4 border-t border-border gap-4 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium">
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 2, mt: 2, borderTop: 1, borderColor: "divider", gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 500 }}>
               Lazy senior dev{" "}
-              <a
-                href="https://github.com/DietrichGebert/ponytail"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-normal text-primary underline hover:opacity-80"
-              >
-                (Ponytail)
-              </a>
-            </p>
-            <p className="text-sm text-text-muted">
+              <SubtleLink href="https://github.com/DietrichGebert/ponytail">(Ponytail)</SubtleLink>
+            </Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Bias the model toward minimal code: YAGNI, reuse stdlib, deletion over addition
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, shrink: 0 }}>
             {ponytailEnabled && (
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-1.5">
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                   {PONYTAIL_LEVELS.map((lvl) => (
-                    <button
+                    <Button
                       key={lvl.id}
+                      size="sm"
+                      variant={ponytailLevel === lvl.id ? "primary" : "secondary"}
                       onClick={() => handlePonytailLevel(lvl.id)}
-                      className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
-                        ponytailLevel === lvl.id
-                          ? "bg-primary text-white border-primary"
-                          : "bg-transparent border-border text-text-muted hover:bg-surface-2"
-                      }`}
                       title={lvl.desc}
                     >
                       {lvl.label}
-                    </button>
+                    </Button>
                   ))}
-                </div>
-                <p className="text-xs text-primary">
+                </Box>
+                <Typography sx={{ fontSize: 12, color: "primary.main" }}>
                   {PONYTAIL_LEVELS.find((lvl) => lvl.id === ponytailLevel)?.desc}
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
             <Toggle
               checked={ponytailEnabled}
               onChange={() => handlePonytailEnabled(!ponytailEnabled)}
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Card>
 
       {/* API Keys */}
       <Card id="require-api-key">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">vpn_key</span>
-            API Keys
-          </h2>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <SectionTitle icon="vpn_key">API Keys</SectionTitle>
           <Button icon="add" onClick={() => setShowAddModal(true)}>
             Create Key
           </Button>
-        </div>
+        </Box>
 
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-border">
-          <div>
-            <p className="font-medium">Require API key</p>
-            <p className="text-sm text-text-muted">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 2, mb: 2, borderBottom: 1, borderColor: "divider" }}>
+          <Box>
+            <Typography sx={{ fontWeight: 500 }}>Require API key</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Requests without a valid key will be rejected
-            </p>
-          </div>
+            </Typography>
+          </Box>
           <Toggle
             checked={requireApiKey}
             onChange={() => handleRequireApiKey(!requireApiKey)}
           />
-        </div>
+        </Box>
 
         {isRemoteHost && !requireApiKey && (
-          <div className="mb-4 -mt-2">
+          <Box sx={{ mb: 2, mt: -1 }}>
             <SecurityWarning message="Endpoint is exposed without an API key." />
-          </div>
+          </Box>
         )}
 
         {!requireApiKey && isRemoteHost && (
-          <div className="flex items-center justify-between p-4 rounded-xl bg-surface/50 border border-border/30 mb-4">
-            <div>
-              <p className="text-sm font-medium text-text-main">
+          <Box
+            sx={(theme) => ({
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              p: 2,
+              borderRadius: "12px",
+              bgcolor: theme.palette.mode === "dark" ? "rgba(38,38,38,0.5)" : "rgba(255,255,255,0.5)",
+              border: 1,
+              borderColor: theme.palette.mode === "dark" ? "rgba(51,51,51,0.3)" : "rgba(229,231,235,0.3)",
+              mb: 2,
+            })}
+          >
+            <Box>
+              <Typography sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>
                 Allow Remote Access Without API Key
-              </p>
-              <p className="text-sm text-text-muted">
+              </Typography>
+              <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
                 Let non-loopback requests reach /v1/* without a key (use with caution)
-              </p>
-            </div>
+              </Typography>
+            </Box>
             <Toggle
               checked={allowRemoteNoApiKey}
               onChange={() => handleAllowRemoteNoApiKey(!allowRemoteNoApiKey)}
             />
-          </div>
+          </Box>
         )}
 
         {!requireApiKey && allowRemoteNoApiKey && (
-          <div className="mb-4 -mt-2">
+          <Box sx={{ mb: 2, mt: -1 }}>
             <SecurityWarning message="Remote access without an API key is enabled — anyone who can reach this endpoint can use your providers." />
-          </div>
+          </Box>
         )}
 
         {keys.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
-              <span className="material-symbols-outlined text-[32px]">vpn_key</span>
-            </div>
-            <p className="text-text-main font-medium mb-1">No API keys yet</p>
-            <p className="text-sm text-text-muted mb-4">Create your first API key to get started</p>
+          <Box sx={{ textAlign: "center", py: 6 }}>
+            <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 64, height: 64, borderRadius: "50%", bgcolor: "rgba(229,106,74,0.10)", color: "primary.main", mb: 2 }}>
+              <MsIcon sx={{ fontSize: 32 }}>vpn_key</MsIcon>
+            </Box>
+            <Typography sx={{ color: "text.primary", fontWeight: 500, mb: 0.5 }}>No API keys yet</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2 }}>Create your first API key to get started</Typography>
             <Button icon="add" onClick={() => setShowAddModal(true)}>
               Create Key
             </Button>
-          </div>
+          </Box>
         ) : (
-          <div className="flex flex-col">
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
             {keys.map((key) => (
-              <div
+              <Box
                 key={key.id}
-                className={`group flex items-center justify-between py-3 border-b border-black/[0.03] dark:border-white/[0.03] last:border-b-0 ${key.isActive === false ? "opacity-60" : ""}`}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  py: 1.5,
+                  borderBottom: 1,
+                  borderColor: "rgba(0,0,0,0.03)",
+                  "&:last-of-type": { borderBottom: 0 },
+                  opacity: key.isActive === false ? 0.6 : 1,
+                  "&:hover .key-actions": { opacity: 1 },
+                }}
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{key.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <code className="text-xs text-text-muted font-mono">
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{key.name}</Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+                    <Box component="code" sx={{ fontSize: 12, color: "text.secondary", fontFamily: "ui-monospace, monospace" }}>
                       {visibleKeys.has(key.id) ? key.key : maskKey(key.key)}
-                    </code>
-                    <button
+                    </Box>
+                    <IconButton
                       onClick={() => toggleKeyVisibility(key.id)}
-                      className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                       title={visibleKeys.has(key.id) ? "Hide key" : "Show key"}
+                      sx={COPY_BUTTON_SX}
                     >
-                      <span className="material-symbols-outlined text-[14px]">
+                      <MsIcon sx={{ fontSize: 14 }}>
                         {visibleKeys.has(key.id) ? "visibility_off" : "visibility"}
-                      </span>
-                    </button>
-                    <button
+                      </MsIcon>
+                    </IconButton>
+                    <IconButton
                       onClick={() => copy(key.key, key.id)}
-                      className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
+                      sx={COPY_BUTTON_SX}
                     >
-                      <span className="material-symbols-outlined text-[14px]">
+                      <MsIcon sx={{ fontSize: 14 }}>
                         {copied === key.id ? "check" : "content_copy"}
-                      </span>
-                    </button>
-                  </div>
-                  <p className="text-xs text-text-muted mt-1">
+                      </MsIcon>
+                    </IconButton>
+                  </Box>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
                     Created {new Date(key.createdAt).toLocaleDateString()}
-                  </p>
-                   {key.isActive === false && (
-                    <p className="text-xs text-orange-500 mt-1">Paused</p>
+                  </Typography>
+                  {key.isActive === false && (
+                    <Typography sx={{ fontSize: 12, color: "#f97316", mt: 0.5 }}>Paused</Typography>
                   )}
-                   {/* ACL badges */}
+                  {/* ACL badges */}
                   {(key.allowedProviders || key.allowedCombos || key.allowedKinds) && (
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
                       {key.allowedProviders && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-500/20" title={key.allowedProviders.join(", ")}>
+                        <Box
+                          component="span"
+                          title={key.allowedProviders.join(", ")}
+                          sx={{ fontSize: 10, px: 0.75, py: 0.25, borderRadius: "4px", bgcolor: "rgba(59,130,246,0.10)", color: "#3b82f6" }}
+                        >
                           {key.allowedProviders.length === 0
                             ? "No providers"
                             : key.allowedProviders.map((stored) => {
@@ -1537,30 +1630,30 @@ export default function APIPageClient() {
                                 if (resolved) return resolved;
                                 return stored;
                               }).join(", ")}
-                        </span>
+                        </Box>
                       )}
                       {key.allowedCombos && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-500 dark:bg-purple-500/20">
+                        <Box component="span" sx={{ fontSize: 10, px: 0.75, py: 0.25, borderRadius: "4px", bgcolor: "rgba(168,85,247,0.10)", color: "#a855f7" }}>
                           {key.allowedCombos.length === 0 ? "No combos" : key.allowedCombos.join(", ")}
-                        </span>
+                        </Box>
                       )}
                       {key.allowedKinds && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-500 dark:bg-green-500/20">
+                        <Box component="span" sx={{ fontSize: 10, px: 0.75, py: 0.25, borderRadius: "4px", bgcolor: "rgba(34,197,94,0.10)", color: "#22c55e" }}>
                           {key.allowedKinds.length === 0 ? "No kinds" : key.allowedKinds.join(", ")}
-                        </span>
+                        </Box>
                       )}
-                    </div>
+                    </Box>
                   )}
-                </div>
-                <div className="flex items-center gap-2">
+                </Box>
+                <Box className="key-actions" sx={{ display: "flex", alignItems: "center", gap: 1, opacity: { xs: 1, sm: 0 }, transition: "opacity 150ms" }}>
                   {/* Edit ACL button */}
-                  <button
+                  <IconButton
                     onClick={() => handleOpenEditKey(key)}
-                    className="p-2 hover:bg-primary/10 rounded text-primary opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                     title="Edit access control"
+                    sx={{ color: "primary.main", "&:hover": { bgcolor: "rgba(229,106,74,0.10)" } }}
                   >
-                    <span className="material-symbols-outlined text-[18px]">tune</span>
-                  </button>
+                    <MsIcon sx={{ fontSize: 18 }}>tune</MsIcon>
+                  </IconButton>
                   <Toggle
                     size="sm"
                     checked={key.isActive ?? true}
@@ -1580,16 +1673,16 @@ export default function APIPageClient() {
                     }}
                     title={key.isActive ? "Pause key" : "Resume key"}
                   />
-                  <button
+                  <IconButton
                     onClick={() => handleDeleteKey(key.id)}
-                    className="p-2 hover:bg-red-500/10 rounded text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
+                    sx={{ color: "#dc2626", "&:hover": { bgcolor: "rgba(239,68,68,0.10)" } }}
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
-                </div>
-              </div>
+                    <MsIcon sx={{ fontSize: 18 }}>delete</MsIcon>
+                  </IconButton>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
         )}
       </Card>
 
@@ -1602,14 +1695,14 @@ export default function APIPageClient() {
           setNewKeyName("");
         }}
       >
-        <div className="flex flex-col gap-4">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <Input
             label="Key Name"
             value={newKeyName}
             onChange={(e) => setNewKeyName(e.target.value)}
             placeholder="Production Key"
           />
-          <div className="flex gap-2">
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button onClick={handleCreateKey} fullWidth disabled={!newKeyName.trim()}>
               Create
             </Button>
@@ -1623,8 +1716,8 @@ export default function APIPageClient() {
             >
               Cancel
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Created Key Modal */}
@@ -1633,21 +1726,31 @@ export default function APIPageClient() {
         title="API Key Created"
         onClose={() => setCreatedKey(null)}
       >
-        <div className="flex flex-col gap-4">
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2 font-medium">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box
+            sx={(theme) => ({
+              bgcolor: theme.palette.mode === "dark" ? "rgba(113,63,18,0.20)" : "#fefce8",
+              border: 1,
+              borderColor: theme.palette.mode === "dark" ? "#854d0e" : "#fef08a",
+              borderRadius: "8px",
+              p: 2,
+            })}
+          >
+            <Typography sx={(theme) => ({ fontSize: 14, color: theme.palette.mode === "dark" ? "#fef08a" : "#854d0e", mb: 0.5, fontWeight: 500 })}>
               Save this key now!
-            </p>
-            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+            </Typography>
+            <Typography sx={(theme) => ({ fontSize: 14, color: theme.palette.mode === "dark" ? "#fde047" : "#a16207" })}>
               This is the only time you will see this key. Store it securely.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Input
-              value={createdKey || ""}
-              readOnly
-              className="flex-1 font-mono text-sm"
-            />
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Input
+                value={createdKey || ""}
+                readOnly
+                className=""
+              />
+            </Box>
             <Button
               variant="secondary"
               icon={copied === "created_key" ? "check" : "content_copy"}
@@ -1655,11 +1758,11 @@ export default function APIPageClient() {
             >
               {copied === "created_key" ? "Copied!" : "Copy"}
             </Button>
-          </div>
+          </Box>
           <Button onClick={() => setCreatedKey(null)} fullWidth>
             Done
           </Button>
-        </div>
+        </Box>
       </Modal>
 
       {/* Edit ACL Modal */}
@@ -1668,129 +1771,185 @@ export default function APIPageClient() {
         title={`Edit Access: ${editingKey?.name || ""}`}
         onClose={() => !editSaving && setEditingKey(null)}
       >
-        <div className="flex flex-col gap-5">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
           {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Key Name</label>
+          <Box>
+            <Typography component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 0.5 }}>Key Name</Typography>
             <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Key name" />
-          </div>
+          </Box>
 
           {/* Service Kinds */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium">Service Kinds</label>
-              <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+              <Typography component="label" sx={{ fontSize: 14, fontWeight: 500 }}>Service Kinds</Typography>
+              <Box component="label" sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 12, cursor: "pointer" }}>
                 <input type="checkbox" checked={editKindsAll} onChange={(e) => setEditKindsAll(e.target.checked)} />
-                <span className="text-text-muted">All allowed</span>
-              </label>
-            </div>
+                <Box component="span" sx={{ color: "text.secondary" }}>All allowed</Box>
+              </Box>
+            </Box>
             {!editKindsAll && (
-              <div className="flex flex-wrap gap-2">
-                {ALL_KINDS.map((kind) => (
-                  <label key={kind} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${editKinds.includes(kind) ? "border-primary bg-primary/10 text-primary" : "border-border-subtle text-text-muted hover:border-primary/40"}`}>
-                    <input type="checkbox" className="hidden" checked={editKinds.includes(kind)} onChange={() => toggleEditKind(kind)} />
-                    {kind}
-                  </label>
-                ))}
-              </div>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {ALL_KINDS.map((kind) => {
+                  const active = editKinds.includes(kind);
+                  return (
+                    <Box
+                      key={kind}
+                      component="label"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.75,
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: "8px",
+                        border: 1,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        transition: "border-color 150ms, background-color 150ms",
+                        borderColor: active ? "primary.main" : "var(--color-border-subtle)",
+                        bgcolor: active ? "rgba(229,106,74,0.10)" : "transparent",
+                        color: active ? "primary.main" : "text.secondary",
+                        "&:hover": { borderColor: "rgba(229,106,74,0.4)" },
+                      }}
+                    >
+                      <input type="checkbox" hidden checked={active} onChange={() => toggleEditKind(kind)} />
+                      {kind}
+                    </Box>
+                  );
+                })}
+              </Box>
             )}
-            {editKindsAll && <p className="text-xs text-text-muted">This key can access all service kinds.</p>}
-          </div>
+            {editKindsAll && <Typography sx={{ fontSize: 12, color: "text.secondary" }}>This key can access all service kinds.</Typography>}
+          </Box>
 
           {/* Providers */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium">Providers</label>
-              <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+              <Typography component="label" sx={{ fontSize: 14, fontWeight: 500 }}>Providers</Typography>
+              <Box component="label" sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 12, cursor: "pointer" }}>
                 <input type="checkbox" checked={editProvidersAll} onChange={(e) => setEditProvidersAll(e.target.checked)} />
-                <span className="text-text-muted">All allowed</span>
-              </label>
-            </div>
+                <Box component="span" sx={{ color: "text.secondary" }}>All allowed</Box>
+              </Box>
+            </Box>
             {!editProvidersAll && (
               <>
-                <div className="max-h-60 overflow-y-auto border border-border-subtle rounded-lg p-2 space-y-1">
+                <Box sx={{ maxHeight: 240, overflowY: "auto", border: 1, borderColor: "var(--color-border-subtle)", borderRadius: "8px", p: 1, "& > * + *": { mt: 0.5 } }}>
                   {providerList.length === 0 ? (
-                    <p className="text-xs text-text-muted p-2">No providers configured.</p>
+                    <Typography sx={{ fontSize: 12, color: "text.secondary", p: 1 }}>No providers configured.</Typography>
                   ) : (
                     providerList.map((p) => {
                       const checked = editProviders.includes(p.id);
                       return (
-                        <label key={p.id} className={`flex items-center gap-2 px-2 py-2 rounded text-xs cursor-pointer transition-colors ${checked ? "bg-primary/10 text-primary" : "hover:bg-surface-2"}`}>
-                          <input type="checkbox" checked={checked} onChange={() => toggleEditProvider(p.id)} className="rounded" />
-                          <div className="flex-1 min-w-0">
-                            <span className="font-medium">{p.displayName}</span>
+                        <Box
+                          key={p.id}
+                          component="label"
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            px: 1,
+                            py: 1,
+                            borderRadius: "4px",
+                            fontSize: 12,
+                            cursor: "pointer",
+                            transition: "background-color 150ms",
+                            bgcolor: checked ? "rgba(229,106,74,0.10)" : "transparent",
+                            color: checked ? "primary.main" : "inherit",
+                            "&:hover": { bgcolor: checked ? "rgba(229,106,74,0.10)" : "var(--color-surface-2)" },
+                          }}
+                        >
+                          <input type="checkbox" checked={checked} onChange={() => toggleEditProvider(p.id)} />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Box component="span" sx={{ fontWeight: 500 }}>{p.displayName}</Box>
                             {p.prefix && (
-                              <span className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-surface-2 text-text-muted font-mono">{p.prefix}</span>
+                              <Box component="span" sx={{ ml: 0.75, fontSize: 10, px: 0.5, py: 0.25, borderRadius: "4px", bgcolor: "var(--color-surface-2)", color: "text.secondary", fontFamily: "ui-monospace, monospace" }}>{p.prefix}</Box>
                             )}
-                          </div>
-                          <span className="text-text-muted text-[10px] shrink-0">{p.count} conn</span>
-                        </label>
+                          </Box>
+                          <Box component="span" sx={{ color: "text.secondary", fontSize: 10, flexShrink: 0 }}>{p.count} conn</Box>
+                        </Box>
                       );
                     })
                   )}
-                </div>
+                </Box>
                 {editProviders.length === 0 && (
-                  <p className="text-xs text-warning bg-warning/10 border border-warning/20 rounded px-2 py-1 mt-1.5 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[14px]">warning</span>
-                    <span>Warning: Zero providers selected. This key will have NO access to any providers (Deny All).</span>
-                  </p>
+                  <Box sx={{ fontSize: 12, color: "#f59e0b", bgcolor: "rgba(245,158,11,0.10)", border: 1, borderColor: "rgba(245,158,11,0.20)", borderRadius: "4px", px: 1, py: 0.5, mt: 0.75, display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <MsIcon sx={{ fontSize: 14 }}>warning</MsIcon>
+                    <Box component="span">Warning: Zero providers selected. This key will have NO access to any providers (Deny All).</Box>
+                  </Box>
                 )}
               </>
             )}
-            {editProvidersAll && <p className="text-xs text-text-muted">This key can access all providers ({providerList.length}).</p>}
-          </div>
+            {editProvidersAll && <Typography sx={{ fontSize: 12, color: "text.secondary" }}>This key can access all providers ({providerList.length}).</Typography>}
+          </Box>
 
           {/* Combos */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium">Combos</label>
-              <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+              <Typography component="label" sx={{ fontSize: 14, fontWeight: 500 }}>Combos</Typography>
+              <Box component="label" sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 12, cursor: "pointer" }}>
                 <input type="checkbox" checked={editCombosAll} onChange={(e) => setEditCombosAll(e.target.checked)} />
-                <span className="text-text-muted">All allowed</span>
-              </label>
-            </div>
+                <Box component="span" sx={{ color: "text.secondary" }}>All allowed</Box>
+              </Box>
+            </Box>
             {!editCombosAll && (
-              <div className="max-h-40 overflow-y-auto border border-border-subtle rounded-lg p-2 space-y-1">
+              <Box sx={{ maxHeight: 160, overflowY: "auto", border: 1, borderColor: "var(--color-border-subtle)", borderRadius: "8px", p: 1, "& > * + *": { mt: 0.5 } }}>
                 {comboList.length === 0 ? (
-                  <p className="text-xs text-text-muted p-2">No combos configured.</p>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary", p: 1 }}>No combos configured.</Typography>
                 ) : (
                   comboList.map((combo) => {
                     const name = combo.name || combo.id;
                     const checked = editCombos.includes(name);
                     return (
-                      <label key={name} className={`flex items-center gap-2 px-2 py-1.5 rounded text-xs cursor-pointer transition-colors ${checked ? "bg-primary/10 text-primary" : "hover:bg-surface-2"}`}>
-                        <input type="checkbox" checked={checked} onChange={() => toggleEditCombo(name)} className="rounded" />
-                        <span>{name}</span>
-                        <span className="text-text-muted ml-auto text-[10px]">{Array.isArray(combo.models) ? combo.models.length : 0} models</span>
-                      </label>
+                      <Box
+                        key={name}
+                        component="label"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          px: 1,
+                          py: 0.75,
+                          borderRadius: "4px",
+                          fontSize: 12,
+                          cursor: "pointer",
+                          transition: "background-color 150ms",
+                          bgcolor: checked ? "rgba(229,106,74,0.10)" : "transparent",
+                          color: checked ? "primary.main" : "inherit",
+                          "&:hover": { bgcolor: checked ? "rgba(229,106,74,0.10)" : "var(--color-surface-2)" },
+                        }}
+                      >
+                        <input type="checkbox" checked={checked} onChange={() => toggleEditCombo(name)} />
+                        <Box component="span">{name}</Box>
+                        <Box component="span" sx={{ color: "text.secondary", ml: "auto", fontSize: 10 }}>{Array.isArray(combo.models) ? combo.models.length : 0} models</Box>
+                      </Box>
                     );
                   })
                 )}
-              </div>
+              </Box>
             )}
-            {editCombosAll && <p className="text-xs text-text-muted">This key can access all combos.</p>}
-          </div>
+            {editCombosAll && <Typography sx={{ fontSize: 12, color: "text.secondary" }}>This key can access all combos.</Typography>}
+          </Box>
 
           {/* ACL info */}
-          <div className="text-xs text-text-muted bg-surface-2 rounded-lg p-3 border border-border-subtle">
-            <p className="font-medium mb-1">How it works:</p>
-            <ul className="list-disc pl-4 space-y-0.5">
+          <Box sx={{ fontSize: 12, color: "text.secondary", bgcolor: "var(--color-surface-2)", borderRadius: "8px", p: 1.5, border: 1, borderColor: "var(--color-border-subtle)" }}>
+            <Typography sx={{ fontWeight: 500, mb: 0.5 }}>How it works:</Typography>
+            <Box component="ul" sx={{ listStyle: "disc", pl: 2, "& li": { mb: 0.25 } }}>
               <li><strong>All allowed</strong> = unrestricted (default). No ACL filtering.</li>
               <li><strong>Unchecked + empty</strong> = deny everything of that type.</li>
               <li><strong>Checked items</strong> = only those items are accessible.</li>
-            </ul>
-          </div>
+            </Box>
+          </Box>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <Box sx={{ display: "flex", gap: 1.5 }}>
             <Button onClick={() => setEditingKey(null)} variant="ghost" fullWidth disabled={editSaving}>
               Cancel
             </Button>
             <Button onClick={handleSaveEditKey} fullWidth disabled={editSaving}>
               {editSaving ? "Saving..." : "Save ACL"}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Enable Tunnel Modal */}
@@ -1799,42 +1958,42 @@ export default function APIPageClient() {
         title="Enable Tunnel"
         onClose={() => setShowEnableTunnelModal(false)}
       >
-        <div className="flex flex-col gap-4">
-          <div className="bg-surface-2 border border-border-subtle rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-primary">cloud_upload</span>
-              <div>
-                <p className="text-sm text-text-main font-medium mb-1">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ bgcolor: "var(--color-surface-2)", border: 1, borderColor: "var(--color-border-subtle)", borderRadius: "8px", p: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+              <MsIcon sx={{ color: "primary.main" }}>cloud_upload</MsIcon>
+              <Box>
+                <Typography sx={{ fontSize: 14, color: "text.primary", fontWeight: 500, mb: 0.5 }}>
                   Cloudflare Tunnel
-                </p>
-                <p className="text-sm text-text-muted">
+                </Typography>
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
                   Expose your local 9Router to the internet. No port forwarding, no static IP needed. Share endpoint URL with your team or use it in Cursor, Cline, and other AI tools from anywhere.
-                </p>
-              </div>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
 
-          <div className="grid grid-cols-2 gap-3">
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
             {TUNNEL_BENEFITS.map((benefit) => (
-              <div key={benefit.title} className="flex flex-col items-center text-center p-3 rounded-lg bg-sidebar/50">
-                <span className="material-symbols-outlined text-xl text-primary mb-1">{benefit.icon}</span>
-                <p className="text-xs font-semibold">{benefit.title}</p>
-                <p className="text-xs text-text-muted">{benefit.desc}</p>
-              </div>
+              <Box key={benefit.title} sx={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", p: 1.5, borderRadius: "8px", bgcolor: "var(--color-bg-alt)" }}>
+                <MsIcon sx={{ fontSize: 20, color: "primary.main", mb: 0.5 }}>{benefit.icon}</MsIcon>
+                <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{benefit.title}</Typography>
+                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{benefit.desc}</Typography>
+              </Box>
             ))}
-          </div>
+          </Box>
 
-          <p className="text-xs text-text-muted">
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
             Requires outbound port 7844 (TCP/UDP). Connection may take 10-30s.
-          </p>
+          </Typography>
 
-          <div className="flex gap-2">
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button onClick={handleEnableTunnel} fullWidth>
               Start Tunnel
             </Button>
             <Button onClick={() => setShowEnableTunnelModal(false)} variant="ghost" fullWidth>Cancel</Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Disable Cloudflare Tunnel Modal */}
@@ -1843,15 +2002,15 @@ export default function APIPageClient() {
         title="Disable Tunnel"
         onClose={() => !tunnelLoading && setShowDisableTunnelModal(false)}
       >
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-text-muted">The Cloudflare tunnel will be disconnected. Remote access via tunnel URL will stop working.</p>
-          <div className="flex gap-2">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>The Cloudflare tunnel will be disconnected. Remote access via tunnel URL will stop working.</Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button onClick={handleDisableTunnel} fullWidth disabled={tunnelLoading} variant="danger">
               {tunnelLoading ? "Disabling..." : "Disable"}
             </Button>
             <Button onClick={() => setShowDisableTunnelModal(false)} variant="ghost" fullWidth disabled={tunnelLoading}>Cancel</Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Tailscale Modal */}
@@ -1860,53 +2019,65 @@ export default function APIPageClient() {
         title="Tailscale Funnel"
         onClose={() => { if (!tsInstalling) { setShowTsModal(false); setTsSudoPassword(""); setTsStatus(null); } }}
       >
-        <div className="flex flex-col gap-4">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {/* Checking state */}
           {tsInstalled === null && (
-            <p className="text-sm text-text-muted flex items-center gap-2">
-              <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", display: "flex", alignItems: "center", gap: 1 }}>
+              <Spinner />
               Checking...
-            </p>
+            </Typography>
           )}
 
           {/* Not installed */}
           {tsInstalled === false && !tsInstalling && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-text-muted">Tailscale is not installed. Install it to enable Funnel.</p>
-              <div className="flex gap-2">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              <Typography sx={{ fontSize: 14, color: "text.secondary" }}>Tailscale is not installed. Install it to enable Funnel.</Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Button onClick={handleInstallTailscale} fullWidth>
                   Install Tailscale
                 </Button>
                 <Button onClick={() => setShowTsModal(false)} variant="ghost" fullWidth>Cancel</Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
           {/* Installing with progress log */}
           {tsInstalling && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-sm text-text-muted">
-                <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 14, color: "text.secondary" }}>
+                <Spinner />
                 Installing Tailscale...
-              </div>
+              </Box>
               {tsInstallLog.length > 0 && (
-                <div ref={tsLogRef} className="bg-black/5 dark:bg-white/5 rounded p-2 max-h-40 overflow-y-auto font-mono text-xs text-text-muted">
+                <Box
+                  ref={tsLogRef}
+                  sx={(theme) => ({
+                    bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    borderRadius: "4px",
+                    p: 1,
+                    maxHeight: 160,
+                    overflowY: "auto",
+                    fontFamily: "ui-monospace, monospace",
+                    fontSize: 12,
+                    color: "text.secondary",
+                  })}
+                >
                   {tsInstallLog.map((line, i) => (
-                    <div key={i}>{line}</div>
+                    <Box key={i}>{line}</Box>
                   ))}
-                </div>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Installed: show Connect button */}
           {tsInstalled === true && !tsInstalling && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 14, color: "#16a34a" }}>
+                <MsIcon sx={{ fontSize: 16 }}>check_circle</MsIcon>
                 Tailscale installed
-              </div>
-              <div className="flex gap-2">
+              </Box>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   onClick={() => handleConnectTailscale()}
                   fullWidth
@@ -1914,12 +2085,12 @@ export default function APIPageClient() {
                   Connect
                 </Button>
                 <Button onClick={() => setShowTsModal(false)} variant="ghost" fullWidth>Cancel</Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
           {tsStatus && <StatusAlert status={tsStatus} />}
-        </div>
+        </Box>
       </Modal>
 
       {/* Disable Tailscale Modal */}
@@ -1928,15 +2099,15 @@ export default function APIPageClient() {
         title="Disable Tailscale"
         onClose={() => !tsLoading && setShowDisableTsModal(false)}
       >
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-text-muted">Tailscale Funnel will be stopped. Remote access via Tailscale URL will stop working.</p>
-          <div className="flex gap-2">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>Tailscale Funnel will be stopped. Remote access via Tailscale URL will stop working.</Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button onClick={handleDisableTailscale} fullWidth disabled={tsLoading} variant="danger">
               {tsLoading ? "Disabling..." : "Disable"}
             </Button>
             <Button onClick={() => setShowDisableTsModal(false)} variant="ghost" fullWidth disabled={tsLoading}>Cancel</Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Headroom Install Guide Modal */}
@@ -1945,59 +2116,70 @@ export default function APIPageClient() {
         title={headroomRunning ? "Headroom" : "Setup Headroom"}
         onClose={() => setShowHeadroomInstallModal(false)}
       >
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between text-sm">
-            <span>Status</span>
-            <span className={headroomRunning ? "text-success" : "text-warning"}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 14 }}>
+            <Box component="span">Status</Box>
+            <Box component="span" sx={{ color: headroomRunning ? "#10b981" : "#f59e0b" }}>
               {headroomStatusLabel}
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium">Proxy URL</p>
+            </Box>
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Proxy URL</Typography>
             <Input
               value={headroomUrl}
               onChange={(e) => setHeadroomUrl(e.target.value)}
               onBlur={handleHeadroomUrlBlur}
               placeholder="http://localhost:8787"
-              className="font-mono text-sm"
             />
-            <p className="text-xs text-text-muted">
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               Use a local proxy for Start/Stop, or an external Docker sidecar like http://headroom:8787.
-            </p>
-          </div>
+            </Typography>
+          </Box>
           {headroomManaged ? (
             <Button onClick={handleHeadroomStop} variant="ghost" fullWidth disabled={headroomActionLoading}>
               {headroomActionLoading ? "Stopping…" : "Stop Headroom"}
             </Button>
           ) : headroomRunning ? (
-            <p className="text-sm text-success">Headroom proxy is reachable. You can enable the token saver.</p>
+            <Typography sx={{ fontSize: 14, color: "#10b981" }}>Headroom proxy is reachable. You can enable the token saver.</Typography>
           ) : headroomCanStart ? (
             <Button onClick={handleHeadroomStart} fullWidth disabled={headroomActionLoading}>
               {headroomActionLoading ? "Starting…" : "Start Headroom"}
             </Button>
           ) : !headroomLocalUrl ? (
-            <p className="text-sm text-warning">Start Headroom separately at the configured URL, then recheck.</p>
+            <Typography sx={{ fontSize: 14, color: "#f59e0b" }}>Start Headroom separately at the configured URL, then recheck.</Typography>
           ) : !headroomStatus.python ? (
-            <p className="text-sm text-warning">Python ≥ 3.10 required for local managed mode. Install Python first, or use an external proxy URL.</p>
+            <Typography sx={{ fontSize: 14, color: "#f59e0b" }}>Python ≥ 3.10 required for local managed mode. Install Python first, or use an external proxy URL.</Typography>
           ) : (
-            <div className="flex flex-col gap-1">
-              <p className="text-sm font-medium">Install then click Start:</p>
-              <div className="flex items-center gap-2">
-                <pre className="flex-1 rounded bg-black/5 dark:bg-white/5 p-2 text-xs font-mono overflow-x-auto">{`pip install "headroom-ai[proxy]"`}</pre>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Install then click Start:</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  component="pre"
+                  sx={(theme) => ({
+                    flex: 1,
+                    borderRadius: "4px",
+                    bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    p: 1,
+                    fontSize: 12,
+                    fontFamily: "ui-monospace, monospace",
+                    overflowX: "auto",
+                    m: 0,
+                  })}
+                >{`pip install "headroom-ai[proxy]"`}</Box>
                 <Button size="sm" variant="ghost" onClick={() => copy(`pip install "headroom-ai[proxy]"`)}>
                   {copied ? "Copied" : "Copy"}
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
           {headroomActionError && (
-            <p className="text-sm text-warning">{headroomActionError}</p>
+            <Typography sx={{ fontSize: 14, color: "#f59e0b" }}>{headroomActionError}</Typography>
           )}
-          <div className="flex gap-2">
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button onClick={() => refreshHeadroomStatus()} variant="ghost" fullWidth>Recheck</Button>
             <Button onClick={() => setShowHeadroomInstallModal(false)} fullWidth>Done</Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {/* Confirm Modal */}
@@ -2009,8 +2191,6 @@ export default function APIPageClient() {
         message={confirmState?.message}
         variant="danger"
       />
-    </div>
+    </Stack>
   );
 }
-
-

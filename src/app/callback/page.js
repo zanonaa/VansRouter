@@ -2,6 +2,21 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, className = "" }) {
+  return (
+    <Icon
+      className={`material-symbols-outlined ${className}`.trim()}
+      baseClassName=""
+      sx={{ fontSize: 30, ...sx }}
+    >
+      {children}
+    </Icon>
+  );
+}
 
 /**
  * OAuth Callback Page Content
@@ -87,46 +102,48 @@ function CallbackContent() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg">
-      <div className="text-center p-8 max-w-md">
+    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default" }}>
+      <Box sx={{ textAlign: "center", p: 4, maxWidth: 448 }}>
         {status === "processing" && (
           <>
-            <div className="size-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
-            </div>
-            <h1 className="text-xl font-semibold mb-2">Processing...</h1>
-            <p className="text-text-muted">Please wait while we complete the authorization.</p>
+            <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(229,106,74,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <MsIcon className="material-symbols-outlined" sx={{ color: "primary.main", animation: "mui-spinner-rotate 1s linear infinite", "@keyframes mui-spinner-rotate": { to: { transform: "rotate(360deg)" } } }}>progress_activity</MsIcon>
+            </Box>
+            <Typography sx={{ fontSize: 20, fontWeight: 600, mb: 1 }}>Processing...</Typography>
+            <Typography sx={{ color: "text.secondary" }}>Please wait while we complete the authorization.</Typography>
           </>
         )}
 
         {(status === "success" || status === "done") && (
           <>
-            <div className="size-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-green-600">check_circle</span>
-            </div>
-            <h1 className="text-xl font-semibold mb-2">Authorization Successful!</h1>
-            <p className="text-text-muted">
+            <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(34,197,94,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <MsIcon sx={{ color: "#16a34a" }}>check_circle</MsIcon>
+            </Box>
+            <Typography sx={{ fontSize: 20, fontWeight: 600, mb: 1 }}>Authorization Successful!</Typography>
+            <Typography sx={{ color: "text.secondary" }}>
               {status === "success" ? "This window will close automatically..." : "You can close this tab now."}
-            </p>
+            </Typography>
           </>
         )}
 
         {status === "manual" && (
           <>
-            <div className="size-16 mx-auto mb-4 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-yellow-600">info</span>
-            </div>
-            <h1 className="text-xl font-semibold mb-2">Copy This URL</h1>
-            <p className="text-text-muted mb-4">
+            <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(234,179,8,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <MsIcon sx={{ color: "#ca8a04" }}>info</MsIcon>
+            </Box>
+            <Typography sx={{ fontSize: 20, fontWeight: 600, mb: 1 }}>Copy This URL</Typography>
+            <Typography sx={{ color: "text.secondary", mb: 2 }}>
               Please copy the URL from the address bar and paste it in the application.
-            </p>
-            <div className="bg-surface border border-border rounded-lg p-3 text-left">
-              <code className="text-xs break-all">{typeof window !== "undefined" ? window.location.href : ""}</code>
-            </div>
+            </Typography>
+            <Box sx={{ bgcolor: "background.paper", border: 1, borderColor: "divider", borderRadius: "8px", p: 1.5, textAlign: "left" }}>
+              <Box component="code" sx={{ fontSize: 12, wordBreak: "break-all" }}>
+                {typeof window !== "undefined" ? window.location.href : ""}
+              </Box>
+            </Box>
           </>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -137,14 +154,14 @@ function CallbackContent() {
 export default function CallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="text-center p-8">
-          <div className="size-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
-          </div>
-          <p className="text-text-muted">Loading...</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default" }}>
+        <Box sx={{ textAlign: "center", p: 4 }}>
+          <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(229,106,74,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <MsIcon className="material-symbols-outlined" sx={{ color: "primary.main", animation: "mui-spinner-rotate 1s linear infinite", "@keyframes mui-spinner-rotate": { to: { transform: "rotate(360deg)" } } }}>progress_activity</MsIcon>
+          </Box>
+          <Typography sx={{ color: "text.secondary" }}>Loading...</Typography>
+        </Box>
+      </Box>
     }>
       <CallbackContent />
     </Suspense>
