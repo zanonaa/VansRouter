@@ -90,7 +90,7 @@ func run() error {
 		Handler: router.NewWithNodes(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}}),
+		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.

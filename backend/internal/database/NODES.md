@@ -4,7 +4,9 @@
 
 O pacote está ligado a GET/POST /api/provider-nodes, além de HEAD/OPTIONS, sob o middleware de autenticação existente. Não cria tabelas e não executa migrations: schema ausente retorna erro (inclusive em instalações novas enquanto migrations não forem portadas). Testes usam banco descartável com a definição de tabela da origem.
 
-Ainda faltam: PUT/DELETE de provider-nodes (propagam alterações/exclusões às connections), rota de validação, catálogo/normalização de providers, connectionsRepo (deduplicação OAuth/API key, prioridades e estado de saúde) e proxyPoolsRepo. Nenhum desses blocos deve ser declarado concluído por esta entrega.
+PUT/DELETE /api/provider-nodes/{id} agora estão registrados: atualização propaga prefix/baseUrl/nodeName/apiType às connections preservando campos específicos adicionais; exclusão remove as connections associadas antes do nó. Como na origem, as operações usam transações separadas e podem deixar alterações parciais quando uma escrita falha; erro retorna 500, não sucesso fictício.
+
+Connections porta consulta por ID, listagem/filtro/ordenação, mesclagem com reset de saúde quando testStatus=active, reordenação ao atualizar prioridade e exclusão por provider. Ainda faltam criação/deduplicação OAuth/API key, bulk, exclusão individual, limpeza e demais contratos HTTP de providers. A rota de validação de nós, catálogo/normalização de providers e proxyPoolsRepo também seguem pendentes.
 
 Correção do acompanhamento: rotação de segredo JWT não é requisito de paridade identificado no backend original; não será acrescentada sem requisito específico. Limpeza global do limiter também não existe na origem e é melhoria opcional, não bloqueio da migração. Isso não elimina as divergências e pendências já documentadas em `../auth/README.md`, nem equivale a uma auditoria de autenticação aprovada.
 

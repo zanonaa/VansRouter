@@ -79,6 +79,11 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Head("/api/provider-nodes", withoutBody(nodes.List))
 		r.Post("/api/provider-nodes", nodes.Create)
 		r.Options("/api/provider-nodes", options("GET, HEAD, OPTIONS, POST"))
+		if nodes.Mutations != nil && nodes.Connections != nil {
+			r.Put("/api/provider-nodes/{id}", nodes.Update)
+			r.Delete("/api/provider-nodes/{id}", nodes.Delete)
+			r.Options("/api/provider-nodes/{id}", options("DELETE, OPTIONS, PUT"))
+		}
 	}
 	return r
 }

@@ -14,7 +14,21 @@ type NodeStore interface {
 	List(context.Context, string) ([]map[string]any, error)
 	Create(context.Context, map[string]any) (map[string]any, error)
 }
-type Nodes struct{ Store NodeStore }
+type NodeMutations interface {
+	Get(context.Context, string) (map[string]any, error)
+	Update(context.Context, string, map[string]any) (map[string]any, error)
+	Delete(context.Context, string) (map[string]any, error)
+}
+type NodeConnections interface {
+	List(context.Context, string, *bool) ([]map[string]any, error)
+	Update(context.Context, string, map[string]any) (map[string]any, error)
+	DeleteByProvider(context.Context, string) (int64, error)
+}
+type Nodes struct {
+	Store       NodeStore
+	Mutations   NodeMutations
+	Connections NodeConnections
+}
 
 func nodeReply(w http.ResponseWriter, status int, body any) {
 	w.Header().Set("Content-Type", "application/json")
