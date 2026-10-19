@@ -43,11 +43,37 @@ func TestBootstrapRoutes(t *testing.T) {
 	}
 }
 
-func TestAPIIsNotImplementedYet(t *testing.T) {
-	response := httptest.NewRecorder()
-	New().ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/api/settings", nil))
-	if response.Code != http.StatusNotFound {
-		t.Fatalf("esperado 404, recebido %d", response.Code)
+func TestMiddlewareDenyByDefault(t *testing.T) {
+	authentication, _ := wiredAuth(t)
+	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": true}, nil }
+	router := NewWithAuth(func(context.Context) error { return nil }, authentication)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/rota-inexistente", nil))
+	if w.Code != http.StatusUnauthorized || !strings.Contains(w.Body.String(), "Unauthorized") {
+		t.Fatalf("deny-by-default: %d %s", w.Code, w.Body.String())
+	}
+	// CLI token libera o caminho (chi responde 404 depois do guard).
+	token := authentication.CLIToken()
+	w = httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/rota-inexistente", nil)
+	req.Header.Set("X-9r-cli-token", token)
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("CLI token não liberou: %d %s", w.Code, w.Body.String())
+	}
+	// Public API passa pelo guard.
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("public API bloqueada: %d", w.Code)
+	}
+	// Local-only remoto continua 403.
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPost, "/api/auth/reset-password", nil)
+	req.RemoteAddr = "192.0.2.10:1234"
+	router.ServeHTTP(w, req)
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("local-only remoto: %d", w.Code)
 	}
 }
 
@@ -62,6 +88,7 @@ func wiredAuth(t *testing.T) (*auth.HTTP, *map[string]bool) {
 	authentication := &auth.HTTP{
 		Sessions: sessions,
 		Limiter:  auth.NewLimiter(),
+		Machine:  auth.NewMachineID(t.TempDir()),
 		Settings: func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": false}, nil },
 		ChangeP:  func(context.Context, string) (map[string]any, error) { written["called"] = true; return nil, nil },
 	}
