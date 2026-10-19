@@ -2,32 +2,43 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 import { useNotificationStore } from "@/store/notificationStore";
 import Sidebar from "../Sidebar";
 import Header from "../Header";
 
-
 function getToastStyle(type) {
   if (type === "success") {
     return {
-      wrapper: "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400",
+      bgcolor: "rgba(34,197,94,0.1)",
+      borderColor: "rgba(34,197,94,0.3)",
+      color: "#16a34a",
       icon: "check_circle",
     };
   }
   if (type === "error") {
     return {
-      wrapper: "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
+      bgcolor: "rgba(239,68,68,0.1)",
+      borderColor: "rgba(239,68,68,0.3)",
+      color: "#dc2626",
       icon: "error",
     };
   }
   if (type === "warning") {
     return {
-      wrapper: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      bgcolor: "rgba(245,158,11,0.1)",
+      borderColor: "rgba(245,158,11,0.3)",
+      color: "#d97706",
       icon: "warning",
     };
   }
   return {
-    wrapper: "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    bgcolor: "rgba(59,130,246,0.1)",
+    borderColor: "rgba(59,130,246,0.3)",
+    color: "#2563eb",
     icon: "info",
   };
 }
@@ -45,65 +56,121 @@ export default function DashboardLayout({ children }) {
     return () => document.removeEventListener("keydown", onEsc);
   }, [sidebarOpen]);
 
+  const isBasicChat = pathname === "/dashboard/basic-chat";
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-bg">
-      <div className="fixed top-4 right-4 z-[80] flex w-[min(92vw,380px)] flex-col gap-2">
-        {notifications.map((n) => {
-          const style = getToastStyle(n.type);
+    <Box sx={{ display: "flex", width: "100%", height: "100vh", overflow: "hidden", bgcolor: "background.default" }}>
+      <Box sx={{ position: "fixed", top: 16, right: 16, zIndex: 80, display: "flex", width: "min(92vw, 380px)", flexDirection: "column", gap: 1 }}>
+        {notifications.map((notification) => {
+          const style = getToastStyle(notification.type);
           return (
-            <div
-              key={n.id}
-              className={`rounded-lg border px-3 py-2 shadow-lg backdrop-blur-sm ${style.wrapper}`}
+            <Paper
+              key={notification.id}
+              elevation={4}
+              sx={{
+                borderRadius: "8px",
+                border: "1px solid",
+                borderColor: style.borderColor,
+                bgcolor: style.bgcolor,
+                color: style.color,
+                px: 1.5,
+                py: 1,
+                backdropFilter: "blur(8px)",
+              }}
             >
-              <div className="flex items-start gap-2">
-                <span className="material-symbols-outlined text-[18px] leading-5">{style.icon}</span>
-                <div className="min-w-0 flex-1">
-                  {n.title ? <p className="text-xs font-semibold mb-0.5">{n.title}</p> : null}
-                  <p className="text-xs whitespace-pre-wrap break-words">{n.message}</p>
-                </div>
-                {n.dismissible ? (
-                  <button
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18, lineHeight: "20px" }}>
+                  {style.icon}
+                </span>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  {notification.title ? (
+                    <Typography sx={{ fontSize: 12, fontWeight: 600, mb: 0.5, color: "inherit" }}>
+                      {notification.title}
+                    </Typography>
+                  ) : null}
+                  <Typography sx={{ fontSize: 12, whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: "inherit" }}>
+                    {notification.message}
+                  </Typography>
+                </Box>
+                {notification.dismissible ? (
+                  <IconButton
                     type="button"
-                    onClick={() => removeNotification(n.id)}
-                    className="text-current/70 hover:text-current"
+                    size="small"
+                    onClick={() => removeNotification(notification.id)}
                     aria-label="Dismiss notification"
+                    sx={{ p: 0, color: "inherit", opacity: 0.7, "&:hover": { opacity: 1 } }}
                   >
-                    <span className="material-symbols-outlined text-[16px]">close</span>
-                  </button>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+                  </IconButton>
                 ) : null}
-              </div>
-            </div>
+              </Box>
+            </Paper>
           );
         })}
-      </div>
+      </Box>
+
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/20 lg:hidden"
+        <Box
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
+          sx={{ display: { xs: "block", lg: "none" }, position: "fixed", inset: 0, zIndex: 40, bgcolor: "rgba(0,0,0,0.2)" }}
         />
       )}
 
       {/* One responsive sidebar avoids duplicate settings/version requests. */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:flex lg:h-full lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+      <Box
+        sx={{
+          position: { xs: "fixed", lg: "static" },
+          top: { xs: 0, lg: "auto" },
+          bottom: { xs: 0, lg: "auto" },
+          left: { xs: 0, lg: "auto" },
+          zIndex: { xs: 50, lg: "auto" },
+          display: { lg: "flex" },
+          height: { lg: "100%" },
+          transform: { xs: sidebarOpen ? "translateX(0)" : "translateX(-100%)", lg: "translateX(0)" },
+          transition: "transform 300ms ease-in-out",
+        }}
       >
         <Sidebar onClose={() => setSidebarOpen(false)} />
-      </div>
+      </Box>
 
       {/* Main content */}
-      <main className="flex flex-col flex-1 h-full min-w-0 relative transition-colors duration-300 isolate">
+      <Box
+        component="main"
+        sx={{
+          display: "flex",
+          flex: 1,
+          flexDirection: "column",
+          height: "100%",
+          minWidth: 0,
+          position: "relative",
+          transition: "background-color 300ms",
+          isolation: "isolate",
+        }}
+      >
         {/* Faint grid background */}
-        <div className="landing-grid absolute inset-0 pointer-events-none -z-10" aria-hidden="true" />
+        <Box className="landing-grid" aria-hidden="true" sx={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: -1 }} />
         <Header key={pathname} onMenuClick={() => setSidebarOpen(true)} />
-        <div className={`flex-1 overflow-y-auto custom-scrollbar ${pathname === "/dashboard/basic-chat" ? "" : "p-6 lg:p-10"} ${pathname === "/dashboard/basic-chat" ? "flex flex-col overflow-hidden" : ""}`}>
-          <div className={`${pathname === "/dashboard/basic-chat" ? "flex-1 w-full h-full flex flex-col" : "max-w-7xl mx-auto"}`}>{children}</div>
-        </div>
-      </main>
-    </div>
+        <Box
+          className="custom-scrollbar"
+          sx={{
+            flex: 1,
+            overflowY: isBasicChat ? "hidden" : "auto",
+            p: isBasicChat ? 0 : { xs: 3, lg: 5 },
+            display: isBasicChat ? "flex" : "block",
+            flexDirection: isBasicChat ? "column" : undefined,
+          }}
+        >
+          <Box
+            sx={isBasicChat
+              ? { flex: 1, width: "100%", height: "100%", display: "flex", flexDirection: "column" }
+              : { maxWidth: 1280, mx: "auto" }}
+          >
+            {children}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

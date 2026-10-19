@@ -1,24 +1,78 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import ThemeToggle from "../ThemeToggle";
 
 export default function AuthLayout({ children }) {
   return (
-    <div className="min-h-screen flex flex-col relative bg-bg transition-colors duration-500 overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        bgcolor: "background.default",
+        transition: "background-color 500ms",
+        overflowX: "hidden",
+        "&::selection": { bgcolor: "rgba(229,106,74,0.2)", color: "primary.main" },
+      }}
+    >
       {/* Background effects */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 dark:bg-primary/5 rounded-full blur-[100px] pointer-events-none z-0" />
-      <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-orange-200/20 dark:bg-orange-900/10 rounded-full blur-[120px] pointer-events-none z-0 translate-y-1/3 translate-x-1/3" />
+      <Box
+        aria-hidden="true"
+        sx={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 800,
+          height: 800,
+          borderRadius: "50%",
+          bgcolor: "rgba(229,106,74,0.05)",
+          filter: "blur(100px)",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+      <Box
+        aria-hidden="true"
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          right: 0,
+          width: 600,
+          height: 600,
+          transform: "translate(33.333%, 33.333%)",
+          borderRadius: "50%",
+          bgcolor: "rgba(251,146,60,0.2)",
+          filter: "blur(120px)",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
       {/* Theme toggle */}
-      <div className="absolute top-6 right-6 z-20">
+      <Box sx={{ position: "absolute", top: 24, right: 24, zIndex: 20 }}>
         <ThemeToggle variant="card" />
-      </div>
+      </Box>
 
       {/* Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 z-10 w-full h-full">
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          p: { xs: 2, sm: 3 },
+          zIndex: 10,
+          width: "100%",
+          height: "100%",
+        }}
+      >
         {children}
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 }
-
