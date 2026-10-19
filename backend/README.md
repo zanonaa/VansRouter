@@ -1,6 +1,6 @@
 # Backend Go — Fase 2
 
-Estrutura inicial do backend e primeiro lote da Fase 3: saúde, prontidão, inicialização e idioma. **A autenticação está parcialmente implementada; migrations, demais endpoints e frontend SPA ainda estão pendentes.** Consulte `internal/auth/README.md`. Inclui middleware geral de guard para /api/* (deny-by-default), token CLI (machineId) e CRUD/validação de API keys (`/api/keys`) integrado ao middleware de LLM. O Next.js existente não foi alterado: sua remoção será feita nas fases aprovadas no plano da raiz.
+Estrutura inicial do backend e primeiro lote da Fase 3: saúde, prontidão, inicialização e idioma. **A autenticação está parcialmente implementada; migrations, demais endpoints e frontend SPA ainda estão pendentes.** Consulte `internal/auth/README.md`. Inclui middleware geral de guard para /api/* (deny-by-default), token CLI (machineId), CRUD/validação de API keys (`/api/keys`) e OIDC completo (start/callback/test com PKCE e JWKS). O Next.js existente não foi alterado: sua remoção será feita nas fases aprovadas no plano da raiz.
 
 ## Rotas migradas — Fase 3, lote de inicialização
 

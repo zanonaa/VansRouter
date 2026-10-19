@@ -28,7 +28,9 @@ type HTTP struct {
 	UpdateAPIKey   func(context.Context, string, map[string]any) (map[string]any, error)
 	DeleteAPIKey   func(context.Context, string) (bool, error)
 	ValidateAPIKey func(context.Context, string) (map[string]any, error)
-	Initial        string
+	// OIDCClient permite injetar o cliente HTTP dos fluxos OIDC em testes.
+	OIDCClient *http.Client
+	Initial    string
 	// InitialValid reproduz a política de INITIAL_PASSWORD em produção.
 	InitialValid bool
 	ForceSecure  bool

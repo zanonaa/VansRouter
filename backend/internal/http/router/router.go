@@ -65,6 +65,10 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 			r.Put("/{id}", authentication.APIKeyPut)
 			r.Delete("/{id}", authentication.APIKeyDelete)
 		})
+		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
+		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
+		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
+		r.Post("/api/auth/oidc/test", authentication.OIDCTest)
 	}
 	return r
 }
