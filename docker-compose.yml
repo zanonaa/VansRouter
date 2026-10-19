@@ -19,9 +19,6 @@ services:
       # Bind-mount users must keep their existing host path or migrate it first.
       # The entrypoint copies only missing files into the canonical volume.
       - vansrouter-data:/migration-data:ro
-      # Optional: use the host's Tailscale daemon instead of the bundled one.
-      # Uncomment the line below and set TAILSCALE_USE_HOST_SOCKET=true in .env
-      # - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
     env_file:
       - .env
     environment:
@@ -30,8 +27,6 @@ services:
       HOSTNAME: "0.0.0.0"
       NODE_ENV: production
       HEADROOM_URL: http://headroom:8787
-      # Set TAILSCALE_USE_HOST_SOCKET=true to reuse the host Tailscale daemon.
-      # TAILSCALE_USE_HOST_SOCKET: "true"
     depends_on:
       headroom:
         condition: service_started

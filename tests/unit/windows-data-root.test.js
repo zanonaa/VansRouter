@@ -8,8 +8,6 @@ const DATA_ROOT_FILES = [
   "src/lib/dataDir.js",
   "src/lib/appUpdater.js",
   "src/lib/updater/updater.js",
-  "src/lib/mitmAliasCache.js",
-  "src/mitm/paths.js",
   "scripts/runtime-paths.cjs",
   "cli/cli.js",
   "cli/hooks/sqliteRuntime.js",
@@ -36,7 +34,6 @@ describe("Windows data root", () => {
     const resolvers = [
       "src/lib/dataDir.js",
       "src/shared/utils/apiKey.js",
-      "cli/cli.js",
       "cli/hooks/sqliteRuntime.js",
       "cli/src/cli/api/client.js",
     ];

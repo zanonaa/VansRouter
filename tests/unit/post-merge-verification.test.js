@@ -193,31 +193,21 @@ describe("Post-merge: ponytail still wired in chatCore", () => {
   });
 });
 
-describe("Post-merge: allowRemoteNoApiKey feature intact", () => {
+describe("Post-merge: web-only gateway access", () => {
   const guard = read("src/dashboardGuard.js");
-  const settings = read("src/lib/db/repos/settingsRepo.js");
   const ui = read("src/app/(dashboard)/dashboard/endpoint/EndpointPageClient.js");
 
-  it("dashboardGuard has canAccessPublicLlmApi", () => {
+  it("dashboardGuard has the public LLM API key gate", () => {
     expect(guard).toContain("canAccessPublicLlmApi");
+    expect(guard).toContain("remote API key required");
+    expect(guard).not.toContain("allowRemoteNoApiKey");
   });
 
-  it("dashboardGuard checks allowRemoteNoApiKey", () => {
-    expect(guard).toContain("allowRemoteNoApiKey");
-  });
-
-  it("settingsRepo has allowRemoteNoApiKey default false", () => {
-    expect(settings).toContain("allowRemoteNoApiKey: false");
-  });
-
-  it("UI has toggle state", () => {
-    expect(ui).toContain("allowRemoteNoApiKey");
-    expect(ui).toContain("handleAllowRemoteNoApiKey");
-  });
-
-  it("UI shows toggle when requireApiKey is off", () => {
-    expect(ui).toContain("!requireApiKey");
-    expect(ui).toContain("Allow Remote Access Without API Key");
+  it("endpoint page retains API key controls and no tunnel/CLI controls", () => {
+    expect(ui).toContain("Require API key");
+    expect(ui).not.toContain("allowRemoteNoApiKey");
+    expect(ui).not.toContain("Tailscale");
+    expect(ui).not.toContain("Cloudflare Tunnel");
   });
 });
 

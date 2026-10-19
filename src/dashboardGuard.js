@@ -30,7 +30,6 @@ const PUBLIC_API_PATHS = [
   "/api/auth/status",
   "/api/auth/oidc",
   "/api/version",
-  "/api/settings/require-login",
 ];
 
 // Public top-level prefixes (LLM API endpoints with their own API key auth).
@@ -49,15 +48,6 @@ const ALWAYS_PROTECTED = [
 
 // Routes that spawn child processes or read host secrets — restrict to localhost.
 const LOCAL_ONLY_PATHS = [
-  "/api/cli-tools/cowork-settings",
-  "/api/cli-tools/antigravity-mitm",
-  "/api/mcp/",
-  "/api/tunnel/tailscale-install",
-  "/api/tunnel/tailscale-enable",
-  "/api/tunnel/tailscale-disable",
-  "/api/tunnel/tailscale-check",
-  "/api/tunnel/enable",
-  "/api/tunnel/disable",
   "/api/oauth/cursor/auto-import",
   "/api/oauth/kiro/auto-import",
   "/api/oauth/zed/auto-import",
@@ -159,9 +149,7 @@ async function canAccessPublicLlmApi(request) {
     }
     return true;
   }
-  // Trusted public hostname does NOT bypass API-key auth — it only removes the
-  // local-origin requirement. The request must still be authorized via a valid
-  // API key (or the explicit allowRemoteNoApiKey opt-in below).
+  // Remote web requests to the gateway require a valid API key.
   if (await hasValidCliToken(request)) {
     console.log(`[dashboardGuard] ${pathname} public LLM allowed via CLI token (host=${host})`);
     return true;
@@ -175,16 +163,7 @@ async function canAccessPublicLlmApi(request) {
     }
     console.log(`[dashboardGuard] ${pathname} public LLM blocked: API key provided but invalid (host=${host}, masked=${apiKey.slice(0, 8)}...)`);
   }
-  // Explicit opt-in: allow anonymous (no API key) remote access ONLY when the
-  // operator both disabled API-key enforcement AND turned on open remote access.
-  // If requireApiKey is on, the downstream handler would reject a keyless request
-  // anyway, so we keep this gated on requireApiKey !== true to avoid a misleading
-  // "allowed by middleware, rejected by handler" state.
-  const settings = await loadSettings();
-  if (settings && settings.requireApiKey !== true && settings.allowRemoteNoApiKey === true) {
-    return true;
-  }
-  console.log(`[dashboardGuard] ${pathname} public LLM blocked: remote API key required (host=${host}, requireApiKey=${settings?.requireApiKey}, allowRemoteNoApiKey=${settings?.allowRemoteNoApiKey})`);
+  console.log(`[dashboardGuard] ${pathname} public LLM blocked: remote API key required (host=${host})`);
   return false;
 }
 
@@ -301,23 +280,10 @@ export async function proxy(request) {
   // Protect all dashboard routes
   if (pathname.startsWith("/dashboard")) {
     let requireLogin = true;
-    let tunnelDashboardAccess = true;
 
     try {
       const settings = await loadSettings();
-      if (settings) {
-        requireLogin = settings.requireLogin !== false;
-        tunnelDashboardAccess = settings.tunnelDashboardAccess === true;
-
-        if (!tunnelDashboardAccess) {
-          const host = (request.headers.get("host") || "").split(":")[0].toLowerCase();
-          const tunnelHost = settings.tunnelUrl ? new URL(settings.tunnelUrl).hostname.toLowerCase() : "";
-          const tailscaleHost = settings.tailscaleUrl ? new URL(settings.tailscaleUrl).hostname.toLowerCase() : "";
-          if ((tunnelHost && host === tunnelHost) || (tailscaleHost && host === tailscaleHost)) {
-            return NextResponse.redirect(new URL("/masuk", request.url));
-          }
-        }
-      }
+      if (settings) requireLogin = settings.requireLogin !== false;
     } catch {}
 
     if (!requireLogin) return NextResponse.next();

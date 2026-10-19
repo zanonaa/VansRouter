@@ -47,11 +47,10 @@ export {
   createCombo, updateCombo, deleteCombo,
 } from "./repos/combosRepo.js";
 
-// Aliases (model + custom + mitm)
+// Model aliases and custom model registrations
 export {
   getModelAliases, setModelAlias, deleteModelAlias,
   getCustomModels, addCustomModel, addCustomModelsBulk, deleteCustomModel,
-  getMitmAlias, setMitmAliasAll,
 } from "./repos/aliasRepo.js";
 
 // Pricing

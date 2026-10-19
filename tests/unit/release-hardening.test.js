@@ -79,9 +79,6 @@ describe("release hardening contracts", () => {
     expect(dockerfile).toContain("linuxmusl-${bs_arch}.tar.gz");
     expect(dockerfile).toContain("9b14618f3d9aa9b70daade965bca892f324b063e1cc7532b030d7138a8f9d070");
     expect(dockerfile).toContain("b5e92ec2637bb578cc12b8b9b94877a82c3ef5e862ccc72d420706aab978bb9a");
-    expect(dockerfile).toContain("TS_VERSION=1.102.4");
-    expect(dockerfile).toContain("50748df1045e60b5b695f19f4c56b0da36c019948b440fb456b6584a50f0d8b9");
-    expect(dockerfile).toContain("9dd1e6a592a014bbaea0103167ffe299adeda4ba14e078ce9c2895364f6c4c3f");
   });
 
   it("requires an explicit VansRouter version while preserving 9router storage", () => {

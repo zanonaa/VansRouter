@@ -7,36 +7,6 @@ import { UPDATER_CONFIG } from "@/shared/constants/config";
 const KILL_TIMEOUT_MS = 5000;
 const PROCESS_WAIT_MS = 1500;
 
-// Kill MITM server by PID file (MITM may run as admin/sudo)
-function killMitmByPidFile() {
-  try {
-    const mitmPidFile = path.join(
-      process.platform === "win32"
-        ? path.join(process.env.APPDATA || "", "9router")
-        : path.join(os.homedir(), ".9router"),
-      "mitm",
-      ".mitm.pid"
-    );
-    if (!fs.existsSync(mitmPidFile)) return;
-    const pid = parseInt(fs.readFileSync(mitmPidFile, "utf8").trim(), 10);
-    if (!pid) return;
-
-    if (process.platform === "win32") {
-      // taskkill first (works if same user); fallback to PowerShell Stop-Process which can kill admin process if our token allows
-      try { execSync(`taskkill /F /T /PID ${pid}`, { stdio: "ignore", windowsHide: true, timeout: 3000 }); } catch {
-        try { execSync(`powershell -NonInteractive -WindowStyle Hidden -Command "Stop-Process -Id ${pid} -Force"`, { stdio: "ignore", windowsHide: true, timeout: 3000 }); } catch { /* best effort */ }
-      }
-    } else {
-      try {
-        execSync(`sudo -n kill -9 ${pid} 2>/dev/null`, { stdio: "ignore", timeout: 3000 });
-      } catch {
-        try { process.kill(pid, "SIGKILL"); } catch { /* best effort */ }
-      }
-    }
-    try { fs.unlinkSync(mitmPidFile); } catch { /* best effort */ }
-  } catch { /* best effort */ }
-}
-
 // Collect PIDs of all VansRoute-related processes (excluding current)
 function collectAppPids() {
   const pids = [];
@@ -62,8 +32,8 @@ function collectAppPids() {
       });
     } catch { /* no processes */ }
 
-    // Kill cloudflared + tray binaries (hold app dir lock)
-    for (const procName of ["cloudflared", "tray_windows_release"]) {
+    // Kill the tray binary (holds the app directory lock).
+    for (const procName of ["tray_windows_release"]) {
       try {
         const cmd = `powershell -NonInteractive -WindowStyle Hidden -Command "Get-Process ${procName} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id"`;
         const out = execSync(cmd, { encoding: "utf8", windowsHide: true, timeout: KILL_TIMEOUT_MS });
@@ -79,7 +49,6 @@ function collectAppPids() {
       output.split("\n").forEach(line => {
         const isAppProcess = line.includes("9router") ||
           line.includes("next-server") ||
-          line.includes("cloudflared") ||
           line.includes("/bin/app/") ||
           line.includes("tray_darwin") ||
           line.includes("tray_linux");
@@ -137,7 +106,6 @@ function ensureRuntimeUpdater(bundledPath) {
 
 // Kill all app-related processes to release file locks (esp. on Windows)
 export async function killAppProcesses() {
-  killMitmByPidFile();
   const pids = collectAppPids();
   const platform = process.platform;
 

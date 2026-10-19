@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import REGISTRY from "../../open-sse/providers/registry/index.js";
-import { CLI_TOOLS } from "../../src/shared/constants/cliTools.js";
-import { isValidModel } from "../../src/shared/constants/models.js";
 
 const REQUIRED_ALIASES = ["gitlab", "mmf"];
 const PROTECTED = {
@@ -176,23 +174,6 @@ describe("provider catalog invariants", () => {
     }
   });
 
-  // The CLI-tool cards write these defaults straight into the client config, so a
-  // default naming a model the catalog does not declare is a dead pointer: the id
-  // never shows up in the model list, and every lookup keyed on it falls back.
-  it("points every provider-qualified CLI-tool default at a declared model", () => {
-    const unresolved = [];
-
-    for (const tool of Object.values(CLI_TOOLS)) {
-      for (const model of tool.defaultModels || []) {
-        const value = model.defaultValue;
-        if (typeof value !== "string" || !value.includes("/")) continue;
-        const [alias, ...rest] = value.split("/");
-        if (!isValidModel(alias, rest.join("/"))) unresolved.push(`${tool.id}: ${value}`);
-      }
-    }
-
-    expect(unresolved).toEqual([]);
-  });
 });
 
 export { modelKinds };
