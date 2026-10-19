@@ -3,6 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import { GITHUB_CONFIG } from "@/shared/constants/config";
 
 const DEFAULT_DONATE_DATA = {
@@ -91,51 +94,63 @@ export default function DonateModal({ isOpen, onClose }) {
   const { data, loading, error } = fetchState;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div
+    <Box sx={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}>
+      <Box onClick={onClose} aria-hidden="true" sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }} />
+      <Box
         ref={modalRef}
-        className="relative w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-3xl flex flex-col max-h-[85vh]"
+        sx={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 768,
+          bgcolor: "background.paper",
+          border: "1px solid var(--color-border)",
+          borderRadius: "12px",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "85vh",
+        }}
       >
-        <div className="flex items-center justify-between p-3 border-b border-black/5 dark:border-white/5">
-          <h2 className="text-lg font-semibold text-text-main flex items-center gap-2">
-            <span className="material-symbols-outlined text-pink-500">volunteer_activism</span>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, borderBottom: "1px solid var(--color-border-subtle)" }}>
+          <Typography component="h2" variant="h6" sx={{ fontSize: 18, fontWeight: 600, color: "text.primary", display: "flex", alignItems: "center", gap: 1 }}>
+            <span className="material-symbols-outlined" style={{ color: "#ec4899" }}>volunteer_activism</span>
             {data?.title || "Support 9Router"}
-          </h2>
-          <button type="button"
+          </Typography>
+          <IconButton
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             aria-label="Close"
+            sx={{ p: 0.75, borderRadius: "8px", color: "text.secondary", "&:hover": { bgcolor: "var(--color-surface-2)" } }}
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+          </IconButton>
+        </Box>
 
-        <div className="p-6 overflow-y-auto flex-1">
+        <Box sx={{ p: 3, overflowY: "auto", flex: 1 }}>
           {loading && (
-            <div className="flex items-center justify-center py-10 text-text-muted">
-              <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", py: 5, color: "text.secondary" }}>
+              <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  marginRight: 8 }}>progress_activity</span>
               Loading...
-            </div>
+            </Box>
           )}
           {error && (
-            <div className="text-red-500 py-4">Failed to load donate info: {error}</div>
+            <Box sx={{ color: "error.main", py: 2 }}>Failed to load donate info: {error}</Box>
           )}
           {!loading && !error && data && (
             <>
               {data.message && (
-                <p className="text-text-muted text-sm mb-6 text-center">{data.message}</p>
+                <Typography sx={{ color: "text.secondary", fontSize: 14, mb: 3, textAlign: "center" }}>{data.message}</Typography>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" }, gap: 2 }}>
                 {data.channels?.map((ch) => (
                   <DonateChannelCard key={ch.id} channel={ch} />
                 ))}
-              </div>
+              </Box>
             </>
           )}
-        </div>
-      </div>
-    </div>,
+        </Box>
+      </Box>
+    </Box>,
     document.body
   );
 }
@@ -144,21 +159,20 @@ function DonateChannelCard({ channel }) {
   const { label, description, icon, color, url, qr } = channel;
   const content = (
     <>
-      <div
-        className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-        style={{ backgroundColor: `${color}20`, color }}
+      <Box
+        sx={{ width: 48, height: 48, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", mb: 1.5, bgcolor: `${color}20`, color }}
       >
-        <span className="material-symbols-outlined text-[26px]">{icon}</span>
-      </div>
-      <div className="font-semibold text-text-main mb-1">{label}</div>
+        <span className="material-symbols-outlined" style={{ fontSize: 26 }}>{icon}</span>
+      </Box>
+      <Box sx={{ fontWeight: 600, color: "text.primary", mb: 0.5 }}>{label}</Box>
       {description && (
-        <div className="text-xs text-text-muted mb-3 text-center">{description}</div>
+        <Box sx={{ fontSize: 12, color: "text.secondary", mb: 1.5, textAlign: "center" }}>{description}</Box>
       )}
       {qr && (
         <Image
           src={qr}
           alt={`${label} QR`}
-          className="w-full max-w-[180px] aspect-square object-contain rounded-lg bg-white p-1"
+          style={{ width: "100%", maxWidth: 180, aspectRatio: "1 / 1", objectFit: "contain", borderRadius: 8, background: "#fff", padding: 4 }}
           width={180}
           height={180}
           unoptimized
@@ -168,21 +182,32 @@ function DonateChannelCard({ channel }) {
   );
 
   return (
-    <div className="flex flex-col items-center p-4 rounded-xl border border-black/10 dark:border-white/10 bg-surface/50 hover:border-pink-500/40 transition-colors">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        p: 2,
+        borderRadius: "12px",
+        border: "1px solid var(--color-border)",
+        bgcolor: "var(--color-surface)",
+        transition: "border-color 150ms",
+        "&:hover": { borderColor: "rgba(236,72,153,0.4)" },
+      }}
+    >
       {content}
       {url && (
-        <a
+        <Box
+          component="a"
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: color }}
+          sx={{ mt: 1.5, display: "inline-flex", alignItems: "center", gap: 0.5, px: 1.5, py: 0.75, borderRadius: "8px", fontSize: 14, fontWeight: 500, color: "#fff", bgcolor: color, "&:hover": { opacity: 0.9 } }}
         >
           Open
-          <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-        </a>
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>open_in_new</span>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
-

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useReducer, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import Modal from "@/shared/components/Modal";
 import Input from "@/shared/components/Input";
 import Button from "@/shared/components/Button";
@@ -128,8 +130,8 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
     if (!connection?.provider) return;
     dispatch({ type: "TEST_START" });
     try {
-      const isGoogle = connection.provider === "gemini-cli" || connection.provider === "antigravity";
-      const body = isGoogle ? { projectId: formData.projectId } : undefined;
+      const isGoogleProvider = connection.provider === "gemini-cli" || connection.provider === "antigravity";
+      const body = isGoogleProvider ? { projectId: formData.projectId } : undefined;
       const res = await fetch(`/api/providers/${connection.id}/test`, {
         method: "POST",
         headers: body ? { "Content-Type": "application/json" } : undefined,
@@ -235,7 +237,7 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
 
   return (
     <Modal isOpen={isOpen} title="Edit Connection" onClose={onClose}>
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Input
           label="Name"
           value={formData.name}
@@ -243,10 +245,10 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
           placeholder={isOAuth ? "Account name" : "Production Key"}
         />
         {isOAuth && connection.email && (
-          <div className="bg-sidebar/50 p-3 rounded-lg">
-            <p className="text-sm text-text-muted mb-1">Email</p>
-            <p className="font-medium">{connection.email}</p>
-          </div>
+          <Box sx={{ bgcolor: "color-mix(in srgb, var(--color-sidebar) 50%, transparent)", p: 1.5, borderRadius: "8px" }}>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 0.5 }}>Email</Typography>
+            <Typography sx={{ fontWeight: 500 }}>{connection.email}</Typography>
+          </Box>
         )}
         <Input
           label="Priority"
@@ -258,10 +260,10 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
         {isGoogle && (
           <>
             {loadingProjects ? (
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium text-text">Project ID</span>
-                <div className="text-xs text-text-muted animate-pulse py-2">Loading GCP projects...</div>
-              </div>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>Project ID</Box>
+                <Box sx={{ fontSize: 12, color: "text.secondary", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite", py: 1 }}>Loading GCP projects...</Box>
+              </Box>
             ) : gcpProjects && gcpProjects.length > 0 && !projectsError ? (
               <Select
                 label="Project ID"
@@ -291,22 +293,23 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
 
         {!isOAuth && (
           <>
-            <div className="flex gap-2">
-              <Input
-                label="API Key"
-                type="password"
-                value={formData.apiKey}
-                onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                placeholder="Enter new API key"
-                hint="Leave blank to keep the current API key."
-                className="flex-1"
-              />
-              <div className="pt-6">
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Input
+                  label="API Key"
+                  type="password"
+                  value={formData.apiKey}
+                  onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                  placeholder="Enter new API key"
+                  hint="Leave blank to keep the current API key."
+                />
+              </Box>
+              <Box sx={{ pt: 3 }}>
                 <Button onClick={handleValidate} disabled={!formData.apiKey || validating || saving} variant="secondary">
                   {validating ? "Checking..." : "Check"}
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
             {validationResult && (
               <Badge variant={validationResult === "success" ? "success" : "error"}>
                 {validationResult === "success" ? "Valid" : "Invalid"}
@@ -316,9 +319,9 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
         )}
 
         {isAzure && (
-          <div className="bg-sidebar/50 p-4 rounded-lg border border-accent/20">
-            <h3 className="font-semibold mb-3 text-sm">Azure OpenAI Configuration</h3>
-            <div className="flex flex-col gap-3">
+          <Box sx={{ bgcolor: "color-mix(in srgb, var(--color-sidebar) 50%, transparent)", p: 2, borderRadius: "8px", border: "1px solid rgba(229,106,74,0.2)" }}>
+            <Typography sx={{ fontWeight: 600, mb: 1.5, fontSize: 14 }}>Azure OpenAI Configuration</Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               <Input
                 label="Azure Endpoint"
                 value={azureData.azureEndpoint}
@@ -347,8 +350,8 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
                 placeholder="Organization ID"
                 hint="Required for billing"
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {providerRegions && (
@@ -361,7 +364,7 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
         )}
 
         {!isCompatible && !isAzure && !isCloudflareAi && (
-          <div className="flex items-center gap-3">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Button onClick={handleTest} variant="secondary" disabled={testing}>
               {testing ? "Testing..." : "Test Connection"}
             </Button>
@@ -370,10 +373,10 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
                 {testResult === "success" ? "Valid" : "Failed"}
               </Badge>
             )}
-          </div>
+          </Box>
         )}
 
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             onClick={handleSubmit}
             fullWidth
@@ -382,8 +385,8 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
             {saving ? "Saving..." : "Save"}
           </Button>
           <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }

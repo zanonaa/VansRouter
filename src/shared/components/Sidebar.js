@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/shared/utils/cn";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { APP_CONFIG, UPDATER_CONFIG, GITHUB_CONFIG } from "@/shared/constants/config";
 import { MEDIA_PROVIDER_KINDS } from "@/shared/constants/providers";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
@@ -36,6 +37,27 @@ const systemItems = [
   { href: "/dashboard/proxy-pools", label: "Proxy Pools", icon: "lan" },
   { href: "/dashboard/proxy-fitness", label: "Proxy Fitness", icon: "network_check" },
 ];
+
+const navLinkSx = (active) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: 1.5,
+  px: 1.5,
+  py: 0.25,
+  borderRadius: "8px",
+  transition: "all 150ms",
+  textDecoration: "none",
+  bgcolor: active ? "rgba(229,106,74,0.1)" : "transparent",
+  color: active ? "primary.main" : "text.secondary",
+  "&:hover": active ? {} : { bgcolor: "var(--color-surface-2)", color: "text.primary" },
+  "&:hover .ms-nav-icon": active ? {} : { color: "var(--color-primary)" },
+});
+
+const navIconSx = (active) => ({
+  fontSize: 18,
+  fontVariationSettings: active ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : undefined,
+  transition: "color 150ms",
+});
 
 export default function Sidebar({ onClose }) {
   const pathname = usePathname();
@@ -110,223 +132,190 @@ export default function Sidebar({ onClose }) {
 
   return (
     <>
-      <aside className="flex w-72 flex-col border-r border-border-subtle bg-vibrancy backdrop-blur-xl transition-colors duration-300 min-h-full">
+      <Box
+        component="aside"
+        sx={{
+          display: "flex",
+          width: 288,
+          flexDirection: "column",
+          borderRight: "1px solid var(--color-border-subtle)",
+          bgcolor: "var(--color-sidebar)",
+          backdropFilter: "blur(20px)",
+          transition: "background-color 300ms",
+          minHeight: "100%",
+        }}
+      >
         {/* Traffic lights */}
-        <div className="flex items-center gap-2 px-6 pt-5 pb-2">
-          <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
-          <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
-          <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
-        </div>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 3, pt: 2.5, pb: 1 }}>
+          <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#FF5F56" }} />
+          <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#FFBD2E" }} />
+          <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#27C93F" }} />
+        </Box>
 
         {/* Logo */}
-        <div className="px-6 py-4 flex flex-col gap-2">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-9 rounded-[10px] bg-gradient-to-br from-brand-500 to-brand-700 shadow-[var(--shadow-warm)]">
-              <span className="material-symbols-outlined text-white text-[20px]">hub</span>
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-lg font-semibold tracking-tight text-text-main">
+        <Box sx={{ px: 3, py: 2, display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box component={Link} href="/dashboard" sx={{ display: "flex", alignItems: "center", gap: 1.5, textDecoration: "none" }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "10px", background: "linear-gradient(135deg, #E56A4A, #a64027)", boxShadow: "var(--shadow-warm)" }}>
+              <span className="material-symbols-outlined" style={{ color: "#fff", fontSize: 20 }}>hub</span>
+            </Box>
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography component="h1" sx={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: "text.primary", m: 0 }}>
                 {APP_CONFIG.name}
-              </h1>
-              <span className="text-xs text-text-muted">v{APP_CONFIG.version}</span>
-            </div>
-          </Link>
+              </Typography>
+              <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>v{APP_CONFIG.version}</Box>
+            </Box>
+          </Box>
           {updateInfo && (
-            <div className="flex flex-col gap-1.5 rounded p-1 -m-1">
-              <span className="text-xs font-semibold text-green-600 dark:text-amber-500">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, borderRadius: "4px", p: 0.5, m: -0.5 }}>
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#16a34a" }}>
                 ↑ New version available: v{updateInfo.latestVersion}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  component="button"
                   onClick={() => setShowUpdateModal(true)}
-                  className="px-2 py-1 rounded bg-green-600 hover:bg-green-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white text-[11px] font-semibold transition-colors cursor-pointer"
+                  sx={{ px: 1, py: 0.5, borderRadius: "4px", bgcolor: "#16a34a", color: "#fff", fontSize: 11, fontWeight: 600, border: 0, cursor: "pointer", transition: "background-color 150ms", "&:hover": { bgcolor: "#15803d" } }}
                 >
                   {updateInfo.canAutoRestart ? "Update & Restart" : "Update now"}
-                </button>
-                <button
+                </Box>
+                <Box
+                  component="button"
                   onClick={() => copy(updateInfo.installCommand || INSTALL_CMD)}
                   title="Copy install command"
-                  className="flex-1 text-left hover:opacity-80 transition-opacity cursor-pointer min-w-0"
+                  sx={{ flex: 1, textAlign: "left", bgcolor: "transparent", border: 0, cursor: "pointer", minWidth: 0, "&:hover": { opacity: 0.8 } }}
                 >
-                  <code className="block text-[10px] text-green-600/80 dark:text-amber-400/70 font-mono truncate">
+                  <Box component="code" sx={{ display: "block", fontSize: 10, color: "rgba(22,163,74,0.8)", fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {copied ? "✓ copied!" : (updateInfo.installCommand || INSTALL_CMD)}
-                  </code>
-                </button>
-              </div>
-              <div className="flex items-center mt-0.5">
-                <button
+                  </Box>
+                </Box>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", mt: 0.25 }}>
+                <Box
+                  component="button"
                   type="button"
                   onClick={() => setShowChangelogModal(true)}
-                  className="text-[10px] text-green-600/80 hover:text-green-700 dark:text-amber-500/80 dark:hover:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  sx={{ fontSize: 10, color: "rgba(22,163,74,0.8)", bgcolor: "transparent", border: 0, cursor: "pointer", display: "flex", alignItems: "center", gap: 0.5, "&:hover": { color: "#15803d", textDecoration: "underline" } }}
                 >
-                  <span className="material-symbols-outlined text-[12px]">description</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 12 }}>description</span>
                   Check new changelog
-                </button>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           )}
-        </div>
+        </Box>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+        <Box component="nav" className="custom-scrollbar" sx={{ flex: 1, px: 2, py: 1, overflowY: "auto" }}>
           {navItems.map((item) => (
-            <Link
+            <Box
               key={item.href}
+              component={Link}
               href={item.href}
               onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-1 rounded-lg transition-all group",
-                isActive(item.href)
-                  ? "bg-primary/10 text-primary"
-                  : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-              )}
+              sx={navLinkSx(isActive(item.href))}
             >
-              <span
-                className={cn(
-                  "material-symbols-outlined text-[18px]",
-                  isActive(item.href) ? "fill-1" : "group-hover:text-primary transition-colors"
-                )}
-              >
+              <span className="material-symbols-outlined ms-nav-icon" style={navIconSx(isActive(item.href))}>
                 {item.icon}
               </span>
-              <span className="text-[13px] font-medium">{item.label}</span>
-            </Link>
+              <Box component="span" sx={{ fontSize: 13, fontWeight: 500 }}>{item.label}</Box>
+            </Box>
           ))}
 
           {/* System section */}
-          <div className="pt-3 mt-2 space-y-0.5">
-            <p className="px-4 text-xs font-semibold text-text-muted/60 uppercase tracking-wider mb-2">
+          <Box sx={{ pt: 1.5, mt: 1 }}>
+            <Typography component="p" sx={{ px: 2, fontSize: 12, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", letterSpacing: "0.05em", mb: 1, opacity: 0.6 }}>
               System
-            </p>
+            </Typography>
 
             {/* Media Providers accordion */}
-            <button
+            <Box
+              component="button"
               onClick={() => setMediaOpen((v) => !v)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-1 rounded-lg transition-all group",
-                pathname.startsWith("/dashboard/media-providers")
-                  ? "bg-primary/10 text-primary"
-                  : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-              )}
+              sx={{ ...navLinkSx(pathname.startsWith("/dashboard/media-providers")), width: "100%", border: 0, bgcolor: pathname.startsWith("/dashboard/media-providers") ? "rgba(229,106,74,0.1)" : "transparent", cursor: "pointer" }}
             >
-              <span className="material-symbols-outlined text-[18px]">perm_media</span>
-              <span className="text-[13px] font-medium flex-1 text-left">Media Providers</span>
-              <span className="material-symbols-outlined text-[14px] transition-transform" style={{ transform: mediaOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+              <span className="material-symbols-outlined ms-nav-icon" style={{ fontSize: 18 }}>perm_media</span>
+              <Box component="span" sx={{ fontSize: 13, fontWeight: 500, flex: 1, textAlign: "left" }}>Media Providers</Box>
+              <span className="material-symbols-outlined" style={{ fontSize: 14, transition: "transform 150ms", transform: mediaOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
                 expand_more
               </span>
-            </button>
+            </Box>
             {mediaOpen && (
-              <div className="pl-4">
+              <Box sx={{ pl: 2 }}>
                 {MEDIA_PROVIDER_KINDS.filter((k) => VISIBLE_MEDIA_KINDS.includes(k.id)).map((kind) => (
-                  <Link
+                  <Box
                     key={kind.id}
+                    component={Link}
                     href={`/dashboard/media-providers/${kind.id}`}
                     onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-1 rounded-lg transition-all group",
-                      pathname.startsWith(`/dashboard/media-providers/${kind.id}`)
-                        ? "bg-primary/10 text-primary"
-                        : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-                    )}
+                    sx={navLinkSx(pathname.startsWith(`/dashboard/media-providers/${kind.id}`))}
                   >
-                    <span className="material-symbols-outlined text-[16px]">{kind.icon}</span>
-                    <span className="text-sm">{kind.label}</span>
-                  </Link>
+                    <span className="material-symbols-outlined ms-nav-icon" style={{ fontSize: 16 }}>{kind.icon}</span>
+                    <Box component="span" sx={{ fontSize: 14 }}>{kind.label}</Box>
+                  </Box>
                 ))}
-                <Link
+                <Box
                   key={COMBINED_WEB_ITEM.id}
+                  component={Link}
                   href={COMBINED_WEB_ITEM.href}
                   onClick={onClose}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-1 rounded-lg transition-all group",
-                    pathname.startsWith(COMBINED_WEB_ITEM.href)
-                      ? "bg-primary/10 text-primary"
-                      : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-                  )}
+                  sx={navLinkSx(pathname.startsWith(COMBINED_WEB_ITEM.href))}
                 >
-                  <span className="material-symbols-outlined text-[16px]">{COMBINED_WEB_ITEM.icon}</span>
-                  <span className="text-sm">{COMBINED_WEB_ITEM.label}</span>
-                </Link>
-              </div>
+                  <span className="material-symbols-outlined ms-nav-icon" style={{ fontSize: 16 }}>{COMBINED_WEB_ITEM.icon}</span>
+                  <Box component="span" sx={{ fontSize: 14 }}>{COMBINED_WEB_ITEM.label}</Box>
+                </Box>
+              </Box>
             )}
 
             {systemItems.map((item) => (
-              <Link
+              <Box
                 key={item.href}
+                component={Link}
                 href={item.href}
                 onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-1 rounded-lg transition-all group",
-                  isActive(item.href)
-                    ? "bg-primary/10 text-primary"
-                    : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-                )}
+                sx={navLinkSx(isActive(item.href))}
               >
-                <span
-                  className={cn(
-                    "material-symbols-outlined text-[18px]",
-                    isActive(item.href) ? "fill-1" : "group-hover:text-primary transition-colors"
-                  )}
-                >
+                <span className="material-symbols-outlined ms-nav-icon" style={navIconSx(isActive(item.href))}>
                   {item.icon}
                 </span>
-                <span className="text-[13px] font-medium">{item.label}</span>
-              </Link>
+                <Box component="span" sx={{ fontSize: 13, fontWeight: 500 }}>{item.label}</Box>
+              </Box>
             ))}
 
             {/* Debug items (inside System section, before Settings) */}
             {debugItems.map((item) => {
               const show = item.href !== "/dashboard/translator" || enableTranslator;
               return show ? (
-                <Link
+                <Box
                   key={item.href}
+                  component={Link}
                   href={item.href}
                   onClick={onClose}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-1 rounded-lg transition-all group",
-                    isActive(item.href)
-                      ? "bg-primary/10 text-primary"
-                      : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-                  )}
+                  sx={navLinkSx(isActive(item.href))}
                 >
-                  <span
-                    className={cn(
-                      "material-symbols-outlined text-[18px]",
-                      isActive(item.href) ? "fill-1" : "group-hover:text-primary transition-colors"
-                    )}
-                  >
+                  <span className="material-symbols-outlined ms-nav-icon" style={navIconSx(isActive(item.href))}>
                     {item.icon}
                   </span>
-                  <span className="text-[13px] font-medium">{item.label}</span>
-                </Link>
+                  <Box component="span" sx={{ fontSize: 13, fontWeight: 500 }}>{item.label}</Box>
+                </Box>
               ) : null;
             })}
 
             {/* Settings */}
-            <Link
+            <Box
+              component={Link}
               href="/dashboard/profile"
               onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-1 rounded-lg transition-all group",
-                isActive("/dashboard/profile")
-                  ? "bg-primary/10 text-primary"
-                  : "text-text-muted hover:bg-surface-2 hover:text-text-main"
-              )}
+              sx={navLinkSx(isActive("/dashboard/profile"))}
             >
-              <span
-                className={cn(
-                  "material-symbols-outlined text-[18px]",
-                  isActive("/dashboard/profile") ? "fill-1" : "group-hover:text-primary transition-colors"
-                )}
-              >
+              <span className="material-symbols-outlined ms-nav-icon" style={navIconSx(isActive("/dashboard/profile"))}>
                 settings
               </span>
-              <span className="text-[13px] font-medium">Settings</span>
-            </Link>
-          </div>
-        </nav>
+              <Box component="span" sx={{ fontSize: 13, fontWeight: 500 }}>Settings</Box>
+            </Box>
+          </Box>
+        </Box>
 
-      </aside>
+      </Box>
 
       {/* Changelog Modal */}
       <ChangelogModal isOpen={showChangelogModal} onClose={() => setShowChangelogModal(false)} />
@@ -345,7 +334,7 @@ export default function Sidebar({ onClose }) {
 
       {/* Disconnected / Updating Overlay */}
       {(isDisconnected || isUpdating) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
+        <Box sx={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)", p: 3 }}>
           {isUpdating ? (
             <ManualUpdatePanel
               latestVersion={updateInfo?.latestVersion}
@@ -357,18 +346,18 @@ export default function Sidebar({ onClose }) {
               isDisconnected={isDisconnected}
             />
           ) : (
-            <div className="text-center p-8">
-              <div className="flex items-center justify-center size-16 rounded-full bg-red-500/20 text-red-500 mx-auto mb-4">
-                <span className="material-symbols-outlined text-[32px]">power_off</span>
-              </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Server Disconnected</h2>
-              <p className="text-text-muted mb-6">The proxy server has been stopped.</p>
+            <Box sx={{ textAlign: "center", p: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 64, height: 64, borderRadius: "50%", bgcolor: "rgba(239,68,68,0.2)", color: "#ef4444", mx: "auto", mb: 2 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 32 }}>power_off</span>
+              </Box>
+              <Typography variant="h6" sx={{ fontSize: 20, fontWeight: 600, color: "#fff", mb: 1 }}>Server Disconnected</Typography>
+              <Typography sx={{ color: "text.secondary", mb: 3 }}>The proxy server has been stopped.</Typography>
               <Button variant="secondary" onClick={() => globalThis.location.reload()}>
                 Reload Page
               </Button>
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
     </>
   );
@@ -378,49 +367,48 @@ export default function Sidebar({ onClose }) {
 function ManualUpdatePanel({ latestVersion, installCmd, copied, onCopyAndShutdown, onCancel, countdown, isDisconnected }) {
   const isCountingDown = countdown > 0;
   return (
-    <div className="w-full max-w-lg rounded-xl bg-neutral-900/95 border border-white/10 p-6 text-white">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center justify-center size-11 rounded-full bg-amber-500/20 text-amber-400">
-          <span className="material-symbols-outlined text-[24px]">content_copy</span>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">Update VansRouter{latestVersion ? ` to v${latestVersion}` : ""}</h2>
-          <p className="text-xs text-white/60">
+    <Box sx={{ width: "100%", maxWidth: 512, borderRadius: "12px", bgcolor: "rgba(23,23,23,0.95)", border: "1px solid rgba(255,255,255,0.1)", p: 3, color: "#fff" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: "50%", bgcolor: "rgba(245,158,11,0.2)", color: "#fbbf24" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 24 }}>content_copy</span>
+        </Box>
+        <Box>
+          <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>Update VansRouter{latestVersion ? ` to v${latestVersion}` : ""}</Typography>
+          <Box component="p" sx={{ fontSize: 12, color: "rgba(255,255,255,0.6)", m: 0 }}>
             {isDisconnected
               ? "Server stopped. Paste the command into a terminal to install."
               : isCountingDown
                 ? `Command copied. Server will stop in ${countdown}s...`
                 : "Click the button below to copy the install command and shutdown."}
-          </p>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <p className="text-sm text-white/80 mb-2">Install command:</p>
-      <div className="w-full px-3 py-2 rounded bg-white/5 mb-4">
-        <code className="text-xs font-mono text-amber-400 break-all">{installCmd}</code>
-      </div>
+      <Box component="p" sx={{ fontSize: 14, color: "rgba(255,255,255,0.8)", mb: 1 }}>Install command:</Box>
+      <Box sx={{ width: "100%", px: 1.5, py: 1, borderRadius: "4px", bgcolor: "rgba(255,255,255,0.05)", mb: 2 }}>
+        <Box component="code" sx={{ fontSize: 12, fontFamily: "ui-monospace, monospace", color: "#fbbf24", wordBreak: "break-all" }}>{installCmd}</Box>
+      </Box>
 
-      <ol className="text-xs text-white/70 space-y-1 list-decimal list-inside mb-4">
-        <li>Click <strong>Copy & Shutdown</strong> below.</li>
+      <Box component="ol" sx={{ fontSize: 12, color: "rgba(255,255,255,0.7)", display: "flex", flexDirection: "column", gap: 0.5, listStyle: "decimal", pl: 2.5, m: 0, mb: 2 }}>
+        <li>Click <strong>Copy &amp; Shutdown</strong> below.</li>
         <li>Paste the command into your terminal and press Enter.</li>
-        <li>Run <code className="px-1 rounded bg-white/10 text-green-400">vansrouter</code> again after install.</li>
-      </ol>
+        <li>Run <Box component="code" sx={{ px: 0.5, borderRadius: "4px", bgcolor: "rgba(255,255,255,0.1)", color: "#4ade80" }}>vansrouter</Box> again after install.</li>
+      </Box>
 
       {isDisconnected ? (
         <Button variant="secondary" fullWidth onClick={() => globalThis.location.reload()}>
           Reload Page
         </Button>
       ) : (
-        <div className="flex gap-2">
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button variant="secondary" onClick={onCancel} disabled={isCountingDown}>
             Cancel
           </Button>
           <Button variant="primary" fullWidth onClick={onCopyAndShutdown} disabled={isCountingDown}>
             {copied ? "✓ Copied — shutting down..." : isCountingDown ? `Shutting down in ${countdown}s` : "Copy & Shutdown"}
           </Button>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
-

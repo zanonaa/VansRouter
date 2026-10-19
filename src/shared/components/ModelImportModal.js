@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import Modal from "./Modal";
 import Button from "./Button";
 
@@ -43,28 +45,50 @@ export default function ModelImportModal({ models, onClose, onConfirm, onTestCon
       <Button variant="secondary" onClick={close} disabled={busy}>Close</Button>
       <Button onClick={confirm} loading={busy} disabled={busy || selected.size === 0}>Import {selected.size} models</Button>
     </>}>
-      <input aria-label="Search models" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search models" className="w-full rounded-lg border border-border bg-background p-2" />
-      <div className="my-3 flex flex-wrap items-center gap-3">
+      <Box
+        component="input"
+        aria-label="Search models"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search models"
+        sx={{
+          width: "100%",
+          borderRadius: "8px",
+          border: "1px solid var(--color-border)",
+          bgcolor: "background.default",
+          p: 1,
+          color: "text.primary",
+          outline: "none",
+          "&:focus": { borderColor: "primary.main" },
+        }}
+      />
+      <Box sx={{ my: 1.5, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1.5 }}>
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => setSelected((prev) => new Set([...prev, ...visible.map((m) => models.indexOf(m))]))}>Select all</Button>
         <Button size="sm" variant="secondary" disabled={busy} onClick={() => setSelected(new Set())}>Clear</Button>
         {onTestConnection && (
           <Button size="sm" variant="secondary" icon="science" loading={test.state === "running"} disabled={busy} onClick={runTest}>Test connection</Button>
         )}
-        <span className="text-xs text-text-muted">{selected.size} selected / {models.length} available</span>
-      </div>
-      {test.state === "ok" && <p className="mb-3 text-xs text-green-500">{test.message}</p>}
-      {test.state === "error" && <p role="alert" className="mb-3 text-xs text-red-500">{test.message}</p>}
-      {error && <p role="alert" className="mb-3 text-red-500">{error}</p>}
-      <div className="max-h-80 overflow-y-auto space-y-2">
+        <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>{selected.size} selected / {models.length} available</Box>
+      </Box>
+      {test.state === "ok" && <Typography sx={{ mb: 1.5, fontSize: 12, color: "success.main" }}>{test.message}</Typography>}
+      {test.state === "error" && <Typography role="alert" sx={{ mb: 1.5, fontSize: 12, color: "error.main" }}>{test.message}</Typography>}
+      {error && <Typography role="alert" sx={{ mb: 1.5, color: "error.main" }}>{error}</Typography>}
+      <Box sx={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1 }}>
         {visible.map((model) => {
           const key = models.indexOf(model);
-          return <label key={key} className="flex gap-3 items-center rounded-lg border border-border p-2">
-            <input type="checkbox" disabled={busy} checked={selected.has(key)} onChange={() => toggle(key)} />
-            <span className="min-w-0 break-all text-sm">{model.id}</span>
-          </label>;
+          return (
+            <Box
+              component="label"
+              key={key}
+              sx={{ display: "flex", gap: 1.5, alignItems: "center", borderRadius: "8px", border: "1px solid var(--color-border)", p: 1, cursor: "pointer" }}
+            >
+              <input type="checkbox" disabled={busy} checked={selected.has(key)} onChange={() => toggle(key)} />
+              <Box component="span" sx={{ minWidth: 0, wordBreak: "break-all", fontSize: 14 }}>{model.id}</Box>
+            </Box>
+          );
         })}
-        {visible.length === 0 && <p className="text-text-muted">No matching models</p>}
-      </div>
+        {visible.length === 0 && <Typography sx={{ color: "text.secondary" }}>No matching models</Typography>}
+      </Box>
     </Modal>
   );
 }

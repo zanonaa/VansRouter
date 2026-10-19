@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useReducer, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Button, Input } from "@/shared/components";
 
 function cursorReducer(state, action) {
@@ -96,22 +98,32 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
     }
   };
 
+  const noteSx = (bg, border, iconColor, textColor) => ({
+    bgcolor: bg,
+    p: 1.5,
+    borderRadius: "8px",
+    border: `1px solid ${border}`,
+    display: "flex",
+    gap: 1,
+    alignItems: "flex-start",
+  });
+
   return (
     <Modal isOpen={isOpen} title="Connect Cursor IDE" onClose={onClose}>
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Auto-detecting state */}
         {autoDetecting && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-primary animate-spin">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(229,106,74,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 30, color: "var(--color-primary)" }}>
                 progress_activity
               </span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Auto-detecting tokens...</h3>
-            <p className="text-sm text-text-muted">
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Auto-detecting tokens...</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Reading from Cursor IDE database
-            </p>
-          </div>
+            </Typography>
+          </Box>
         )}
 
         {/* Form (shown after auto-detect completes) */}
@@ -119,84 +131,94 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
           <>
             {/* Success message if auto-detected */}
             {autoDetected && (
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="flex gap-2">
-                  <span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
-                  <p className="text-sm text-green-800 dark:text-green-200">
-                    Tokens auto-detected from Cursor IDE successfully!
-                  </p>
-                </div>
-              </div>
+              <Box sx={noteSx("rgba(34,197,94,0.1)", "rgba(34,197,94,0.3)", "success.main", "success.main")}>
+                <span className="material-symbols-outlined" style={{ color: "#16a34a" }}>check_circle</span>
+                <Typography sx={{ fontSize: 14, color: "#166534" }}>
+                  Tokens auto-detected from Cursor IDE successfully!
+                </Typography>
+              </Box>
             )}
 
             {/* Windows manual instructions */}
             {windowsManual && (
-              <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                  <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">info</span>
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <Box sx={{ ...noteSx("rgba(245,158,11,0.1)", "rgba(245,158,11,0.3)"), flexDirection: "column" }}>
+                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                  <span className="material-symbols-outlined" style={{ color: "#d97706" }}>info</span>
+                  <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#92400e" }}>
                     Could not read Cursor database automatically.
-                  </p>
-                </div>
-                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: 12, color: "#b45309" }}>
                   Make sure Cursor IDE has been opened at least once, then click <strong>Retry</strong>. If the problem persists, paste your tokens manually below.
-                </p>
+                </Typography>
                 <Button onClick={runAutoDetect} variant="outline" fullWidth>
                   Retry
                 </Button>
-              </div>
+              </Box>
             )}
 
             {/* Info message if not auto-detected */}
             {!autoDetected && !windowsManual && !error && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex gap-2">
-                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Cursor IDE not detected. Please paste your tokens manually.
-                  </p>
-                </div>
-              </div>
+              <Box sx={noteSx("rgba(59,130,246,0.1)", "rgba(59,130,246,0.3)", "info.main", "info.main")}>
+                <span className="material-symbols-outlined" style={{ color: "#2563eb" }}>info</span>
+                <Typography sx={{ fontSize: 14, color: "#1e40af" }}>
+                  Cursor IDE not detected. Please paste your tokens manually.
+                </Typography>
+              </Box>
             )}
 
             {/* Access Token Input */}
-            <div>
-              <label htmlFor="cursor-access-token" className="block text-sm font-medium mb-2">
-                Access Token <span className="text-red-500">*</span>
-              </label>
-              <textarea
+            <Box>
+              <Box component="label" htmlFor="cursor-access-token" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
+                Access Token <Box component="span" sx={{ color: "error.main" }}>*</Box>
+              </Box>
+              <Box
+                component="textarea"
                 id="cursor-access-token"
                 value={accessToken}
                 onChange={(e) => dispatch({ type: "SET_TOKEN", value: e.target.value })}
                 placeholder="Access token will be auto-filled..."
                 rows={3}
-                className="w-full px-3 py-2 text-sm font-mono border border-border rounded-lg bg-background focus:outline-none focus:border-primary resize-none"
+                sx={{
+                  width: "100%",
+                  px: 1.5,
+                  py: 1,
+                  fontSize: 14,
+                  fontFamily: "ui-monospace, monospace",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "8px",
+                  bgcolor: "background.default",
+                  color: "text.primary",
+                  resize: "none",
+                  outline: "none",
+                  "&:focus": { borderColor: "primary.main" },
+                }}
               />
-            </div>
+            </Box>
 
             {/* Machine ID Input */}
-            <div>
-              <label htmlFor="cursor-machine-id" className="block text-sm font-medium mb-2">
-                Machine ID <span className="text-red-500">*</span>
-              </label>
+            <Box>
+              <Box component="label" htmlFor="cursor-machine-id" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
+                Machine ID <Box component="span" sx={{ color: "error.main" }}>*</Box>
+              </Box>
               <Input
                 id="cursor-machine-id"
                 value={machineId}
                 onChange={(e) => dispatch({ type: "SET_MACHINE_ID", value: e.target.value })}
                 placeholder="Machine ID will be auto-filled..."
-                className="font-mono text-sm"
+                inputClassName="font-mono text-sm"
               />
-            </div>
+            </Box>
 
             {/* Error Display */}
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-              </div>
+              <Box sx={noteSx("rgba(239,68,68,0.1)", "rgba(239,68,68,0.3)", "error.main", "error.main")}>
+                <Typography sx={{ fontSize: 14, color: "#dc2626" }}>{error}</Typography>
+              </Box>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 onClick={handleImportToken}
                 fullWidth
@@ -207,11 +229,10 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
               <Button onClick={onClose} variant="ghost" fullWidth>
                 Cancel
               </Button>
-            </div>
+            </Box>
           </>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }
-

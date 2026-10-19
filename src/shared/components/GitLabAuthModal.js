@@ -1,6 +1,8 @@
 "use client";
 
 import { useReducer } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Button, Input, OAuthModal } from "@/shared/components";
 
 const GITLAB_COM = "https://gitlab.com";
@@ -29,6 +31,21 @@ function gitlabReducer(state, action) {
     default: return state;
   }
 }
+
+const modeCardSx = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 1,
+  p: 2,
+  borderRadius: "8px",
+  border: "1px solid var(--color-border)",
+  bgcolor: "transparent",
+  textAlign: "left",
+  cursor: "pointer",
+  transition: "all 150ms",
+  "&:hover": { borderColor: "primary.main", bgcolor: "rgba(229,106,74,0.05)" },
+};
 
 /**
  * GitLab Duo Authentication Modal
@@ -94,91 +111,84 @@ export default function GitLabAuthModal({ isOpen, providerInfo, onSuccess, onClo
 
   return (
     <Modal isOpen={isOpen} title="Connect GitLab Duo" onClose={handleClose} size="lg">
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Mode selection */}
         {!mode && (
           <>
-            <p className="text-sm text-text-muted">
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Choose how to authenticate with GitLab Duo:
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button"
-                onClick={() => dispatch({ type: "SET_MODE", value: "oauth" })}
-                className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors text-left"
-              >
-                <span className="material-symbols-outlined text-2xl text-primary">lock_open</span>
-                <div>
-                  <p className="text-sm font-medium">OAuth App</p>
-                  <p className="text-xs text-text-muted">Use a GitLab OAuth application</p>
-                </div>
-              </button>
-              <button type="button"
-                onClick={() => dispatch({ type: "SET_MODE", value: "pat" })}
-                className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors text-left"
-              >
-                <span className="material-symbols-outlined text-2xl text-primary">key</span>
-                <div>
-                  <p className="text-sm font-medium">Personal Access Token</p>
-                  <p className="text-xs text-text-muted">Use a GitLab PAT with api scope</p>
-                </div>
-              </button>
-            </div>
+            </Typography>
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+              <Box component="button" type="button" onClick={() => dispatch({ type: "SET_MODE", value: "oauth" })} sx={modeCardSx}>
+                <span className="material-symbols-outlined" style={{ fontSize: 24, color: "var(--color-primary)" }}>lock_open</span>
+                <Box>
+                  <Typography sx={{ fontSize: 14, fontWeight: 500 }}>OAuth App</Typography>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Use a GitLab OAuth application</Typography>
+                </Box>
+              </Box>
+              <Box component="button" type="button" onClick={() => dispatch({ type: "SET_MODE", value: "pat" })} sx={modeCardSx}>
+                <span className="material-symbols-outlined" style={{ fontSize: 24, color: "var(--color-primary)" }}>key</span>
+                <Box>
+                  <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Personal Access Token</Typography>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Use a GitLab PAT with api scope</Typography>
+                </Box>
+              </Box>
+            </Box>
           </>
         )}
 
         {/* OAuth mode */}
         {mode === "oauth" && (
           <>
-            <p className="text-xs text-text-muted">
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               Create an OAuth app at{" "}
-              <a href={`${baseUrl.trim() || GITLAB_COM}/-/profile/applications`} target="_blank" rel="noreferrer" className="text-primary underline">
+              <Box component="a" href={`${baseUrl.trim() || GITLAB_COM}/-/profile/applications`} target="_blank" rel="noreferrer" sx={{ color: "primary.main", textDecoration: "underline" }}>
                 GitLab Applications
-              </a>{" "}
+              </Box>{" "}
               with redirect URI{" "}
-              <code className="bg-sidebar px-1 rounded text-xs">{getRedirectUri()}</code>
-            </p>
+              <Box component="code" sx={{ bgcolor: "var(--color-sidebar)", px: 0.5, borderRadius: "4px", fontSize: 12 }}>{getRedirectUri()}</Box>
+            </Typography>
             <Input label="GitLab Base URL" value={baseUrl} onChange={(e) => dispatch({ type: "SET_BASE_URL", value: e.target.value })} placeholder={GITLAB_COM} />
             <Input label="Client ID" value={clientId} onChange={(e) => dispatch({ type: "SET_CLIENT_ID", value: e.target.value })} placeholder="Your OAuth application client ID" />
             <Input label="Client Secret (optional for PKCE)" value={clientSecret} onChange={(e) => dispatch({ type: "SET_CLIENT_SECRET", value: e.target.value })} placeholder="Leave empty for public PKCE app" />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <div className="flex gap-2">
+            {error && <Typography sx={{ fontSize: 14, color: "error.main" }}>{error}</Typography>}
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleOAuthStart} fullWidth disabled={!clientId.trim()}>
                 Authorize
               </Button>
               <Button onClick={() => dispatch({ type: "SET_MODE", value: null })} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
+            </Box>
           </>
         )}
 
         {/* PAT mode */}
         {mode === "pat" && (
           <>
-            <p className="text-xs text-text-muted">
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               Create a PAT at{" "}
-              <a href={`${baseUrl.trim() || GITLAB_COM}/-/user_settings/personal_access_tokens`} target="_blank" rel="noreferrer" className="text-primary underline">
+              <Box component="a" href={`${baseUrl.trim() || GITLAB_COM}/-/user_settings/personal_access_tokens`} target="_blank" rel="noreferrer" sx={{ color: "primary.main", textDecoration: "underline" }}>
                 GitLab Access Tokens
-              </a>{" "}
-              with scopes: <code className="bg-sidebar px-1 rounded text-xs">api</code>,{" "}
-              <code className="bg-sidebar px-1 rounded text-xs">read_user</code>, and{" "}
-              <code className="bg-sidebar px-1 rounded text-xs">ai_features</code>.
-            </p>
+              </Box>{" "}
+              with scopes: <Box component="code" sx={{ bgcolor: "var(--color-sidebar)", px: 0.5, borderRadius: "4px", fontSize: 12 }}>api</Box>,{" "}
+              <Box component="code" sx={{ bgcolor: "var(--color-sidebar)", px: 0.5, borderRadius: "4px", fontSize: 12 }}>read_user</Box>, and{" "}
+              <Box component="code" sx={{ bgcolor: "var(--color-sidebar)", px: 0.5, borderRadius: "4px", fontSize: 12 }}>ai_features</Box>.
+            </Typography>
             <Input label="GitLab Base URL" value={baseUrl} onChange={(e) => dispatch({ type: "SET_BASE_URL", value: e.target.value })} placeholder={GITLAB_COM} />
             <Input label="Personal Access Token" value={pat} onChange={(e) => dispatch({ type: "SET_PAT", value: e.target.value })} placeholder="glpat-xxxxxxxxxxxxxxxxxxxx" type="password" />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <div className="flex gap-2">
+            {error && <Typography sx={{ fontSize: 14, color: "error.main" }}>{error}</Typography>}
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handlePATSubmit} fullWidth disabled={!pat.trim() || loading} loading={loading}>
                 Connect
               </Button>
               <Button onClick={() => dispatch({ type: "SET_MODE", value: null })} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
+            </Box>
           </>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }
-

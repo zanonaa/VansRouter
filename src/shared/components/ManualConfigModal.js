@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
 import Modal from "./Modal";
 import Button from "./Button";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
@@ -19,28 +20,41 @@ export default function ManualConfigModal({ isOpen, onClose, title = "Manual Con
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="xl">
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {configs.map((config, index) => (
-          <div key={config.filename} className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-text-main">{config.filename}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => copyConfig(config.content, index)}
-              >
-                <span className="material-symbols-outlined text-[14px] mr-1">
+          <Box key={config.filename} sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>{config.filename}</Box>
+              <Button variant="ghost" size="sm" onClick={() => copyConfig(config.content, index)}>
+                <span className="material-symbols-outlined" style={{ fontSize: 14, marginRight: 4 }}>
                   {copiedIndex === index ? "check" : "content_copy"}
                 </span>
                 {copiedIndex === index ? "Copied!" : "Copy"}
               </Button>
-            </div>
-            <pre className="px-3 py-2 bg-black/5 dark:bg-white/5 rounded font-mono text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto border border-border">
+            </Box>
+            <Box
+              component="pre"
+              sx={{
+                px: 1.5,
+                py: 1,
+                bgcolor: "rgba(0,0,0,0.05)",
+                borderRadius: "4px",
+                fontFamily: "ui-monospace, monospace",
+                fontSize: 12,
+                overflowX: "auto",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
+                maxHeight: 240,
+                overflowY: "auto",
+                border: "1px solid var(--color-border)",
+                m: 0,
+              }}
+            >
               {config.content}
-            </pre>
-          </div>
+            </Box>
+          </Box>
         ))}
-      </div>
+      </Box>
     </Modal>
   );
 }

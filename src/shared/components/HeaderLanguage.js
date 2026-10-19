@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
 import { LOCALE_COOKIE, normalizeLocale } from "@/i18n/config";
 import { LOCALE_FLAGS } from "@/shared/constants/locales";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -20,14 +22,15 @@ export default function HeaderLanguage() {
 
   return (
     <>
-      <button type="button"
+      <IconButton
+        type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center p-2 rounded-lg text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/5 transition-all"
         title="Language"
         data-i18n-skip="true"
+        sx={{ p: 1, borderRadius: "8px", color: "text.secondary", "&:hover": { color: "text.primary", bgcolor: "var(--color-surface-2)" } }}
       >
-        <span className="text-lg leading-none">{LOCALE_FLAGS[locale] || "🌐"}</span>
-      </button>
+        <Box component="span" sx={{ fontSize: 18, lineHeight: 1 }}>{LOCALE_FLAGS[locale] || "🌐"}</Box>
+      </IconButton>
 
       <LanguageSwitcher
         hideTrigger

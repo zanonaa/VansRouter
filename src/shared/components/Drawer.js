@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import { cn } from "@/shared/utils/cn";
 
 const DRAWER_WIDTHS = {
-  sm: "w-full sm:w-[400px] max-w-full",
-  md: "w-full sm:w-[500px] max-w-full",
-  lg: "w-full sm:w-[600px] max-w-full",
-  xl: "w-full sm:w-[800px] max-w-full",
-  full: "w-full",
+  sm: { xs: "100%", sm: 400 },
+  md: { xs: "100%", sm: 500 },
+  lg: { xs: "100%", sm: 600 },
+  xl: { xs: "100%", sm: 800 },
+  full: { xs: "100%", sm: "100%" },
 };
 
 export default function Drawer({
@@ -17,9 +20,8 @@ export default function Drawer({
   title,
   children,
   width = "md",
-  className
+  className,
 }) {
-  const widths = DRAWER_WIDTHS;
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -45,44 +47,60 @@ export default function Drawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <Box sx={{ position: "fixed", inset: 0, zIndex: 50 }}>
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px] fade-in cursor-pointer"
+      <Box
         onClick={onClose}
         aria-hidden="true"
+        sx={{
+          position: "absolute",
+          inset: 0,
+          bgcolor: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(2px)",
+          animation: "fadeIn 0.2s ease-out forwards",
+          cursor: "pointer",
+        }}
       />
 
       {/* Drawer panel */}
-      <div className={cn(
-        "absolute right-0 top-0 h-full bg-surface flex flex-col max-w-full",
-        "shadow-[var(--shadow-elev)]",
-        "slide-in-right",
-        "border-l border-border-subtle",
-        widths[width] || widths.md,
-        className
-      )}>
+      <Box
+        className={cn(className)}
+        sx={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          height: "100%",
+          bgcolor: "background.paper",
+          display: "flex",
+          flexDirection: "column",
+          maxWidth: "100%",
+          boxShadow: "var(--shadow-elev)",
+          animation: "slideInFromRight 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+          borderLeft: "1px solid var(--color-border-subtle)",
+          width: DRAWER_WIDTHS[width] || DRAWER_WIDTHS.md,
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border-subtle flex-shrink-0">
-          <div className="flex items-center gap-3">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 3, borderBottom: "1px solid var(--color-border-subtle)", flexShrink: 0 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             {title && (
-              <h2 className="text-lg font-semibold text-text-main">{title}</h2>
+              <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}>{title}</Typography>
             )}
-          </div>
-          <button
+          </Box>
+          <IconButton
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-[10px] text-text-muted hover:bg-surface-2 hover:text-text-main transition-colors"
+            sx={{ p: 0.75, borderRadius: "10px", color: "text.secondary", "&:hover": { bgcolor: "var(--color-surface-2)", color: "text.primary" } }}
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+          </IconButton>
+        </Box>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+        <Box className="custom-scrollbar" sx={{ flex: 1, overflowY: "auto", p: 3 }}>
           {children}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Button, Input } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 
@@ -599,81 +601,83 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
 
   return (
     <Modal isOpen={isOpen} title={modalTitle} onClose={handleClose} size="lg">
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Waiting + Manual Input combined (non-device-code) */}
         {(step === "waiting" || step === "input") && !isDeviceCode && (
           <>
             {/* Option A: Auto via popup */}
-            <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-sidebar/50">
-              <span className="material-symbols-outlined text-base text-primary animate-spin">
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1.5, py: 1, border: "1px solid var(--color-border)", borderRadius: "8px", bgcolor: "rgba(244,241,236,0.5)" }}>
+              <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 16, color: "var(--color-primary)" }}>
                 progress_activity
               </span>
-              <span className="text-sm">
+              <Box component="span" sx={{ fontSize: 14 }}>
                 {isXaiProvider ? "Waiting for Grok Build OAuth…" : "Waiting for popup authorization…"}
-              </span>
-            </div>
+              </Box>
+            </Box>
 
             {/* Divider */}
-            <div className="flex items-center gap-3 my-1">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-text-muted uppercase tracking-wider">Or paste callback URL manually</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, my: 0.5 }}>
+              <Box sx={{ flex: 1, height: "1px", bgcolor: "var(--color-border)" }} />
+              <Box component="span" sx={{ fontSize: 12, color: "text.secondary", textTransform: "uppercase", letterSpacing: "0.05em" }}>Or paste callback URL manually</Box>
+              <Box sx={{ flex: 1, height: "1px", bgcolor: "var(--color-border)" }} />
+            </Box>
 
             {/* Option B: Manual paste */}
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium mb-2">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 500, mb: 1 }}>
                   Step 1: Open this {isXaiProvider ? "Grok Build OAuth URL" : "URL"} in your browser
-                </p>
-                <div className="flex gap-2">
-                  <Input value={authData?.authUrl || ""} readOnly className="flex-1 font-mono text-xs" />
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Input value={authData?.authUrl || ""} readOnly inputClassName="font-mono text-xs" />
+                  </Box>
                   <Button variant="secondary" icon={copied === "auth_url" ? "check" : "content_copy"} onClick={() => copy(authData?.authUrl, "auth_url")} disabled={!authData?.authUrl}>
                     Copy
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <div>
-                <p className="text-sm font-medium mb-2">
+              <Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 500, mb: 1 }}>
                   Step 2: Paste the {provider === "xai" ? "callback URL or copied code" : "callback URL"} here
-                </p>
-                <p className="text-xs text-text-muted mb-2">
+                </Typography>
+                <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 1 }}>
                   {provider === "xai"
                     ? "If xAI shows a code instead of redirecting, paste that code here."
                     : "After authorization, copy the full URL from your browser."}
-                </p>
+                </Typography>
                 <Input
                   value={callbackUrl}
                   onChange={(e) => setCallbackUrl(e.target.value)}
                   placeholder={manualPlaceholder}
-                  className="font-mono text-xs"
+                  inputClassName="font-mono text-xs"
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleManualSubmit} fullWidth disabled={!callbackUrl}>
                 Connect
               </Button>
               <Button onClick={handleClose} variant="ghost" fullWidth>
                 Cancel
               </Button>
-            </div>
+            </Box>
           </>
         )}
 
         {/* Device Code Flow - Waiting */}
         {step === "waiting" && isDeviceCode && deviceData && (
           <>
-            <div className="text-center py-4">
-              <p className="text-sm text-text-muted mb-4">
+            <Box sx={{ textAlign: "center", py: 2 }}>
+              <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2 }}>
                 Visit the login URL below and authorize:
-              </p>
-              <div className="bg-sidebar p-4 rounded-lg mb-4">
-                <p className="text-xs text-text-muted mb-1">Login URL</p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-sm break-all">{deviceLoginUrl}</code>
+              </Typography>
+              <Box sx={{ bgcolor: "var(--color-sidebar)", p: 2, borderRadius: "8px", mb: 2 }}>
+                <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 0.5 }}>Login URL</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box component="code" sx={{ flex: 1, fontSize: 14, wordBreak: "break-all" }}>{deviceLoginUrl}</Box>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -690,68 +694,67 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
                   >
                     Open
                   </Button>
-                </div>
-              </div>
+                </Box>
+              </Box>
               {deviceData.user_code && (
-                <div className="bg-primary/10 p-4 rounded-lg">
-                  <p className="text-xs text-text-muted mb-1">Your Code</p>
-                  <div className="flex items-center justify-center gap-2">
-                    <p className="text-2xl font-mono font-bold text-primary">{deviceData.user_code}</p>
+                <Box sx={{ bgcolor: "rgba(229,106,74,0.1)", p: 2, borderRadius: "8px" }}>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 0.5 }}>Your Code</Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                    <Box component="p" sx={{ fontSize: 24, fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "primary.main", m: 0 }}>{deviceData.user_code}</Box>
                     <Button
                       size="sm"
                       variant="ghost"
                       icon={copied === "user_code" ? "check" : "content_copy"}
                       onClick={() => copy(deviceData.user_code, "user_code")}
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               )}
-            </div>
+            </Box>
             {polling && (
-              <div className="flex items-center justify-center gap-2 text-sm text-text-muted">
-                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, fontSize: 14, color: "text.secondary" }}>
+                <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite" }}>progress_activity</span>
                 Waiting for authorization...
-              </div>
+              </Box>
             )}
           </>
         )}
 
         {/* Success Step */}
         {step === "success" && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-green-600">check_circle</span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Connected Successfully!</h3>
-            <p className="text-sm text-text-muted mb-4">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(34,197,94,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 30, color: "#16a34a" }}>check_circle</span>
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Connected Successfully!</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2 }}>
               Your {providerInfo.name} account has been connected.
-            </p>
+            </Typography>
             <Button onClick={handleClose} fullWidth>
               Done
             </Button>
-          </div>
+          </Box>
         )}
 
         {/* Error Step */}
         {step === "error" && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-red-600">error</span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Connection Failed</h3>
-            <p className="text-sm text-red-600 mb-4">{error}</p>
-            <div className="flex gap-2">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(239,68,68,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 30, color: "#dc2626" }}>error</span>
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Connection Failed</Typography>
+            <Typography sx={{ fontSize: 14, color: "#dc2626", mb: 2 }}>{error}</Typography>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={startOAuthFlow} variant="secondary" fullWidth>
                 Try Again
               </Button>
               <Button onClick={handleClose} variant="ghost" fullWidth>
                 Cancel
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }
-

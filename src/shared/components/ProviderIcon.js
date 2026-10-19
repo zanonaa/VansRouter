@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Box from "@mui/material/Box";
 import { getProviderIconSrc, markProviderIconMissing } from "@/shared/utils/providerIcon";
 
 export default function ProviderIcon({
@@ -18,34 +19,43 @@ export default function ProviderIcon({
 
   if (providerName === "a6api" || providerName === "a6api-cli") {
     return (
-      <span
-        className={`inline-flex items-center justify-center font-bold rounded-full ${className}`.trim()}
-        style={{
+      <Box
+        component="span"
+        className={className.trim()}
+        sx={{
+          display: "grid",
+          placeItems: "center",
+          fontWeight: 700,
           width: size,
           height: size,
           borderRadius: "50%",
-          display: "grid",
-          placeItems: "center",
           position: "relative",
           overflow: "hidden",
           color: "var(--navy, #1F2937)",
           fontSize: `${Math.max(10, Math.floor(size * 0.35))}px`,
           letterSpacing: 0,
-          background: "radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .38), transparent 22%), conic-gradient(from 210deg, #3157ff, #16b8a6, #74c86a, #3157ff)",
+          background:
+            "radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .38), transparent 22%), conic-gradient(from 210deg, #3157ff, #16b8a6, #74c86a, #3157ff)",
           boxShadow: "0 12px 26px #3157ff38",
           isolation: "isolate",
         }}
       >
         <span>A6</span>
-      </span>
+      </Box>
     );
   }
 
   if (!effectiveSrc || errored) {
     return (
-      <span
-        className={`inline-flex items-center justify-center font-bold rounded-lg ${className}`.trim()}
-        style={{
+      <Box
+        component="span"
+        className={className.trim()}
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontWeight: 700,
+          borderRadius: "8px",
           width: size,
           height: size,
           color: fallbackColor,
@@ -53,12 +63,13 @@ export default function ProviderIcon({
         }}
       >
         {fallbackText}
-      </span>
+      </Box>
     );
   }
 
   return (
-    <img
+    <Box
+      component="img"
       src={effectiveSrc}
       alt={alt}
       width={size}
@@ -70,6 +81,7 @@ export default function ProviderIcon({
         if (providerName) markProviderIconMissing(providerName);
         setErrored(true);
       }}
+      sx={{ display: "inline-block", objectFit: "contain" }}
     />
   );
 }

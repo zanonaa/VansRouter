@@ -1,5 +1,6 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import { cn } from "@/shared/utils/cn";
 
 const EMPTY_OPTIONS = [];
@@ -19,27 +20,46 @@ export default function Select({
   ...props
 }) {
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <Box className={cn(className)} sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
       {label && (
-        <label className="text-sm font-medium text-text-main">
+        <Box component="label" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+          {required && <Box component="span" sx={{ color: "error.main", ml: 0.5 }}>*</Box>}
+        </Box>
       )}
-      <div className="relative">
-        <select
+      <Box sx={{ position: "relative" }}>
+        <Box
+          component="select"
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={cn(
-            "w-full py-2.5 px-3 pr-10 text-sm text-text-main",
-            "bg-surface-2 border border-transparent rounded-[10px] appearance-none",
-            "focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500/40",
-            "transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
-            "text-[16px] sm:text-sm",
-            error && "ring-1 ring-red-500 focus:ring-2 focus:ring-red-500/40 border-red-500/40",
-            selectClassName
-          )}
+          className={cn(selectClassName)}
+          sx={{
+            width: "100%",
+            py: 1.25,
+            px: 1.5,
+            pr: 5,
+            fontSize: { xs: 16, sm: 14 },
+            color: "text.primary",
+            bgcolor: "var(--color-surface-2)",
+            border: "1px solid transparent",
+            borderRadius: "10px",
+            appearance: "none",
+            transition: "all 150ms ease",
+            "&:focus": {
+              outline: "none",
+              borderColor: "rgba(229,106,74,0.4)",
+              boxShadow: "0 0 0 2px rgba(229,106,74,0.3)",
+            },
+            "&:disabled": { opacity: 0.5, cursor: "not-allowed" },
+            ...(error
+              ? {
+                  borderColor: "rgba(239,68,68,0.4)",
+                  boxShadow: "0 0 0 1px #ef4444",
+                  "&:focus": { boxShadow: "0 0 0 2px rgba(239,68,68,0.4)" },
+                }
+              : {}),
+          }}
           {...props}
         >
           <option value="" disabled>
@@ -50,20 +70,38 @@ export default function Select({
               {option.label}
             </option>
           ))}
-        </select>
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-muted">
-          <span className="material-symbols-outlined text-[20px]">expand_more</span>
-        </div>
-      </div>
+        </Box>
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            right: 0,
+            display: "flex",
+            alignItems: "center",
+            pr: 1.5,
+            pointerEvents: "none",
+            color: "text.secondary",
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+            expand_more
+          </span>
+        </Box>
+      </Box>
       {error && (
-        <p className="text-xs text-red-500 flex items-center gap-1">
-          <span className="material-symbols-outlined text-[14px]">error</span>
+        <Box component="p" sx={{ fontSize: 12, color: "error.main", display: "flex", alignItems: "center", gap: 0.5 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+            error
+          </span>
           {error}
-        </p>
+        </Box>
       )}
       {hint && !error && (
-        <p className="text-xs text-text-muted">{hint}</p>
+        <Box component="p" sx={{ fontSize: 12, color: "text.secondary" }}>
+          {hint}
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

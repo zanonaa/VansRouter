@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import { GITHUB_CONFIG } from "@/shared/constants/config";
 
 function sanitizeHtml(html) {
@@ -61,53 +64,65 @@ export default function ChangelogModal({ isOpen, onClose }) {
   const { html, loading, error } = fetchState;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Box sx={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}>
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+      <Box
         onClick={onClose}
         aria-hidden="true"
+        sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }}
       />
 
       {/* Modal content */}
-      <div
+      <Box
         ref={modalRef}
-        className="relative w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-3xl flex flex-col max-h-[85vh]"
+        sx={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 768,
+          bgcolor: "background.paper",
+          border: "1px solid var(--color-border)",
+          borderRadius: "12px",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "85vh",
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-black/5 dark:border-white/5">
-          <h2 className="text-lg font-semibold text-text-main">Change Log</h2>
-          <button type="button"
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, borderBottom: "1px solid var(--color-border-subtle)" }}>
+          <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}>Change Log</Typography>
+          <IconButton
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             aria-label="Close"
+            sx={{ p: 0.75, borderRadius: "8px", color: "text.secondary", "&:hover": { bgcolor: "var(--color-surface-2)" } }}
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+          </IconButton>
+        </Box>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto flex-1">
+        <Box sx={{ p: 3, overflowY: "auto", flex: 1 }}>
           {loading && (
-            <div className="flex items-center justify-center py-10 text-text-muted">
-              <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", py: 5, color: "text.secondary" }}>
+              <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  marginRight: 8 }}>progress_activity</span>
               Loading...
-            </div>
+            </Box>
           )}
           {error && (
-            <div className="text-red-500 py-4">Failed to load changelog: {error}</div>
+            <Box sx={{ color: "error.main", py: 2 }}>Failed to load changelog: {error}</Box>
           )}
           {!loading && !error && html && (
-            <div
-              className="changelog-body text-text-main"
+            <Box
+              className="changelog-body"
+              sx={{ color: "text.primary" }}
               // SECURITY: html is sanitized via DOMPurify.sanitize() before reaching this element
               dangerouslySetInnerHTML={{ __html: html }}
             />
           )}
-        </div>
-      </div>
-    </div>,
+        </Box>
+      </Box>
+    </Box>,
     document.body
   );
 }
-

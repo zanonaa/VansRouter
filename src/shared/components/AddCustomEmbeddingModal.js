@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useReducer } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Input, Button, Badge } from "@/shared/components";
 
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
@@ -12,15 +14,15 @@ function ValidationResult({ validationResult }) {
     return (
       <>
         <Badge variant="success">Valid</Badge>
-        {dimensions && <span className="text-sm text-text-muted">{dimensions} dims</span>}
+        {dimensions && <Box component="span" sx={{ fontSize: 14, color: "text.secondary" }}>{dimensions} dims</Box>}
       </>
     );
   }
   return (
-    <div className="flex flex-col gap-1">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
       <Badge variant="error">Invalid</Badge>
-      {error && <span className="text-sm text-red-500">{error}</span>}
-    </div>
+      {error && <Box component="span" sx={{ fontSize: 14, color: "error.main" }}>{error}</Box>}
+    </Box>
   );
 }
 
@@ -118,7 +120,7 @@ export default function AddCustomEmbeddingModal({ isOpen, onClose, onCreated, on
 
   return (
     <Modal isOpen={isOpen} title={isEdit ? "Edit Custom Embedding" : "Add Custom Embedding"} onClose={onClose}>
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Input
           label="Name"
           value={formData.name}
@@ -153,7 +155,7 @@ export default function AddCustomEmbeddingModal({ isOpen, onClose, onCreated, on
           placeholder="e.g. voyage-3, embed-english-v3.0, text-embedding-3-small"
           hint="Required for validation. Will send a test embeddings request."
         />
-        <div className="flex items-center gap-3">
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Button
             onClick={handleValidate}
             disabled={!checkKey || !checkModelId.trim() || validating || !formData.baseUrl.trim()}
@@ -162,8 +164,8 @@ export default function AddCustomEmbeddingModal({ isOpen, onClose, onCreated, on
             {validating ? "Checking..." : "Check"}
           </Button>
           <ValidationResult validationResult={validationResult} />
-        </div>
-        <div className="flex gap-2">
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             onClick={handleSubmit}
             fullWidth
@@ -172,9 +174,8 @@ export default function AddCustomEmbeddingModal({ isOpen, onClose, onCreated, on
             {submitting ? (isEdit ? "Saving..." : "Creating...") : (isEdit ? "Save" : "Create")}
           </Button>
           <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }
-

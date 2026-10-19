@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { LOCALES, LOCALE_COOKIE, normalizeLocale } from "@/i18n/config";
 import { reloadTranslations } from "@/i18n/runtime";
 
@@ -53,6 +55,21 @@ const getLocaleInfo = (locale) => {
     "no": { name: "Norsk", flag: "🇳🇴" }
   };
   return locales[locale] || { name: locale, flag: "🌐" };
+};
+
+const triggerSx = {
+  display: "flex",
+  alignItems: "center",
+  gap: 1,
+  px: 1.5,
+  py: 1,
+  borderRadius: "8px",
+  border: 0,
+  bgcolor: "transparent",
+  color: "text.secondary",
+  cursor: "pointer",
+  transition: "color 150ms, background-color 150ms",
+  "&:hover": { color: "text.primary", bgcolor: "var(--color-surface)" },
 };
 
 export default function LanguageSwitcher({ className = "", isOpen: controlledOpen, onClose, hideTrigger = false }) {
@@ -127,98 +144,125 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
 
   if (!mounted) {
     return (
-      <div className={className}>
+      <Box className={className}>
         {!hideTrigger && (
-          <button type="button"
-            disabled={true}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-muted transition-colors opacity-70"
-            title="Language"
-          >
-            <span className="material-symbols-outlined text-[20px]">language</span>
-            <span className="text-sm font-medium">{getLocaleInfo(locale).name}</span>
-          </button>
+          <Box component="button" type="button" disabled title="Language" sx={{ ...triggerSx, opacity: 0.7, cursor: "default" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>language</span>
+            <Box component="span" sx={{ fontSize: 14, fontWeight: 500 }}>{getLocaleInfo(locale).name}</Box>
+          </Box>
         )}
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className={className}>
+    <Box className={className}>
       {/* Trigger button */}
       {!hideTrigger && (
-        <button type="button"
+        <Box
+          component="button"
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           disabled={isPending}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-muted hover:text-text-main hover:bg-surface/60 transition-colors"
           title="Language"
           data-i18n-skip="true"
+          sx={triggerSx}
         >
-          <span className="material-symbols-outlined text-[20px]">language</span>
-          <span className="text-sm font-medium">{getLocaleInfo(locale).name}</span>
-          <span className="text-lg">{getLocaleInfo(locale).flag}</span>
-        </button>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>language</span>
+          <Box component="span" sx={{ fontSize: 14, fontWeight: 500 }}>{getLocaleInfo(locale).name}</Box>
+          <Box component="span" sx={{ fontSize: 18 }}>{getLocaleInfo(locale).flag}</Box>
+        </Box>
       )}
 
       {/* Portal modal - renders at document.body to avoid parent layout constraints */}
       {isOpen && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-i18n-skip="true">
+        <Box sx={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", p: 2 }} data-i18n-skip="true">
           {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+          <Box
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
+            sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }}
           />
 
           {/* Modal content */}
-          <div
+          <Box
             ref={modalRef}
-            className="relative w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-2xl flex flex-col max-h-[80vh]"
+            sx={{
+              position: "relative",
+              width: "100%",
+              maxWidth: 672,
+              bgcolor: "background.paper",
+              border: "1px solid var(--color-border)",
+              borderRadius: "12px",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: "80vh",
+            }}
           >
             {/* Modal header */}
-            <div className="flex items-center justify-between p-3 border-b border-black/5 dark:border-white/5">
-              <h2 className="text-lg font-semibold text-text-main">Select Language</h2>
-              <button type="button"
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, borderBottom: "1px solid var(--color-border-subtle)" }}>
+              <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}>Select Language</Typography>
+              <Box
+                component="button"
+                type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 aria-label="Close"
+                sx={{ p: 0.75, borderRadius: "8px", border: 0, bgcolor: "transparent", color: "text.secondary", cursor: "pointer", "&:hover": { bgcolor: "var(--color-surface-2)" } }}
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+              </Box>
+            </Box>
 
             {/* Modal body - fixed grid columns, equal sizing */}
-            <div className="p-6 overflow-y-auto flex-1">
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2">
+            <Box sx={{ p: 3, overflowY: "auto", flex: 1 }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 1 }}>
                 {LOCALES.map((item) => {
                   const active = locale === item;
                   const info = getLocaleInfo(item);
                   return (
-                    <button type="button"
+                    <Box
+                      component="button"
+                      type="button"
                       key={item}
                       onClick={() => handleSetLocale(item)}
                       disabled={isPending}
-                      className={`flex flex-col items-center justify-start gap-1 px-2 py-3 rounded-lg text-xs font-medium transition-colors w-full ${
-                        active
-                          ? "bg-primary/15 text-primary ring-2 ring-primary"
-                          : "text-text-main hover:bg-black/5 dark:hover:bg-white/5"
-                      } ${isPending ? "opacity-70 cursor-wait" : ""}`}
                       title={info.name}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                        gap: 0.5,
+                        px: 1,
+                        py: 1.5,
+                        borderRadius: "8px",
+                        border: 0,
+                        fontSize: 12,
+                        fontWeight: 500,
+                        width: "100%",
+                        cursor: "pointer",
+                        transition: "background-color 150ms, color 150ms",
+                        bgcolor: active ? "rgba(229,106,74,0.15)" : "transparent",
+                        color: active ? "primary.main" : "text.primary",
+                        boxShadow: active ? "0 0 0 2px var(--color-primary)" : "none",
+                        "&:hover": { bgcolor: active ? "rgba(229,106,74,0.2)" : "var(--color-surface-2)" },
+                        ...(isPending ? { opacity: 0.7, cursor: "wait" } : {}),
+                      }}
                     >
-                      <span className="text-2xl">{info.flag}</span>
+                      <Box component="span" sx={{ fontSize: 24 }}>{info.flag}</Box>
                       {/* Fixed 2-line height so all cards are uniform */}
-                      <span className="text-center leading-tight line-clamp-2 h-8 flex items-center">{info.name}</span>
-                      {active && (
-                        <span className="material-symbols-outlined text-sm">check</span>
-                      )}
-                    </button>
+                      <Box component="span" sx={{ textAlign: "center", lineHeight: 1.2, height: 32, display: "flex", alignItems: "center", overflow: "hidden" }}>{info.name}</Box>
+                      {active && <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check</span>}
+                    </Box>
                   );
                 })}
-              </div>
-            </div>
-          </div>
-        </div>,
+              </Box>
+            </Box>
+          </Box>
+        </Box>,
         document.body
       )}
-    </div>
+    </Box>
   );
 }

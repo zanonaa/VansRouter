@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import ProviderIcon from "@/shared/components/ProviderIcon";
 import HeaderMenu from "@/shared/components/HeaderMenu";
 import HeaderLanguage from "@/shared/components/HeaderLanguage";
@@ -212,106 +215,123 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
   };
 
   return (
-    <header className="shrink-0 flex items-center justify-between gap-3 px-4 lg:px-8 pt-3 pb-2 border-b border-border-subtle bg-surface/60 backdrop-blur-xl lg:bg-transparent lg:backdrop-blur-none z-20">
+    <Box
+      component="header"
+      sx={{
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 1.5,
+        px: { xs: 2, lg: 4 },
+        pt: 1.5,
+        pb: 1,
+        borderBottom: "1px solid var(--color-border-subtle)",
+        bgcolor: { xs: "color-mix(in srgb, var(--color-surface) 60%, transparent)", lg: "transparent" },
+        backdropFilter: { xs: "blur(20px)", lg: "none" },
+        zIndex: 20,
+      }}
+    >
       {/* Mobile menu button */}
-      <div className="flex items-center gap-3 lg:hidden shrink-0">
+      <Box sx={{ display: { lg: "none" }, alignItems: "center", gap: 1.5, flexShrink: 0 }}>
         {showMenuButton && (
-          <button
+          <IconButton
             onClick={onMenuClick}
-            className="text-text-main hover:text-primary transition-colors"
+            sx={{ color: "text.primary", "&:hover": { color: "primary.main" }, p: 0.5 }}
           >
             <span className="material-symbols-outlined">menu</span>
-          </button>
+          </IconButton>
         )}
-      </div>
+      </Box>
 
       {/* Page title with breadcrumbs */}
-      <div className="flex flex-col min-w-0 flex-1">
+      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
         {breadcrumbs.length > 0 ? (
-          <div className="flex items-center gap-2">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {breadcrumbs.map((crumb, index) => (
-              <div
+              <Box
                 key={`${crumb.label}-${crumb.href || "current"}`}
-                className="flex items-center gap-2"
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
               >
                 {index > 0 && (
-                  <span className="material-symbols-outlined text-text-muted text-base">
+                  <span className="material-symbols-outlined" style={{ color: "var(--color-text-muted)", fontSize: 16 }}>
                     chevron_right
                   </span>
                 )}
                 {crumb.href ? (
-                  <Link
+                  <Box
+                    component={Link}
                     href={crumb.href}
-                    className="text-text-muted hover:text-primary transition-colors"
+                    sx={{ color: "text.secondary", "&:hover": { color: "primary.main" }, transition: "color 150ms" }}
                   >
                     {crumb.label}
-                  </Link>
+                  </Box>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {crumb.image && (
                       <ProviderIcon
                         src={crumb.image}
                         alt={crumb.label}
                         size={28}
-                        className="object-contain rounded max-w-[28px] max-h-[28px]"
                         fallbackText={crumb.label.slice(0, 2).toUpperCase()}
                       />
                     )}
-                    <h1 className="text-base lg:text-2xl font-semibold text-text-main tracking-tight truncate">
+                    <Box component="h1" sx={{ fontSize: { xs: 16, lg: 24 }, fontWeight: 600, color: "text.primary", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", m: 0 }}>
                       {translate(crumb.label)}
-                    </h1>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
-              </div>
+              </Box>
             ))}
-          </div>
+          </Box>
         ) : title ? (
-          <div>
-            <div className="flex items-center gap-2">
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {icon && (
-                <span className="material-symbols-outlined text-primary text-xl lg:text-2xl">
+                <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", fontSize: 24 }}>
                   {icon}
                 </span>
               )}
-              <h1 className="text-base lg:text-2xl font-semibold tracking-tight truncate">
+              <Box component="h1" sx={{ fontSize: { xs: 16, lg: 24 }, fontWeight: 600, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", m: 0 }}>
                 {translate(title)}
-              </h1>
-            </div>
+              </Box>
+            </Box>
             {description && (
-              <p className="hidden lg:block text-sm text-text-muted truncate">
+              <Typography sx={{ display: { xs: "none", lg: "block" }, fontSize: 14, color: "text.secondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {translate(description)}
-              </p>
+              </Typography>
             )}
-          </div>
+          </Box>
         ) : null}
-      </div>
+      </Box>
 
       {/* Right actions */}
-      <div className="flex items-center gap-1 shrink-0">
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}>
         {displayName && loginMethod === "OIDC" && (
-          <div className="hidden sm:flex items-center max-w-[220px] px-3 py-1.5 rounded-full border border-border bg-surface/70 text-xs text-text-muted truncate">
-            <span className="material-symbols-outlined text-[14px] mr-1.5 text-primary">person</span>
-            <span className="truncate">{displayName}</span>
-            <span className="ml-2 shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+          <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", maxWidth: 220, px: 1.5, py: 0.75, borderRadius: "9999px", border: "1px solid var(--color-border)", bgcolor: "color-mix(in srgb, var(--color-surface) 70%, transparent)", fontSize: 12, color: "text.secondary", overflow: "hidden" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14, marginRight: 6, color: "var(--color-primary)" }}>person</span>
+            <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</Box>
+            <Box component="span" sx={{ ml: 1, flexShrink: 0, borderRadius: "9999px", bgcolor: "rgba(229,106,74,0.1)", px: 1, py: 0.25, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "primary.main" }}>
               OIDC
-            </span>
-          </div>
+            </Box>
+          </Box>
         )}
         <HeaderSearch />
-        <button
+        <Box
+          component="button"
           onClick={() => setDonateOpen(true)}
-          className="flex items-center gap-1.5 px-3 h-8 rounded-lg border border-pink-500/30 bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-500/20 transition-colors text-sm font-medium"
           aria-label="Donate Me :3"
+          sx={{ display: "flex", alignItems: "center", gap: 0.75, px: 1.5, height: 32, borderRadius: "8px", border: "1px solid rgba(236,72,153,0.3)", bgcolor: "rgba(236,72,153,0.1)", color: "#db2777", fontSize: 14, fontWeight: 500, cursor: "pointer", "&:hover": { bgcolor: "rgba(236,72,153,0.2)" } }}
         >
-          <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
-          <span className="hidden sm:inline">Donate Me :3</span>
-        </button>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>volunteer_activism</span>
+          <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Donate Me :3</Box>
+        </Box>
         <ThemeToggle />
         <HeaderLanguage />
         <HeaderMenu onLogout={handleLogout} />
-      </div>
+      </Box>
       <DonateModal isOpen={donateOpen} onClose={() => setDonateOpen(false)} />
-    </header>
+    </Box>
   );
 }
 
@@ -324,28 +344,29 @@ function HeaderSearch() {
   if (!visible) return null;
 
   return (
-    <div className="relative w-[160px] sm:w-[220px]">
-      <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-text-muted text-[16px] pointer-events-none">
+    <Box sx={{ position: "relative", width: { xs: 160, sm: 220 } }}>
+      <span className="material-symbols-outlined" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)", fontSize: 16, pointerEvents: "none" }}>
         search
       </span>
-      <input
+      <Box
+        component="input"
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-8 pl-7 pr-7 rounded-lg border border-border bg-surface/60 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+        sx={{ width: "100%", height: 32, pl: 3.5, pr: 3.5, borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "color-mix(in srgb, var(--color-surface) 60%, transparent)", fontSize: 14, color: "text.primary", outline: "none", transition: "border-color 150ms", "&:focus": { borderColor: "rgba(229,106,74,0.5)" } }}
       />
       {query && (
-        <button
+        <Box
+          component="button"
           type="button"
           onClick={() => setQuery("")}
-          className="absolute right-1 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main p-0.5 rounded"
           aria-label="Clear search"
+          sx={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", color: "text.secondary", p: 0.25, borderRadius: "4px", border: 0, bgcolor: "transparent", cursor: "pointer", "&:hover": { color: "text.primary" } }}
         >
-          <span className="material-symbols-outlined text-[16px]">close</span>
-        </button>
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
-

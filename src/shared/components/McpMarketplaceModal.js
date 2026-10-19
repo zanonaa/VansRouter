@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import Modal from "./Modal";
 
 const REGISTRY_ENDPOINT = "/api/cli-tools/cowork-mcp-registry";
@@ -111,45 +113,59 @@ export default function McpMarketplaceModal({ isOpen, onClose, onAdd, addedNames
 
   const { loading, error } = loadState;
 
+  const inputSx = {
+    px: 1,
+    py: 0.75,
+    bgcolor: "var(--color-surface)",
+    borderRadius: "4px",
+    fontSize: 12,
+    border: "1px solid var(--color-border)",
+    color: "text.primary",
+    outline: "none",
+    "&:focus": { boxShadow: "0 0 0 1px rgba(229,106,74,0.5)" },
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Browse MCP Marketplace" size="lg">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <input
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box
+            component="input"
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or description..."
             aria-label="Search MCP servers"
-            className="flex-1 px-2 py-1.5 bg-surface rounded text-xs border border-border focus:outline-none focus:ring-1 focus:ring-primary/50"
+            sx={{ ...inputSx, flex: 1 }}
           />
-          <select
+          <Box
+            component="select"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             aria-label="Filter MCP servers"
-            className="px-2 py-1.5 bg-surface rounded text-xs border border-border focus:outline-none focus:ring-1 focus:ring-primary/50"
+            sx={inputSx}
           >
             <option value="all">All</option>
             <option value="authless">Authless</option>
             <option value="oauth">OAuth</option>
-          </select>
-        </div>
+          </Box>
+        </Box>
 
         {error && (
-          <div className="px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600">{error}</div>
+          <Box sx={{ px: 1, py: 0.75, borderRadius: "4px", fontSize: 12, bgcolor: "rgba(239,68,68,0.1)", color: "#dc2626" }}>{error}</Box>
         )}
 
         {loading && (
-          <div className="flex items-center gap-2 text-text-muted text-xs py-4 justify-center">
-            <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary", fontSize: 12, py: 2, justifyContent: "center" }}>
+            <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 18 }}>progress_activity</span>
             <span>Loading registry...</span>
-          </div>
+          </Box>
         )}
 
         {!loading && (
-          <div className="flex flex-col gap-1 max-h-[60vh] overflow-y-auto">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, maxHeight: "60vh", overflowY: "auto" }}>
             {filtered.length === 0 && (
-              <div className="text-center text-xs text-text-muted py-6">No servers match filter</div>
+              <Box sx={{ textAlign: "center", fontSize: 12, color: "text.secondary", py: 3 }}>No servers match filter</Box>
             )}
             {filtered.map((s) => {
               const added = addedSet.has(s.slug || s.name);
@@ -160,105 +176,111 @@ export default function McpMarketplaceModal({ isOpen, onClose, onAdd, addedNames
               const toolKeys = Object.keys(sel);
               const selectedCount = Object.values(sel).filter(Boolean).length;
               return (
-                <div key={s.url} className="rounded border border-transparent hover:border-border">
-                  <div className="flex items-start gap-2 px-2 py-2 hover:bg-black/5 dark:hover:bg-white/5">
+                <Box key={s.url} sx={{ borderRadius: "4px", border: "1px solid transparent", "&:hover": { borderColor: "var(--color-border)" } }}>
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, px: 1, py: 1, "&:hover": { bgcolor: "var(--color-surface-2)" } }}>
                     {s.iconUrl ? (
-                      <Image src={s.iconUrl} alt="" className="size-7 rounded shrink-0 object-contain" width={28} height={28} onError={(e) => { e.target.style.display = "none"; }} unoptimized />
+                      <Image src={s.iconUrl} alt="" style={{ width: 28, height: 28, borderRadius: 4, flexShrink: 0, objectFit: "contain" }} width={28} height={28} onError={(e) => { e.target.style.display = "none"; }} unoptimized />
                     ) : (
-                      <div className="size-7 rounded bg-surface shrink-0" />
+                      <Box sx={{ width: 28, height: 28, borderRadius: "4px", bgcolor: "var(--color-surface)", flexShrink: 0 }} />
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-medium text-xs">{s.title}</span>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
+                        <Box component="span" sx={{ fontWeight: 500, fontSize: 12 }}>{s.title}</Box>
                         {s.oauth ? (
-                          <span className="px-1 py-0.5 text-[9px] rounded bg-amber-500/10 text-amber-600">OAuth</span>
+                          <Box component="span" sx={{ px: 0.5, py: 0.25, fontSize: 9, borderRadius: "4px", bgcolor: "rgba(245,158,11,0.1)", color: "#d97706" }}>OAuth</Box>
                         ) : (
-                          <span className="px-1 py-0.5 text-[9px] rounded bg-green-500/10 text-green-600">Authless</span>
+                          <Box component="span" sx={{ px: 0.5, py: 0.25, fontSize: 9, borderRadius: "4px", bgcolor: "rgba(34,197,94,0.1)", color: "#16a34a" }}>Authless</Box>
                         )}
                         {s.toolCount > 0 && (
-                          <span className="text-[10px] text-text-muted">{s.toolCount} tools</span>
+                          <Box component="span" sx={{ fontSize: 10, color: "text.secondary" }}>{s.toolCount} tools</Box>
                         )}
-                      </div>
+                      </Box>
                       {s.description && (
-                        <p className="text-[10px] text-text-muted line-clamp-2 mt-0.5">{s.description}</p>
+                        <Typography sx={{ fontSize: 10, color: "text.secondary", mt: 0.25, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s.description}</Typography>
                       )}
-                    </div>
-                    <button type="button"
+                    </Box>
+                    <Box
+                      component="button"
+                      type="button"
                       onClick={() => added ? null : expandServer(s)}
                       disabled={added}
-                      className={`shrink-0 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
-                        added
-                          ? "bg-green-500/10 text-green-600 cursor-default"
-                          : expanded
-                          ? "bg-surface border border-border text-text-muted hover:bg-black/5"
-                          : "bg-primary/10 border border-primary/40 text-primary hover:bg-primary/20"
-                      }`}
+                      sx={{
+                        flexShrink: 0,
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: "4px",
+                        fontSize: 10,
+                        fontWeight: 500,
+                        cursor: added ? "default" : "pointer",
+                        transition: "all 150ms",
+                        border: added ? "1px solid transparent" : expanded ? "1px solid var(--color-border)" : "1px solid rgba(229,106,74,0.4)",
+                        bgcolor: added ? "rgba(34,197,94,0.1)" : expanded ? "var(--color-surface)" : "rgba(229,106,74,0.1)",
+                        color: added ? "#16a34a" : expanded ? "text.secondary" : "primary.main",
+                        "&:hover": added ? {} : { bgcolor: expanded ? "var(--color-surface-2)" : "rgba(229,106,74,0.2)" },
+                      }}
                     >
                       {added ? "Added" : expanded ? "Cancel" : "+ Add"}
-                    </button>
-                  </div>
+                    </Box>
+                  </Box>
                   {expanded && (
-                    <div className="px-3 py-2 bg-surface/40 border-t border-border flex flex-col gap-2">
+                    <Box sx={{ px: 1.5, py: 1, bgcolor: "rgba(255,255,255,0.4)", borderTop: "1px solid var(--color-border)", display: "flex", flexDirection: "column", gap: 1 }}>
                       {isLoadingTools && (
-                        <div className="flex items-center gap-2 text-text-muted text-[10px] py-1">
-                          <span className="material-symbols-outlined animate-spin text-[14px]">progress_activity</span>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary", fontSize: 10, py: 0.5 }}>
+                          <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 14 }}>progress_activity</span>
                           <span>Probing server for tools...</span>
-                        </div>
+                        </Box>
                       )}
                       {!isLoadingTools && cache?.requiresAuth && (
-                        <p className="text-[10px] text-amber-600 bg-amber-500/10 px-2 py-1 rounded">
+                        <Box component="p" sx={{ fontSize: 10, color: "#d97706", bgcolor: "rgba(245,158,11,0.1)", px: 1, py: 0.5, borderRadius: "4px", m: 0 }}>
                           🔐 OAuth required. Add now and authenticate after Apply; tool list will be discovered after first connect.
-                        </p>
+                        </Box>
                       )}
                       {!isLoadingTools && cache?.error && !cache?.requiresAuth && (
-                        <p className="text-[10px] text-red-600 bg-red-500/10 px-2 py-1 rounded">Probe failed: {cache.error}</p>
+                        <Box component="p" sx={{ fontSize: 10, color: "#dc2626", bgcolor: "rgba(239,68,68,0.1)", px: 1, py: 0.5, borderRadius: "4px", m: 0 }}>Probe failed: {cache.error}</Box>
                       )}
                       {!isLoadingTools && toolKeys.length === 0 && !cache?.requiresAuth && !cache?.error && (
-                        <p className="text-[10px] text-text-muted">No tools advertised by server.</p>
+                        <Box component="p" sx={{ fontSize: 10, color: "text.secondary", m: 0 }}>No tools advertised by server.</Box>
                       )}
                       {!isLoadingTools && toolKeys.length > 0 && (
                         <>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-text-muted">{selectedCount}/{toolKeys.length} tools enabled</span>
-                            <div className="flex gap-1">
-                              <button type="button" onClick={() => setAllTools(s.url, true)} className="text-[10px] text-primary hover:underline">All</button>
-                              <span className="text-[10px] text-text-muted">·</span>
-                              <button type="button" onClick={() => setAllTools(s.url, false)} className="text-[10px] text-primary hover:underline">None</button>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto">
+                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <Box component="span" sx={{ fontSize: 10, color: "text.secondary" }}>{selectedCount}/{toolKeys.length} tools enabled</Box>
+                            <Box sx={{ display: "flex", gap: 0.5 }}>
+                              <Box component="button" type="button" onClick={() => setAllTools(s.url, true)} sx={{ fontSize: 10, color: "primary.main", border: 0, bgcolor: "transparent", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}>All</Box>
+                              <Box component="span" sx={{ fontSize: 10, color: "text.secondary" }}>·</Box>
+                              <Box component="button" type="button" onClick={() => setAllTools(s.url, false)} sx={{ fontSize: 10, color: "primary.main", border: 0, bgcolor: "transparent", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}>None</Box>
+                            </Box>
+                          </Box>
+                          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0.5, maxHeight: 160, overflowY: "auto" }}>
                             {toolKeys.map((t) => (
-                              <label key={t} className="flex items-center gap-1.5 text-[10px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 px-1 rounded">
-                                <input
-                                  type="checkbox"
-                                  checked={!!sel[t]}
-                                  onChange={() => toggleTool(s.url, t)}
-                                  className="size-3"
-                                />
-                                <span className="truncate">{t}</span>
-                              </label>
+                              <Box component="label" key={t} sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 10, cursor: "pointer", px: 0.5, borderRadius: "4px", "&:hover": { bgcolor: "var(--color-surface-2)" } }}>
+                                <input type="checkbox" checked={!!sel[t]} onChange={() => toggleTool(s.url, t)} style={{ width: 12, height: 12 }} />
+                                <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t}</Box>
+                              </Box>
                             ))}
-                          </div>
+                          </Box>
                         </>
                       )}
-                      <button type="button"
+                      <Box
+                        component="button"
+                        type="button"
                         onClick={() => confirmAdd(s)}
-                        className="self-end px-2 py-1 rounded text-[10px] font-medium bg-primary text-white hover:bg-primary/90"
+                        sx={{ alignSelf: "flex-end", px: 1, py: 0.5, borderRadius: "4px", fontSize: 10, fontWeight: 500, bgcolor: "primary.main", color: "#fff", border: 0, cursor: "pointer", "&:hover": { bgcolor: "primary.dark" } }}
                       >
                         ✓ Confirm Add
-                      </button>
-                    </div>
+                      </Box>
+                    </Box>
                   )}
-                </div>
+                </Box>
               );
             })}
-          </div>
+          </Box>
         )}
 
-        <div className="text-[10px] text-text-muted text-right">
+        <Box sx={{ fontSize: 10, color: "text.secondary", textAlign: "right" }}>
           {filtered.length} of {servers.length} servers
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Modal>
   );
 }

@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
 import { cn } from "@/shared/utils/cn";
 import Button from "./Button";
 import Tooltip from "./Tooltip";
 
 const MODAL_SIZES = {
-  sm: "max-w-sm",
-  md: "max-w-md",
-  lg: "max-w-lg",
-  xl: "max-w-xl",
-  full: "max-w-4xl",
+  sm: 384,
+  md: 448,
+  lg: 512,
+  xl: 576,
+  full: 896,
 };
 
 export default function Modal({
@@ -24,7 +27,7 @@ export default function Modal({
   showTrafficLights = true,
   className,
 }) {
-  const sizeClass = MODAL_SIZES[size] || MODAL_SIZES.md;
+  const maxWidth = MODAL_SIZES[size] || MODAL_SIZES.md;
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -50,72 +53,92 @@ export default function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <Box sx={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}>
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px] fade-in"
+      <Box
         onClick={closeOnOverlay ? onClose : undefined}
         aria-hidden="true"
+        sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.5)", backdropFilter: "blur(2px)", animation: "fadeIn 0.2s ease-out forwards" }}
       />
 
       {/* Modal content */}
-      <div
-        className={cn(
-          "relative w-full bg-surface",
-          "border border-border-subtle",
-          "rounded-[14px] shadow-[var(--shadow-elev)]",
-          "fade-in",
-          sizeClass,
-          className
-        )}
+      <Box
+        className={cn(className)}
+        sx={{
+          position: "relative",
+          width: "100%",
+          maxWidth,
+          bgcolor: "background.paper",
+          border: "1px solid var(--color-border-subtle)",
+          borderRadius: "14px",
+          boxShadow: "var(--shadow-elev)",
+          animation: "fadeIn 0.2s ease-out forwards",
+        }}
       >
         {/* Header */}
         {(title || showTrafficLights) && (
-          <div className="flex items-center justify-between p-2 border-b border-border-subtle">
-            <div className="flex items-center">
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1, borderBottom: "1px solid var(--color-border-subtle)" }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               {/* Traffic lights — desktop only */}
               {showTrafficLights && (
-                <div className="hidden md:flex items-center gap-2 mr-4 ml-2">
+                <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, mr: 2, ml: 1 }}>
                   <Tooltip text="Close" position="top" color="#FF5F56">
-                    <button type="button"
+                    <Box
+                      component="button"
+                      type="button"
                       onClick={onClose}
                       aria-label="Close"
                       title="Close"
-                      className="w-4 h-4 rounded-full bg-[#FF5F56] hover:brightness-90 transition-all cursor-pointer flex items-center justify-center group/dot"
+                      sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        bgcolor: "#FF5F56",
+                        border: 0,
+                        p: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        "&:hover": { filter: "brightness(0.9)" },
+                        "& .x": { fontSize: 9, fontWeight: 700, color: "#fff", opacity: 0, transition: "opacity 150ms", lineHeight: 1 },
+                        "&:hover .x": { opacity: 1 },
+                      }}
                     >
-                      <span className="text-[9px] font-bold text-white opacity-0 group-hover/dot:opacity-100 transition-opacity leading-none">✕</span>
-                    </button>
+                      <span className="x">✕</span>
+                    </Box>
                   </Tooltip>
-                  <div className="w-4 h-4 rounded-full bg-[#3a3a3a]/20 dark:bg-white/15 cursor-not-allowed" />
-                  <div className="w-4 h-4 rounded-full bg-[#3a3a3a]/20 dark:bg-white/15 cursor-not-allowed" />
-                </div>
+                  <Box sx={{ width: 16, height: 16, borderRadius: "50%", bgcolor: "rgba(58,58,58,0.2)", cursor: "not-allowed" }} />
+                  <Box sx={{ width: 16, height: 16, borderRadius: "50%", bgcolor: "rgba(58,58,58,0.2)", cursor: "not-allowed" }} />
+                </Box>
               )}
               {title && (
-                <h2 className="text-lg font-semibold text-text-main">{title}</h2>
+                <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}>{title}</Typography>
               )}
-            </div>
+            </Box>
             {/* X button — mobile only */}
-            <button type="button"
+            <IconButton
+              type="button"
               onClick={onClose}
               aria-label="Close"
-              className="md:hidden p-1.5 rounded-[10px] text-text-muted hover:bg-surface-2 hover:text-text-main transition-colors"
+              sx={{ display: { md: "none" }, p: 0.75, borderRadius: "10px", color: "text.secondary", "&:hover": { bgcolor: "var(--color-surface-2)", color: "text.primary" } }}
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
-            </button>
-          </div>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+            </IconButton>
+          </Box>
         )}
 
         {/* Body */}
-        <div className="p-6 max-h-[calc(85vh-100px)] overflow-y-auto custom-scrollbar">{children}</div>
+        <Box className="custom-scrollbar" sx={{ p: 3, maxHeight: "calc(85vh - 100px)", overflowY: "auto" }}>{children}</Box>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border-subtle">
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1.5, p: 3, borderTop: "1px solid var(--color-border-subtle)" }}>
             {footer}
-          </div>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -147,7 +170,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <p className="text-text-muted">{message}</p>
+      <Typography sx={{ color: "text.secondary" }}>{message}</Typography>
     </Modal>
   );
 }

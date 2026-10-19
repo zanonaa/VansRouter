@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -12,6 +14,17 @@ import ModelSelectModal from "./ModelSelectModal";
 import { useModelCaps } from "@/shared/hooks/useModelCaps";
 
 const VALID_NAME_REGEX = /^[a-zA-Z0-9_.\-]+$/;
+
+const iconBtnSx = {
+  p: 0.25,
+  borderRadius: "4px",
+  border: 0,
+  bgcolor: "transparent",
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
 
 // Inline editable model item
 function ModelItem({ id, index, model, isFirst, isLast, onEdit, onMoveUp, onMoveDown, onRemove }) {
@@ -40,37 +53,78 @@ function ModelItem({ id, index, model, isFirst, isLast, onEdit, onMoveUp, onMove
     if (e.key === "Escape") { setDraft(null); setEditing(false); }
   };
   return (
-    <div ref={setNodeRef} style={style} className={`group flex min-w-0 items-center gap-1.5 rounded-md bg-black/[0.02] px-2 py-1 transition-colors hover:bg-black/[0.04] dark:bg-white/[0.02] dark:hover:bg-white/[0.04] ${isDragging ? "shadow-md ring-1 ring-primary/30" : ""}`}>
-      <button {...attributes} {...listeners} type="button" className="cursor-grab touch-none p-0.5 rounded text-text-muted hover:text-primary active:cursor-grabbing shrink-0" title="Drag to reorder" aria-label="Drag to reorder">
+    <Box
+      ref={setNodeRef}
+      style={style}
+      sx={{
+        display: "flex",
+        minWidth: 0,
+        alignItems: "center",
+        gap: 0.75,
+        borderRadius: "6px",
+        bgcolor: "rgba(0,0,0,0.02)",
+        px: 1,
+        py: 0.5,
+        transition: "background-color 150ms",
+        "&:hover": { bgcolor: "rgba(0,0,0,0.04)" },
+        ...(isDragging ? { boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 0 0 1px rgba(229,106,74,0.3)" } : {}),
+      }}
+    >
+      <Box component="button" {...attributes} {...listeners} type="button" title="Drag to reorder" aria-label="Drag to reorder" sx={{ ...iconBtnSx, cursor: "grab", touchAction: "none", color: "text.secondary", flexShrink: 0, "&:hover": { color: "primary.main" } }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9" cy="4" r="2"/><circle cx="15" cy="4" r="2"/>
-          <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
-          <circle cx="9" cy="20" r="2"/><circle cx="15" cy="20" r="2"/>
+          <circle cx="9" cy="4" r="2" /><circle cx="15" cy="4" r="2" />
+          <circle cx="9" cy="12" r="2" /><circle cx="15" cy="12" r="2" />
+          <circle cx="9" cy="20" r="2" /><circle cx="15" cy="20" r="2" />
         </svg>
-      </button>
-      <span className="text-[10px] font-medium text-text-muted w-3 text-center shrink-0">{index + 1}</span>
+      </Box>
+      <Box component="span" sx={{ fontSize: 10, fontWeight: 500, color: "text.secondary", width: 12, textAlign: "center", flexShrink: 0 }}>{index + 1}</Box>
       {editing ? (
-        <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 rounded border border-primary/40 bg-white px-1.5 py-0.5 font-mono text-xs text-text-main outline-none dark:bg-black/20"
-          aria-label={`Edit model ${index + 1}`} />
+        <Box
+          component="input"
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={handleKeyDown}
+          aria-label={`Edit model ${index + 1}`}
+          sx={{
+            minWidth: 0,
+            flex: 1,
+            borderRadius: "4px",
+            border: "1px solid rgba(229,106,74,0.4)",
+            bgcolor: "background.paper",
+            px: 0.75,
+            py: 0.25,
+            fontFamily: "ui-monospace, monospace",
+            fontSize: 12,
+            color: "text.primary",
+            outline: "none",
+          }}
+        />
       ) : (
-        <button type="button" className="min-w-0 flex-1 cursor-text truncate rounded px-1.5 py-0.5 font-mono text-xs text-text-main text-left hover:bg-black/5 dark:hover:bg-white/5"
-          onClick={() => setEditing(true)} title="Click to edit" aria-label={`Edit model: ${model}`}>{model}</button>
+        <Box
+          component="button"
+          type="button"
+          onClick={() => setEditing(true)}
+          title="Click to edit"
+          aria-label={`Edit model: ${model}`}
+          sx={{ minWidth: 0, flex: 1, cursor: "text", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRadius: "4px", px: 0.75, py: 0.25, fontFamily: "ui-monospace, monospace", fontSize: 12, color: "text.primary", textAlign: "left", border: 0, bgcolor: "transparent", "&:hover": { bgcolor: "rgba(0,0,0,0.05)" } }}
+        >
+          {model}
+        </Box>
       )}
-      <div className="flex shrink-0 items-center gap-0.5">
-        <button type="button" onClick={onMoveUp} disabled={isFirst}
-          className={`p-0.5 rounded ${isFirst ? "text-text-muted/20 cursor-not-allowed" : "text-text-muted hover:text-primary hover:bg-black/5 dark:hover:bg-white/5"}`} title="Move up">
-          <span className="material-symbols-outlined text-[12px]">arrow_upward</span>
-        </button>
-        <button type="button" onClick={onMoveDown} disabled={isLast}
-          className={`p-0.5 rounded ${isLast ? "text-text-muted/20 cursor-not-allowed" : "text-text-muted hover:text-primary hover:bg-black/5 dark:hover:bg-white/5"}`} title="Move down">
-          <span className="material-symbols-outlined text-[12px]">arrow_downward</span>
-        </button>
-      </div>
-      <button type="button" onClick={onRemove} className="p-0.5 hover:bg-red-500/10 rounded text-text-muted hover:text-red-500 transition-all" title="Remove">
-        <span className="material-symbols-outlined text-[12px]">close</span>
-      </button>
-    </div>
+      <Box sx={{ display: "flex", flexShrink: 0, alignItems: "center", gap: 0.25 }}>
+        <Box component="button" type="button" onClick={onMoveUp} disabled={isFirst} title="Move up" sx={{ ...iconBtnSx, color: isFirst ? "rgba(107,114,128,0.2)" : "text.secondary", cursor: isFirst ? "not-allowed" : "pointer", "&:hover": isFirst ? {} : { color: "primary.main", bgcolor: "rgba(0,0,0,0.05)" } }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 12 }}>arrow_upward</span>
+        </Box>
+        <Box component="button" type="button" onClick={onMoveDown} disabled={isLast} title="Move down" sx={{ ...iconBtnSx, color: isLast ? "rgba(107,114,128,0.2)" : "text.secondary", cursor: isLast ? "not-allowed" : "pointer", "&:hover": isLast ? {} : { color: "primary.main", bgcolor: "rgba(0,0,0,0.05)" } }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 12 }}>arrow_downward</span>
+        </Box>
+      </Box>
+      <Box component="button" type="button" onClick={onRemove} title="Remove" sx={{ ...iconBtnSx, color: "text.secondary", "&:hover": { bgcolor: "rgba(239,68,68,0.1)", color: "error.main" } }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 12 }}>close</span>
+      </Box>
+    </Box>
   );
 }
 
@@ -156,37 +210,43 @@ export default function ComboFormModal({ isOpen, combo, onClose, onSave, activeP
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} title={title || (isEdit ? "Edit Combo" : "Create Combo")}>
-        <div className="flex flex-col gap-3">
-          <div>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Box>
             {forcePrefix ? (
               <>
-                <label htmlFor="combo-name-input" className="text-sm font-medium mb-1 block">Combo Name</label>
-                <div className="flex items-stretch">
-                  <span className="inline-flex items-center px-2 rounded-l border border-r-0 border-black/10 dark:border-white/10 bg-black/[0.04] dark:bg-white/[0.04] text-text-muted font-mono text-sm">{forcePrefix}</span>
-                  <input id="combo-name-input" value={name} onChange={handleNameChange} placeholder="my-combo"
-                    className="flex-1 min-w-0 rounded-r border border-black/10 dark:border-white/10 bg-white dark:bg-black/20 px-2 py-1.5 font-mono text-sm outline-none focus:border-primary" />
-                </div>
-                {nameError && <p className="text-[11px] text-red-500 mt-0.5">{nameError}</p>}
+                <Box component="label" htmlFor="combo-name-input" sx={{ fontSize: 14, fontWeight: 500, mb: 0.5, display: "block" }}>Combo Name</Box>
+                <Box sx={{ display: "flex", alignItems: "stretch" }}>
+                  <Box component="span" sx={{ display: "inline-flex", alignItems: "center", px: 1, borderRadius: "4px 0 0 4px", border: "1px solid var(--color-border)", borderRight: 0, bgcolor: "rgba(0,0,0,0.04)", color: "text.secondary", fontFamily: "ui-monospace, monospace", fontSize: 14 }}>{forcePrefix}</Box>
+                  <Box
+                    component="input"
+                    id="combo-name-input"
+                    value={name}
+                    onChange={handleNameChange}
+                    placeholder="my-combo"
+                    sx={{ flex: 1, minWidth: 0, borderRadius: "0 4px 4px 0", border: "1px solid var(--color-border)", bgcolor: "background.paper", px: 1, py: 0.75, fontFamily: "ui-monospace, monospace", fontSize: 14, color: "text.primary", outline: "none", "&:focus": { borderColor: "primary.main" } }}
+                  />
+                </Box>
+                {nameError && <Typography sx={{ fontSize: 11, color: "error.main", mt: 0.25 }}>{nameError}</Typography>}
               </>
             ) : (
               <Input label="Combo Name" value={name} onChange={handleNameChange} placeholder="my-combo" error={nameError} />
             )}
-            <p className="text-[10px] text-text-muted mt-0.5">
+            <Typography sx={{ fontSize: 10, color: "text.secondary", mt: 0.25 }}>
               {forcePrefix ? `Auto-prefixed with "${forcePrefix}". ` : ""}Only letters, numbers, -, _ and . allowed
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <div>
-            <span className="text-sm font-medium mb-1.5 block">Models</span>
+          <Box>
+            <Box component="span" sx={{ fontSize: 14, fontWeight: 500, mb: 0.75, display: "block" }}>Models</Box>
             {models.length === 0 ? (
-              <div className="text-center py-4 border border-dashed border-black/10 dark:border-white/10 rounded-lg bg-black/[0.01] dark:bg-white/[0.01]">
-                <span className="material-symbols-outlined text-text-muted text-xl mb-1">layers</span>
-                <p className="text-xs text-text-muted">No models added yet</p>
-              </div>
+              <Box sx={{ textAlign: "center", py: 2, border: "1px dashed var(--color-border)", borderRadius: "8px", bgcolor: "rgba(0,0,0,0.01)" }}>
+                <span className="material-symbols-outlined" style={{ color: "var(--color-text-muted)", fontSize: 20, display: "block", marginBottom: 4 }}>layers</span>
+                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>No models added yet</Typography>
+              </Box>
             ) : (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
                 <SortableContext items={modelItems.map((m) => m.uid)} strategy={verticalListSortingStrategy}>
-                  <div className="flex max-h-[55vh] min-w-0 flex-col gap-1 overflow-y-auto sm:max-h-[350px]">
+                  <Box sx={{ display: "flex", maxHeight: { xs: "55vh", sm: 350 }, minWidth: 0, flexDirection: "column", gap: 0.5, overflowY: "auto" }}>
                     {modelItems.map(({ uid, model }, index) => (
                       <ModelItem key={uid} id={uid} index={index} model={model}
                         isFirst={index === 0} isLast={index === modelItems.length - 1}
@@ -195,32 +255,35 @@ export default function ComboFormModal({ isOpen, combo, onClose, onSave, activeP
                         onMoveDown={() => handleMoveDown(index)}
                         onRemove={() => handleRemoveModel(index)} />
                     ))}
-                  </div>
+                  </Box>
                 </SortableContext>
               </DndContext>
             )}
             {models.length > 0 && models.every((model) => getCaps?.(model)?.vision === false) && (
-              <p className="mt-2 flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
-                <span className="material-symbols-outlined text-[14px]">visibility_off</span>
+              <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 0.5, fontSize: 11, color: "#d97706" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>visibility_off</span>
                 Cannot see images — add a vision-capable model.
-                <button type="button" onClick={() => { setModelPickerCap("vision"); setShowModelSelect(true); }}
-                  className="font-medium underline underline-offset-2 hover:no-underline">Add one</button>
-              </p>
+                <Box component="button" type="button" onClick={() => { setModelPickerCap("vision"); setShowModelSelect(true); }} sx={{ fontWeight: 500, textDecoration: "underline", textUnderlineOffset: 2, border: 0, bgcolor: "transparent", color: "inherit", cursor: "pointer", "&:hover": { textDecoration: "none" } }}>Add one</Box>
+              </Box>
             )}
-            <button type="button" onClick={() => { setModelPickerCap(null); setShowModelSelect(true); }}
-              className="w-full mt-2 py-2 border border-dashed border-black/10 dark:border-white/10 rounded-lg text-xs text-primary font-medium hover:text-primary hover:border-primary/50 transition-colors flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">add</span>
+            <Box
+              component="button"
+              type="button"
+              onClick={() => { setModelPickerCap(null); setShowModelSelect(true); }}
+              sx={{ width: "100%", mt: 1, py: 1, border: "1px dashed var(--color-border)", borderRadius: "8px", fontSize: 12, color: "primary.main", fontWeight: 500, bgcolor: "transparent", cursor: "pointer", transition: "all 150ms", display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, "&:hover": { borderColor: "rgba(229,106,74,0.5)" } }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
               Add Model
-            </button>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="flex flex-col gap-2 pt-1 sm:flex-row">
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, pt: 0.5 }}>
             <Button onClick={onClose} variant="ghost" fullWidth size="sm">Cancel</Button>
             <Button onClick={handleSave} fullWidth size="sm" disabled={!name.trim() || !!nameError || saving}>
               {saving ? "Saving..." : isEdit ? "Save" : "Create"}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       {showModelSelect && (

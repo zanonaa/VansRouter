@@ -1,7 +1,9 @@
 "use client";
 
-import { cn } from "@/shared/utils/cn";
+import Box from "@mui/material/Box";
 import Button from "./Button";
+
+const pageBtnStyle = { width: 36, paddingInline: 0, minWidth: 36 };
 
 export default function Pagination({
   currentPage,
@@ -35,101 +37,109 @@ export default function Pagination({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2",
-        className
-      )}
+    <Box
+      className={className}
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 2,
+        py: 2,
+        px: 1,
+      }}
     >
       {/* Info text */}
       {totalItems > 0 && (
-        <div className="text-sm text-text-muted">
-          Showing <span className="font-medium text-text-main">{startItem}</span> to{" "}
-          <span className="font-medium text-text-main">{endItem}</span> of{" "}
-          <span className="font-medium text-text-main">{totalItems}</span> results
-        </div>
+        <Box sx={{ fontSize: 14, color: "text.secondary" }}>
+          Showing <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>{startItem}</Box> to{" "}
+          <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>{endItem}</Box> of{" "}
+          <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>{totalItems}</Box> results
+        </Box>
       )}
 
-      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: { xs: 1, sm: 2 } }}>
         {/* Page size selector */}
         {onPageSizeChange && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-text-muted">Rows:</span>
-            <select
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box component="span" sx={{ fontSize: 14, color: "text.secondary" }}>Rows:</Box>
+            <Box
+              component="select"
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className={cn(
-                "h-9 rounded-lg border border-black/10 dark:border-white/10 bg-surface",
-                "text-sm text-text-main focus:outline-none focus:ring-2 focus:ring-primary/20",
-                "cursor-pointer"
-              )}
-              style={{ colorScheme: 'auto' }}
+              sx={{
+                height: 36,
+                borderRadius: "8px",
+                border: "1px solid var(--color-border)",
+                bgcolor: "background.paper",
+                fontSize: 14,
+                color: "text.primary",
+                cursor: "pointer",
+                outline: "none",
+                "&:focus": { boxShadow: "0 0 0 2px rgba(229,106,74,0.2)" },
+              }}
+              style={{ colorScheme: "auto" }}
             >
               {[10, 20, 50].map((size) => (
                 <option key={size} value={size}>
                   {size}
                 </option>
               ))}
-            </select>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center gap-1">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="w-9 px-0"
+              style={pageBtnStyle}
             >
-              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_left</span>
             </Button>
 
             {pageNumbers[0] > 1 && (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onPageChange(1)}
-                  className="w-9 px-0 hidden sm:inline-flex"
-                >
-                  1
-                </Button>
+                <Box sx={{ display: { xs: "none", sm: "inline-flex" } }}>
+                  <Button variant="ghost" size="sm" onClick={() => onPageChange(1)} style={pageBtnStyle}>
+                    1
+                  </Button>
+                </Box>
                 {pageNumbers[0] > 2 && (
-                  <span className="text-text-muted px-1 hidden sm:inline">...</span>
+                  <Box component="span" sx={{ color: "text.secondary", px: 0.5, display: { xs: "none", sm: "inline" } }}>...</Box>
                 )}
               </>
             )}
 
-            {pageNumbers.map((page) => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "primary" : "ghost"}
-                size="sm"
-                onClick={() => onPageChange(page)}
-                className={cn(
-                  "w-9 px-0",
-                  currentPage === page ? "inline-flex" : "hidden sm:inline-flex"
-                )}
-              >
-                {page}
-              </Button>
-            ))}
+            {pageNumbers.map((page) => {
+              const isActive = currentPage === page;
+              return (
+                <Box key={page} sx={{ display: isActive ? "inline-flex" : { xs: "none", sm: "inline-flex" } }}>
+                  <Button
+                    variant={isActive ? "primary" : "ghost"}
+                    size="sm"
+                    onClick={() => onPageChange(page)}
+                    style={pageBtnStyle}
+                  >
+                    {page}
+                  </Button>
+                </Box>
+              );
+            })}
 
             {pageNumbers[pageNumbers.length - 1] < totalPages && (
               <>
                 {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-                  <span className="text-text-muted px-1 hidden sm:inline">...</span>
+                  <Box component="span" sx={{ color: "text.secondary", px: 0.5, display: { xs: "none", sm: "inline" } }}>...</Box>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onPageChange(totalPages)}
-                  className="w-9 px-0 hidden sm:inline-flex"
-                >
-                  {totalPages}
-                </Button>
+                <Box sx={{ display: { xs: "none", sm: "inline-flex" } }}>
+                  <Button variant="ghost" size="sm" onClick={() => onPageChange(totalPages)} style={pageBtnStyle}>
+                    {totalPages}
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -138,13 +148,13 @@ export default function Pagination({
               size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="w-9 px-0"
+              style={pageBtnStyle}
             >
-              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_right</span>
             </Button>
-          </div>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -1,24 +1,16 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import { cn } from "@/shared/utils/cn";
 
-const SPINNER_SIZES = {
-  sm: "size-4",
-  md: "size-6",
-  lg: "size-8",
-  xl: "size-12",
-};
+const SPINNER_SIZES = { sm: 16, md: 24, lg: 32, xl: 48 };
 
 // Spinner loading
 export function Spinner({ size = "md", className }) {
-
   return (
     <span
-      className={cn(
-        "material-symbols-outlined animate-spin text-brand-500",
-        SPINNER_SIZES[size],
-        className
-      )}
+      className={`material-symbols-outlined${className ? ` ${cn(className)}` : ""}`}
+      style={{ fontSize: SPINNER_SIZES[size] || SPINNER_SIZES.md, color: "var(--color-brand-500)", animation: "spin 1s linear infinite" }}
     >
       progress_activity
     </span>
@@ -28,21 +20,36 @@ export function Spinner({ size = "md", className }) {
 // Full page loading
 export function PageLoading({ message = "Loading..." }) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-bg">
+    <Box
+      sx={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+      }}
+    >
       <Spinner size="xl" />
-      <p className="mt-4 text-text-muted">{message}</p>
-    </div>
+      <Box component="p" sx={{ mt: 2, color: "text.secondary" }}>
+        {message}
+      </Box>
+    </Box>
   );
 }
 
 // Skeleton loading
 export function Skeleton({ className, ...props }) {
   return (
-    <div
-      className={cn(
-        "animate-pulse rounded-[10px] bg-surface-2",
-        className
-      )}
+    <Box
+      className={cn(className)}
+      sx={{
+        animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        borderRadius: "10px",
+        bgcolor: "var(--color-surface-2)",
+      }}
       {...props}
     />
   );
@@ -51,14 +58,22 @@ export function Skeleton({ className, ...props }) {
 // Card skeleton
 export function CardSkeleton() {
   return (
-    <div className="p-6 rounded-[14px] border border-border-subtle bg-surface shadow-[var(--shadow-soft)]">
-      <div className="flex items-center justify-between mb-4">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="size-10 rounded-[10px]" />
-      </div>
-      <Skeleton className="h-8 w-16 mb-2" />
-      <Skeleton className="h-3 w-20" />
-    </div>
+    <Box
+      sx={{
+        p: 3,
+        borderRadius: "14px",
+        border: "1px solid var(--color-border-subtle)",
+        bgcolor: "background.paper",
+        boxShadow: "var(--shadow-soft)",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+        <Skeleton sx={{ height: 16, width: 96 }} />
+        <Skeleton sx={{ width: 40, height: 40, borderRadius: "10px" }} />
+      </Box>
+      <Skeleton sx={{ height: 32, width: 64, mb: 1 }} />
+      <Skeleton sx={{ height: 12, width: 80 }} />
+    </Box>
   );
 }
 

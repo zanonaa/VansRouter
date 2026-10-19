@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Button } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { getNextKiroSocialPollInterval } from "@/lib/oauth/kiroSocialPoll";
@@ -137,6 +139,9 @@ export default function KiroSocialOAuthModal({
 
   const providerName = provider === "google" ? "Google" : "GitHub";
 
+  const circleSx = (bgcolor) => ({ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor, display: "flex", alignItems: "center", justifyContent: "center" });
+  const copyBtnSx = { flexShrink: 0, p: 0.5, borderRadius: "4px", border: 0, bgcolor: "transparent", color: "text.secondary", cursor: "pointer", "&:hover": { bgcolor: "var(--color-sidebar)", color: "text.primary" } };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -144,116 +149,109 @@ export default function KiroSocialOAuthModal({
       onClose={handleClose}
       size="lg"
     >
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {step === "loading" && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-primary animate-spin">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={circleSx("rgba(229,106,74,0.1)")}>
+              <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 30, color: "var(--color-primary)" }}>
                 progress_activity
               </span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Initializing...</h3>
-            <p className="text-sm text-text-muted">Setting up {providerName} authentication</p>
-          </div>
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Initializing...</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>Setting up {providerName} authentication</Typography>
+          </Box>
         )}
 
         {step === "polling" && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-primary animate-pulse">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={circleSx("rgba(229,106,74,0.1)")}>
+              <span className="material-symbols-outlined" style={{ animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",  fontSize: 30, color: "var(--color-primary)" }}>
                 open_in_browser
               </span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Authorize in Browser</h3>
-            <p className="text-sm text-text-muted mb-3">
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Authorize in Browser</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 1.5 }}>
               Open the link below and enter your verification code:
-            </p>
+            </Typography>
             {authUrl && (
-              <div className="mb-4">
-                <div className="flex items-center gap-2 justify-center">
-                  <a
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}>
+                  <Box
+                    component="a"
                     href={authUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-mono text-primary underline break-all max-w-md inline-block"
+                    sx={{ fontSize: 12, fontFamily: "ui-monospace, monospace", color: "primary.main", textDecoration: "underline", wordBreak: "break-all", maxWidth: 448, display: "inline-block" }}
                   >
                     {authUrl.length > 80 ? authUrl.slice(0, 80) + "..." : authUrl}
-                  </a>
-                  <button
-                    onClick={() => copy(authUrl, "auth_url")}
-                    className="shrink-0 p-1 rounded hover:bg-sidebar text-text-muted hover:text-text"
-                    title="Copy Link"
-                  >
-                    <span className="material-symbols-outlined text-base">
+                  </Box>
+                  <Box component="button" onClick={() => copy(authUrl, "auth_url")} title="Copy Link" sx={copyBtnSx}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
                       {copied === "auth_url" ? "check" : "content_copy"}
                     </span>
-                  </button>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
             )}
             {userCode && (
-              <div className="mb-4">
-                <p className="text-xs text-text-muted mb-1">Verification Code</p>
-                <div className="flex items-center justify-center gap-2">
-                  <p className="font-mono text-2xl font-bold tracking-widest">{userCode}</p>
-                  <button
-                    onClick={() => copy(userCode, "user_code")}
-                    className="shrink-0 p-1 rounded hover:bg-sidebar text-text-muted hover:text-text"
-                    title="Copy Code"
-                  >
-                    <span className="material-symbols-outlined text-base">
+              <Box sx={{ mb: 2 }}>
+                <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 0.5 }}>Verification Code</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                  <Box component="p" sx={{ fontFamily: "ui-monospace, monospace", fontSize: 24, fontWeight: 700, letterSpacing: "0.1em", m: 0 }}>{userCode}</Box>
+                  <Box component="button" onClick={() => copy(userCode, "user_code")} title="Copy Code" sx={copyBtnSx}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
                       {copied === "user_code" ? "check" : "content_copy"}
                     </span>
-                  </button>
-                </div>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
             )}
-            <div className="flex items-center justify-center gap-2 text-sm text-text-muted">
-              <span className="material-symbols-outlined text-base animate-spin">
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, fontSize: 14, color: "text.secondary" }}>
+              <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 16 }}>
                 progress_activity
               </span>
               Waiting for authorization in browser...
-            </div>
-            <div className="mt-6">
+            </Box>
+            <Box sx={{ mt: 3 }}>
               <Button onClick={handleClose} variant="ghost" fullWidth>
                 Cancel
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {step === "success" && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-green-600">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={circleSx("rgba(34,197,94,0.15)")}>
+              <span className="material-symbols-outlined" style={{ fontSize: 30, color: "#16a34a" }}>
                 check_circle
               </span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Connected Successfully!</h3>
-            <p className="text-sm text-text-muted mb-4">
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Connected Successfully!</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2 }}>
               Your {providerLabel} account via {providerName} has been connected.
-            </p>
+            </Typography>
             <Button onClick={handleClose} fullWidth>
               Done
             </Button>
-          </div>
+          </Box>
         )}
 
         {step === "error" && (
-          <div className="text-center py-6">
-            <div className="size-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-3xl text-red-600">error</span>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Connection Failed</h3>
-            <p className="text-sm text-red-600 mb-4">{error}</p>
-            <div className="flex gap-2">
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={circleSx("rgba(239,68,68,0.15)")}>
+              <span className="material-symbols-outlined" style={{ fontSize: 30, color: "#dc2626" }}>error</span>
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Connection Failed</Typography>
+            <Typography sx={{ fontSize: 14, color: "#dc2626", mb: 2 }}>{error}</Typography>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleClose} variant="ghost" fullWidth>
                 Close
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }

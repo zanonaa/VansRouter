@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
 import { getDefaultPricing, formatCost } from "open-sse/providers/pricing.js";
 
 export default function PricingModal({ isOpen, onClose, onSave }) {
@@ -95,116 +102,135 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
   const allProviders = Object.keys(pricingData).sort();
   const pricingFields = ["input", "output", "cached", "reasoning", "cache_creation"];
 
+  const btnBase = {
+    px: 2,
+    py: 1,
+    fontSize: 14,
+    borderRadius: "4px",
+    border: "1px solid var(--color-border)",
+    bgcolor: "transparent",
+    color: "text.secondary",
+    cursor: "pointer",
+    transition: "all 150ms",
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-base border border-border rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <Box sx={{ position: "fixed", inset: 0, bgcolor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, p: 2 }}>
+      <Box sx={{ bgcolor: "background.default", border: "1px solid var(--color-border)", borderRadius: "8px", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)", maxWidth: 1152, width: "100%", maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         {/* Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Pricing Configuration</h2>
-          <button
-            onClick={onClose}
-            className="text-text-muted hover:text-text text-2xl leading-none"
-          >
+        <Box sx={{ p: 2, borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Typography variant="h6" sx={{ fontSize: 20, fontWeight: 600 }}>Pricing Configuration</Typography>
+          <Box component="button" onClick={onClose} sx={{ border: 0, bgcolor: "transparent", color: "text.secondary", fontSize: 24, lineHeight: 1, cursor: "pointer", "&:hover": { color: "text.primary" } }}>
             ×
-          </button>
-        </div>
+          </Box>
+        </Box>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-4">
+        <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
           {loading ? (
-            <div className="text-center py-8 text-text-muted">Loading pricing data...</div>
+            <Box sx={{ textAlign: "center", py: 4, color: "text.secondary" }}>Loading pricing data...</Box>
           ) : (
-            <div className="space-y-6">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {/* Instructions */}
-              <div className="bg-bg-subtle border border-border rounded-lg p-3 text-sm">
-                <p className="font-medium mb-1">Pricing Rates Format</p>
-                <p className="text-text-muted">
+              <Box sx={{ bgcolor: "var(--color-surface-2)", border: "1px solid var(--color-border)", borderRadius: "8px", p: 1.5, fontSize: 14 }}>
+                <Typography sx={{ fontWeight: 500, mb: 0.5 }}>Pricing Rates Format</Typography>
+                <Typography sx={{ color: "text.secondary" }}>
                   All rates are in <strong>dollars per million tokens</strong> ($/1M tokens).
                   Example: Input rate of 2.50 means $2.50 per 1,000,000 input tokens.
-                </p>
-              </div>
+                </Typography>
+              </Box>
 
               {/* Pricing Tables */}
               {allProviders.map(provider => {
                 const models = Object.keys(pricingData[provider]).sort();
                 return (
-                  <div key={provider} className="border border-border rounded-lg overflow-hidden">
-                    <div className="bg-bg-subtle px-4 py-2 font-semibold text-sm">
+                  <Box key={provider} sx={{ border: "1px solid var(--color-border)", borderRadius: "8px", overflow: "hidden" }}>
+                    <Box sx={{ bgcolor: "var(--color-surface-2)", px: 2, py: 1, fontWeight: 600, fontSize: 14 }}>
                       {provider.toUpperCase()}
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-bg-hover text-text-muted uppercase text-xs">
-                          <tr>
-                            <th className="px-3 py-2 text-left">Model</th>
-                            <th className="px-3 py-2 text-right">Input</th>
-                            <th className="px-3 py-2 text-right">Output</th>
-                            <th className="px-3 py-2 text-right">Cached</th>
-                            <th className="px-3 py-2 text-right">Reasoning</th>
-                            <th className="px-3 py-2 text-right">Cache Creation</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
+                    </Box>
+                    <Box sx={{ overflowX: "auto" }}>
+                      <Table sx={{ width: "100%", fontSize: 14 }}>
+                        <TableHead sx={{ bgcolor: "var(--color-surface-3)" }}>
+                          <TableRow>
+                            <TableCell sx={{ px: 1.5, py: 1, textAlign: "left", textTransform: "uppercase", fontSize: 12, color: "text.secondary" }}>Model</TableCell>
+                            <TableCell sx={{ px: 1.5, py: 1, textAlign: "right", textTransform: "uppercase", fontSize: 12, color: "text.secondary" }}>Input</TableCell>
+                            <TableCell sx={{ px: 1.5, py: 1, textAlign: "right", textTransform: "uppercase", fontSize: 12, color: "text.secondary" }}>Output</TableCell>
+                            <TableCell sx={{ px: 1.5, py: 1, textAlign: "right", textTransform: "uppercase", fontSize: 12, color: "text.secondary" }}>Cached</TableCell>
+                            <TableCell sx={{ px: 1.5, py: 1, textAlign: "right", textTransform: "uppercase", fontSize: 12, color: "text.secondary" }}>Reasoning</TableCell>
+                            <TableCell sx={{ px: 1.5, py: 1, textAlign: "right", textTransform: "uppercase", fontSize: 12, color: "text.secondary" }}>Cache Creation</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
                           {models.map(model => (
-                            <tr key={model} className="hover:bg-bg-subtle/50">
-                              <td className="px-3 py-2 font-medium">{model}</td>
+                            <TableRow key={model} hover>
+                              <TableCell sx={{ px: 1.5, py: 1, fontWeight: 500 }}>{model}</TableCell>
                               {pricingFields.map(field => (
-                                <td key={field} className="px-3 py-2">
-                                  <input
+                                <TableCell key={field} sx={{ px: 1.5, py: 1 }}>
+                                  <Box
+                                    component="input"
                                     type="number"
                                     step="0.01"
                                     min="0"
                                     value={pricingData[provider][model][field] || 0}
                                     onChange={(e) => handlePricingChange(provider, model, field, e.target.value)}
-                                    className="w-20 px-2 py-1 text-right bg-bg-base border border-border rounded focus:outline-none focus:border-primary"
+                                    sx={{
+                                      width: 80,
+                                      px: 1,
+                                      py: 0.5,
+                                      textAlign: "right",
+                                      bgcolor: "background.default",
+                                      border: "1px solid var(--color-border)",
+                                      borderRadius: "4px",
+                                      color: "text.primary",
+                                      outline: "none",
+                                      "&:focus": { borderColor: "primary.main" },
+                                    }}
                                   />
-                                </td>
+                                </TableCell>
                               ))}
-                            </tr>
+                            </TableRow>
                           ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  </Box>
                 );
               })}
 
               {allProviders.length === 0 && (
-                <div className="text-center py-8 text-text-muted">
+                <Box sx={{ textAlign: "center", py: 4, color: "text.secondary" }}>
                   No pricing data available
-                </div>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border flex items-center justify-between gap-2">
-          <button
+        <Box sx={{ p: 2, borderTop: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+          <Box
+            component="button"
             onClick={handleReset}
-            className="px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded border border-red-500/20 transition-colors"
             disabled={saving}
+            sx={{ ...btnBase, color: "error.main", borderColor: "rgba(239,68,68,0.2)", "&:hover": { bgcolor: "rgba(239,68,68,0.1)" } }}
           >
             Reset to Defaults
-          </button>
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-text-muted hover:text-text border border-border rounded transition-colors"
-              disabled={saving}
-            >
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Box component="button" onClick={onClose} disabled={saving} sx={{ ...btnBase, "&:hover": { color: "text.primary" } }}>
               Cancel
-            </button>
-            <button
+            </Box>
+            <Box
+              component="button"
               onClick={handleSave}
-              className="px-4 py-2 text-sm bg-primary text-white rounded hover:bg-primary/90 transition-colors disabled:opacity-50"
               disabled={saving}
+              sx={{ ...btnBase, bgcolor: "primary.main", color: "#fff", borderColor: "primary.main", "&:hover": { bgcolor: "primary.dark" }, "&:disabled": { opacity: 0.5 } }}
             >
               {saving ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

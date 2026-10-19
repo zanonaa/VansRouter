@@ -1,7 +1,35 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Button, Input } from "@/shared/components";
+
+const methodBtnSx = {
+  width: "100%",
+  p: 2,
+  textAlign: "left",
+  border: "1px solid var(--color-border)",
+  borderRadius: "8px",
+  bgcolor: "transparent",
+  cursor: "pointer",
+  transition: "background-color 150ms",
+  "&:hover": { bgcolor: "var(--color-sidebar)" },
+};
+
+function MethodButton({ onClick, icon, title, children }) {
+  return (
+    <Box component="button" type="button" onClick={onClick} sx={methodBtnSx}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+        <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", marginTop: 2 }}>{icon}</span>
+        <Box sx={{ flex: 1 }}>
+          <Typography component="h3" sx={{ fontWeight: 600, mb: 0.5 }}>{title}</Typography>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>{children}</Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 
 /**
  * Kiro Auth Method Selection Modal
@@ -190,307 +218,223 @@ export default function KiroAuthModal({ isOpen, onMethodSelect, onClose }) {
     onMethodSelect("social", { provider });
   };
 
+  const noteSx = (bg, border) => ({ bgcolor: bg, p: 1.5, borderRadius: "8px", border: `1px solid ${border}`, display: "flex", gap: 1 });
+
   return (
     <Modal isOpen={isOpen} title="Connect Kiro" onClose={onClose} size="lg">
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Method Selection */}
         {!selectedMethod && (
-          <div className="space-y-3">
-            <p className="text-sm text-text-muted mb-4">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2 }}>
               Choose your authentication method:
-            </p>
+            </Typography>
 
-            {/* AWS Builder ID */}
-            <button
-              onClick={() => onMethodSelect("builder-id")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">shield</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">AWS Builder ID</h3>
-                  <p className="text-sm text-text-muted">
-                    Recommended for most users. Free AWS account required.
-                  </p>
-                </div>
-              </div>
-            </button>
+            <MethodButton onClick={() => onMethodSelect("builder-id")} icon="shield" title="AWS Builder ID">
+              Recommended for most users. Free AWS account required.
+            </MethodButton>
 
-            {/* AWS IAM Identity Center (IDC) */}
-            <button
-              onClick={() => handleMethodSelect("idc")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">business</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">AWS IAM Identity Center</h3>
-                  <p className="text-sm text-text-muted">
-                    For enterprise users with custom AWS IAM Identity Center.
-                  </p>
-                </div>
-              </div>
-            </button>
+            <MethodButton onClick={() => handleMethodSelect("idc")} icon="business" title="AWS IAM Identity Center">
+              For enterprise users with custom AWS IAM Identity Center.
+            </MethodButton>
 
-            {/* AWS API Key */}
-            <button
-              onClick={() => handleMethodSelect("api-key")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">key</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">API Key</h3>
-                  <p className="text-sm text-text-muted">
-                    Use a long-lived Kiro/CodeWhisperer API key (headless auth).
-                  </p>
-                </div>
-              </div>
-            </button>
+            <MethodButton onClick={() => handleMethodSelect("api-key")} icon="key" title="API Key">
+              Use a long-lived Kiro/CodeWhisperer API key (headless auth).
+            </MethodButton>
 
-            {/* Google Social Login */}
-            <button
-              onClick={() => handleSocialLogin("google")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">account_circle</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Google Account</h3>
-                  <p className="text-sm text-text-muted">
-                    Login with your Google account via device authorization code.
-                  </p>
-                </div>
-              </div>
-            </button>
+            <MethodButton onClick={() => handleSocialLogin("google")} icon="account_circle" title="Google Account">
+              Login with your Google account via device authorization code.
+            </MethodButton>
 
-            {/* GitHub Social Login */}
-            <button
-              onClick={() => handleSocialLogin("github")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">code</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">GitHub Account</h3>
-                  <p className="text-sm text-text-muted">
-                    Login with your GitHub account via device authorization code.
-                  </p>
-                </div>
-              </div>
-            </button>
+            <MethodButton onClick={() => handleSocialLogin("github")} icon="code" title="GitHub Account">
+              Login with your GitHub account via device authorization code.
+            </MethodButton>
 
-            {/* Import Token */}
-            <button
-              onClick={() => handleMethodSelect("import")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">file_upload</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Import Token</h3>
-                  <p className="text-sm text-text-muted">
-                    Paste refresh token from Kiro IDE.
-                  </p>
-                </div>
-              </div>
-            </button>
+            <MethodButton onClick={() => handleMethodSelect("import")} icon="file_upload" title="Import Token">
+              Paste refresh token from Kiro IDE.
+            </MethodButton>
 
-            {/* Import CLIProxyAPI JSON */}
-            <button
-              onClick={() => handleMethodSelect("import-cli-proxy")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-primary mt-0.5">data_object</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Import CLIProxyAPI JSON</h3>
-                  <p className="text-sm text-text-muted">
-                    Paste external_idp auth JSON from CLIProxyAPI/Kiro Microsoft login.
-                  </p>
-                </div>
-              </div>
-            </button>
-          </div>
+            <MethodButton onClick={() => handleMethodSelect("import-cli-proxy")} icon="data_object" title="Import CLIProxyAPI JSON">
+              Paste external_idp auth JSON from CLIProxyAPI/Kiro Microsoft login.
+            </MethodButton>
+          </Box>
         )}
 
         {/* IDC Configuration */}
         {selectedMethod === "idc" && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                IDC Start URL <span className="text-red-500">*</span>
-              </label>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box>
+              <Box component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
+                IDC Start URL <Box component="span" sx={{ color: "error.main" }}>*</Box>
+              </Box>
               <Input
                 value={idcStartUrl}
                 onChange={(e) => setIdcStartUrl(e.target.value)}
                 placeholder="https://your-org.awsapps.com/start"
-                className="font-mono text-sm"
+                inputClassName="font-mono text-sm"
               />
-              <p className="text-xs text-text-muted mt-1">
+              <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
                 Your organization&apos;s AWS IAM Identity Center URL
-              </p>
-            </div>
+              </Typography>
+            </Box>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
+            <Box>
+              <Box component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
                 AWS Region
-              </label>
+              </Box>
               <Input
                 value={idcRegion}
                 onChange={(e) => setIdcRegion(e.target.value)}
                 placeholder="us-east-1"
-                className="font-mono text-sm"
+                inputClassName="font-mono text-sm"
               />
-              <p className="text-xs text-text-muted mt-1">
+              <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
                 AWS region for your Identity Center (default: us-east-1)
-              </p>
-            </div>
+              </Typography>
+            </Box>
 
             {error && (
-              <p className="text-sm text-red-600">{error}</p>
+              <Typography sx={{ fontSize: 14, color: "#dc2626" }}>{error}</Typography>
             )}
 
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleIdcContinue} fullWidth>
                 Continue
               </Button>
               <Button onClick={handleBack} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* API Key */}
         {selectedMethod === "api-key" && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex gap-2">
-                <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Paste a long-lived Kiro/CodeWhisperer API key. It is validated
-                  against AWS and stored directly as a bearer credential (no refresh).
-                </p>
-              </div>
-            </div>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={noteSx("rgba(59,130,246,0.1)", "rgba(59,130,246,0.3)")}>
+              <span className="material-symbols-outlined" style={{ color: "#2563eb" }}>info</span>
+              <Typography sx={{ fontSize: 14, color: "#1e40af" }}>
+                Paste a long-lived Kiro/CodeWhisperer API key. It is validated
+                against AWS and stored directly as a bearer credential (no refresh).
+              </Typography>
+            </Box>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                API Key <span className="text-red-500">*</span>
-              </label>
+            <Box>
+              <Box component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
+                API Key <Box component="span" sx={{ color: "error.main" }}>*</Box>
+              </Box>
               <Input
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="Paste your Kiro API key..."
-                className="font-mono text-sm"
+                inputClassName="font-mono text-sm"
               />
-            </div>
+            </Box>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
+            <Box>
+              <Box component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
                 AWS Region
-              </label>
+              </Box>
               <Input
                 value={apiKeyRegion}
                 onChange={(e) => setApiKeyRegion(e.target.value)}
                 placeholder="us-east-1"
-                className="font-mono text-sm"
+                inputClassName="font-mono text-sm"
               />
-              <p className="text-xs text-text-muted mt-1">
+              <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
                 AWS region for the key (default: us-east-1)
-              </p>
-            </div>
+              </Typography>
+            </Box>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-              </div>
+              <Box sx={noteSx("rgba(239,68,68,0.1)", "rgba(239,68,68,0.3)")}>
+                <Typography sx={{ fontSize: 14, color: "#dc2626" }}>{error}</Typography>
+              </Box>
             )}
 
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleApiKeyImport} fullWidth disabled={importing || !apiKey.trim()}>
                 {importing ? "Validating..." : "Add API Key"}
               </Button>
               <Button onClick={handleBack} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Social Login Info (Google) */}
         {selectedMethod === "social-google" && (
-          <div className="space-y-4">
-            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-              <div className="flex gap-2">
-                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">info</span>
-                <div className="flex-1 text-sm">
-                  <p className="font-medium text-amber-900 dark:text-amber-100 mb-1">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ bgcolor: "rgba(245,158,11,0.1)", p: 2, borderRadius: "8px", border: "1px solid rgba(245,158,11,0.3)" }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <span className="material-symbols-outlined" style={{ color: "#d97706" }}>info</span>
+                <Box sx={{ flex: 1, fontSize: 14 }}>
+                  <Typography sx={{ fontWeight: 500, color: "#78350f", mb: 0.5 }}>
                     Manual Callback Required
-                  </p>
-                  <p className="text-amber-800 dark:text-amber-200">
+                  </Typography>
+                  <Typography sx={{ color: "#92400e" }}>
                     After login, you&apos;ll need to copy the callback URL from your browser and paste it back here.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
 
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={() => handleSocialLogin("google")} fullWidth>
                 Continue with Google
               </Button>
               <Button onClick={handleBack} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Social Login Info (GitHub) */}
         {selectedMethod === "social-github" && (
-          <div className="space-y-4">
-            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-              <div className="flex gap-2">
-                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">info</span>
-                <div className="flex-1 text-sm">
-                  <p className="font-medium text-amber-900 dark:text-amber-100 mb-1">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ bgcolor: "rgba(245,158,11,0.1)", p: 2, borderRadius: "8px", border: "1px solid rgba(245,158,11,0.3)" }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <span className="material-symbols-outlined" style={{ color: "#d97706" }}>info</span>
+                <Box sx={{ flex: 1, fontSize: 14 }}>
+                  <Typography sx={{ fontWeight: 500, color: "#78350f", mb: 0.5 }}>
                     Manual Callback Required
-                  </p>
-                  <p className="text-amber-800 dark:text-amber-200">
+                  </Typography>
+                  <Typography sx={{ color: "#92400e" }}>
                     After login, you&apos;ll need to copy the callback URL from your browser and paste it back here.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
 
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={() => handleSocialLogin("github")} fullWidth>
                 Continue with GitHub
               </Button>
               <Button onClick={handleBack} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Import Token */}
         {selectedMethod === "import" && (
-          <div className="space-y-4">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {/* Auto-detecting state */}
             {autoDetecting && (
-              <div className="text-center py-6">
-                <div className="size-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-3xl text-primary animate-spin">
+              <Box sx={{ textAlign: "center", py: 3 }}>
+                <Box sx={{ width: 64, height: 64, mx: "auto", mb: 2, borderRadius: "50%", bgcolor: "rgba(229,106,74,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 30, color: "var(--color-primary)" }}>
                     progress_activity
                   </span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Auto-detecting token...</h3>
-                <p className="text-sm text-text-muted">
+                </Box>
+                <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 600, mb: 1 }}>Auto-detecting token...</Typography>
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
                   Reading from AWS SSO cache
-                </p>
-              </div>
+                </Typography>
+              </Box>
             )}
 
             {/* Form (shown after auto-detect completes) */}
@@ -498,101 +442,95 @@ export default function KiroAuthModal({ isOpen, onMethodSelect, onClose }) {
               <>
                 {/* Success message if auto-detected */}
                 {autoDetected && (
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex gap-2">
-                      <span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
-                      <p className="text-sm text-green-800 dark:text-green-200">
-                        Token auto-detected from Kiro IDE successfully!
-                      </p>
-                    </div>
-                  </div>
+                  <Box sx={noteSx("rgba(34,197,94,0.1)", "rgba(34,197,94,0.3)")}>
+                    <span className="material-symbols-outlined" style={{ color: "#16a34a" }}>check_circle</span>
+                    <Typography sx={{ fontSize: 14, color: "#166534" }}>
+                      Token auto-detected from Kiro IDE successfully!
+                    </Typography>
+                  </Box>
                 )}
 
                 {/* Info message if not auto-detected */}
                 {!autoDetected && !error && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex gap-2">
-                      <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
-                      <p className="text-sm text-blue-800 dark:text-blue-200">
-                        Kiro IDE not detected. Please paste your refresh token manually.
-                      </p>
-                    </div>
-                  </div>
+                  <Box sx={noteSx("rgba(59,130,246,0.1)", "rgba(59,130,246,0.3)")}>
+                    <span className="material-symbols-outlined" style={{ color: "#2563eb" }}>info</span>
+                    <Typography sx={{ fontSize: 14, color: "#1e40af" }}>
+                      Kiro IDE not detected. Please paste your refresh token manually.
+                    </Typography>
+                  </Box>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Refresh Token <span className="text-red-500">*</span>
-                  </label>
+                <Box>
+                  <Box component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
+                    Refresh Token <Box component="span" sx={{ color: "error.main" }}>*</Box>
+                  </Box>
                   <Input
                     value={refreshToken}
                     onChange={(e) => setRefreshToken(e.target.value)}
                     placeholder="Token will be auto-filled..."
-                    className="font-mono text-sm"
+                    inputClassName="font-mono text-sm"
                   />
-                </div>
+                </Box>
 
                 {error && (
-                  <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                  </div>
+                  <Box sx={noteSx("rgba(239,68,68,0.1)", "rgba(239,68,68,0.3)")}>
+                    <Typography sx={{ fontSize: 14, color: "#dc2626" }}>{error}</Typography>
+                  </Box>
                 )}
 
-                <div className="flex gap-2">
+                <Box sx={{ display: "flex", gap: 1 }}>
                   <Button onClick={handleImportToken} fullWidth disabled={importing || !refreshToken.trim()}>
                     {importing ? "Importing..." : "Import Token"}
                   </Button>
                   <Button onClick={handleBack} variant="ghost" fullWidth>
                     Back
                   </Button>
-                </div>
+                </Box>
               </>
             )}
-          </div>
+          </Box>
         )}
 
         {/* Import CLIProxyAPI JSON */}
         {selectedMethod === "import-cli-proxy" && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex gap-2">
-                <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Paste the Kiro CLIProxyAPI auth JSON containing auth_method=external_idp. Only Microsoft login token endpoints are accepted.
-                </p>
-              </div>
-            </div>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={noteSx("rgba(59,130,246,0.1)", "rgba(59,130,246,0.3)")}>
+              <span className="material-symbols-outlined" style={{ color: "#2563eb" }}>info</span>
+              <Typography sx={{ fontSize: 14, color: "#1e40af" }}>
+                Paste the Kiro CLIProxyAPI auth JSON containing auth_method=external_idp. Only Microsoft login token endpoints are accepted.
+              </Typography>
+            </Box>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                CLIProxyAPI Auth JSON <span className="text-red-500">*</span>
-              </label>
-              <textarea
+            <Box>
+              <Box component="label" sx={{ display: "block", fontSize: 14, fontWeight: 500, mb: 1 }}>
+                CLIProxyAPI Auth JSON <Box component="span" sx={{ color: "error.main" }}>*</Box>
+              </Box>
+              <Box
+                component="textarea"
                 value={cliProxyJson}
                 onChange={(e) => setCliProxyJson(e.target.value)}
                 placeholder={'{"auth_method":"external_idp","access_token":"...","refresh_token":"...","client_id":"...","token_endpoint":"https://login.microsoftonline.com/.../oauth2/v2.0/token","profile_arn":"...","scopes":"..."}'}
-                className="min-h-40 w-full rounded-md border border-border bg-background p-3 font-mono text-sm outline-none focus:border-primary"
+                sx={{ minHeight: 160, width: "100%", borderRadius: "6px", border: "1px solid var(--color-border)", bgcolor: "background.default", p: 1.5, fontFamily: "ui-monospace, monospace", fontSize: 14, color: "text.primary", outline: "none", "&:focus": { borderColor: "primary.main" } }}
               />
-            </div>
+            </Box>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-              </div>
+              <Box sx={noteSx("rgba(239,68,68,0.1)", "rgba(239,68,68,0.3)")}>
+                <Typography sx={{ fontSize: 14, color: "#dc2626" }}>{error}</Typography>
+              </Box>
             )}
 
-            <div className="flex gap-2">
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button onClick={handleImportCliProxyJson} fullWidth disabled={importing || !cliProxyJson.trim()}>
                 {importing ? "Importing..." : "Import CLIProxyAPI JSON"}
               </Button>
               <Button onClick={handleBack} variant="ghost" fullWidth>
                 Back
               </Button>
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }
-

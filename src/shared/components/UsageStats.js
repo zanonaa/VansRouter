@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
 import { FREE_PROVIDERS, AI_PROVIDERS } from "@/shared/constants/providers";
 
 // Keep providers without serviceKinds (default LLM) or with "llm" in serviceKinds
@@ -15,10 +22,18 @@ import Card from "./Card";
 import OverviewCards from "@/app/(dashboard)/dashboard/usage/components/OverviewCards";
 import UsageTable, { fmt, fmtTime } from "@/app/(dashboard)/dashboard/usage/components/UsageTable";
 import dynamic from "next/dynamic";
+
 // Panel-sized placeholder for a single topology column, shared with
 // topologySkeleton so the two cannot drift (see its comment below).
-const TOPOLOGY_PANEL_CLASS = "h-[320px] w-full animate-pulse rounded-lg border border-border bg-bg-subtle/50 sm:h-[480px]";
-const topologyPanelSkeleton = <div className={TOPOLOGY_PANEL_CLASS} aria-hidden="true" />;
+const topologyPanelSx = {
+  height: { xs: 320, sm: 480 },
+  width: "100%",
+  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+  borderRadius: "8px",
+  border: "1px solid var(--color-border)",
+  bgcolor: "rgba(244,244,245,0.5)",
+};
+const topologyPanelSkeleton = <Box sx={topologyPanelSx} aria-hidden="true" />;
 
 // ponytail: two independent guards, both needed. `loading:` (below) keeps the
 // skeleton up for the whole chunk fetch, so the area never collapses mid-fetch;
@@ -45,18 +60,18 @@ const TopModelsChart = dynamic(() => import("@/app/(dashboard)/dashboard/usage/c
 // not shift (CLS) when data arrives. Keep dimensions in sync with the real
 // components they replace.
 const overviewSkeleton = (
-  <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 sm:gap-4">
+  <Box sx={{ display: "grid", minWidth: 0, gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(4, 1fr)" }, gap: { xs: 1.5, sm: 2 } }}>
     {Array.from({ length: 4 }).map((_, i) => (
-      <div key={i} className="h-24 w-full animate-pulse rounded-lg border border-border bg-bg-subtle/50" aria-hidden="true" />
+      <Box key={i} sx={{ height: 96, width: "100%", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite", borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "rgba(244,244,245,0.5)" }} aria-hidden="true" />
     ))}
-  </div>
+  </Box>
 );
 
 const topologySkeleton = (
-  <div className="grid min-w-0 grid-cols-1 gap-2 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+  <Box sx={{ display: "grid", minWidth: 0, gridTemplateColumns: { xs: "1fr", lg: "minmax(0,2fr) minmax(280px,1fr)" }, gap: 1 }}>
     {topologyPanelSkeleton}
     {topologyPanelSkeleton}
-  </div>
+  </Box>
 );
 
 // Must match the vertical footprint of UsageChart's Card (p-3/p-4 + toggle row
@@ -64,11 +79,11 @@ const topologySkeleton = (
 // shift the table below. ProviderBarChart/TopModelsChart are shorter (~252px) but
 // share this placeholder, so their skeletons are 300px tall while loading.
 const chartSkeleton = (
-  <div className="min-h-[300px] w-full animate-pulse rounded-lg border border-border bg-bg-subtle/50" aria-hidden="true" />
+  <Box sx={{ minHeight: 300, width: "100%", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite", borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "rgba(244,244,245,0.5)" }} aria-hidden="true" />
 );
 
 const tableSkeleton = (
-  <div className="h-64 w-full animate-pulse rounded-lg border border-border bg-bg-subtle/50" aria-hidden="true" />
+  <Box sx={{ height: 256, width: "100%", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite", borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "rgba(244,244,245,0.5)" }} aria-hidden="true" />
 );
 
 function timeAgo(timestamp) {
@@ -123,46 +138,46 @@ function useInView(rootMargin = "200px") {
 
 function RecentRequests({ requests = EMPTY_REQUESTS }) {
   return (
-    <Card className="flex min-w-0 flex-col overflow-hidden" padding="sm" style={{ height: 480 }}>
+    <Card padding="sm" sx={{ display: "flex", minWidth: 0, flexDirection: "column", overflow: "hidden", height: 480 }}>
       {/* Header */}
-      <div className="px-1 py-2 border-b border-border shrink-0">
-        <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">Recent Requests</span>
-      </div>
+      <Box sx={{ px: 0.5, py: 1, borderBottom: "1px solid var(--color-border)", flexShrink: 0 }}>
+        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", letterSpacing: "0.05em" }}>Recent Requests</Box>
+      </Box>
 
       {!requests.length ? (
-        <div className="flex-1 flex items-center justify-center text-text-muted text-sm">No requests yet.</div>
+        <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "text.secondary", fontSize: 14 }}>No requests yet.</Box>
       ) : (
-        <div className="flex-1 overflow-y-auto">
-          <table className="w-full min-w-[300px] border-collapse text-xs">
-            <thead className="sticky top-0 bg-bg z-10">
-              <tr className="border-b border-border">
-                <th className="py-1.5 text-left font-semibold text-text-muted w-2"><span className="sr-only">Status</span></th>
-                <th className="py-1.5 text-left font-semibold text-text-muted">Model</th>
-                <th className="py-1.5 text-right font-semibold text-text-muted whitespace-nowrap">In / Out</th>
-                <th className="py-1.5 text-right font-semibold text-text-muted">When</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
+        <Box sx={{ flex: 1, overflowY: "auto" }}>
+          <Table sx={{ width: "100%", minWidth: 300, fontSize: 12 }}>
+            <TableHead sx={{ position: "sticky", top: 0, bgcolor: "background.default", zIndex: 10 }}>
+              <TableRow>
+                <TableCell sx={{ py: 0.75, width: 8, borderBottom: "1px solid var(--color-border)" }}><span style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>Status</span></TableCell>
+                <TableCell sx={{ py: 0.75, textAlign: "left", fontWeight: 600, color: "text.secondary", borderBottom: "1px solid var(--color-border)" }}>Model</TableCell>
+                <TableCell sx={{ py: 0.75, textAlign: "right", fontWeight: 600, color: "text.secondary", whiteSpace: "nowrap", borderBottom: "1px solid var(--color-border)" }}>In / Out</TableCell>
+                <TableCell sx={{ py: 0.75, textAlign: "right", fontWeight: 600, color: "text.secondary", borderBottom: "1px solid var(--color-border)" }}>When</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {requests.map((r, i) => {
                 const ok = !r.status || r.status === "ok" || r.status === "success";
                 return (
-                  <tr key={`${r.timestamp}-${r.model}-${i}`} className="hover:bg-bg-subtle transition-colors">
-                    <td className="py-1.5">
-                      <span className={`block w-1.5 h-1.5 rounded-full ${ok ? "bg-success" : "bg-error"}`} aria-label={ok ? "Success" : "Error"} />
-                    </td>
-                    <td className="py-1.5 font-mono truncate max-w-[120px]" title={r.model}>{r.model}</td>
-                    <td className="py-1.5 text-right whitespace-nowrap">
-                      <span className="text-primary">{fmt(r.promptTokens)}↑</span>
+                  <TableRow key={`${r.timestamp}-${r.model}-${i}`} hover>
+                    <TableCell sx={{ py: 0.75 }}>
+                      <Box component="span" aria-label={ok ? "Success" : "Error"} sx={{ display: "block", width: 6, height: 6, borderRadius: "50%", bgcolor: ok ? "success.main" : "error.main" }} />
+                    </TableCell>
+                    <TableCell sx={{ py: 0.75, fontFamily: "ui-monospace, monospace", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.model}>{r.model}</TableCell>
+                    <TableCell sx={{ py: 0.75, textAlign: "right", whiteSpace: "nowrap" }}>
+                      <Box component="span" sx={{ color: "primary.main" }}>{fmt(r.promptTokens)}↑</Box>
                       {" "}
-                      <span className="text-success">{fmt(r.completionTokens)}↓</span>
-                    </td>
-                    <td className="py-1.5 text-right text-text-muted whitespace-nowrap"><TimeAgo timestamp={r.timestamp} /></td>
-                  </tr>
+                      <Box component="span" sx={{ color: "success.main" }}>{fmt(r.completionTokens)}↓</Box>
+                    </TableCell>
+                    <TableCell sx={{ py: 0.75, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}><TimeAgo timestamp={r.timestamp} /></TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Box>
       )}
     </Card>
   );
@@ -301,25 +316,42 @@ const PERIODS = [
   { value: "all", label: "All" },
 ];
 
+const periodBtnSx = (active) => ({
+  borderRadius: "6px",
+  px: 1.5,
+  py: 0.5,
+  fontSize: 14,
+  fontWeight: 500,
+  transition: "background-color 150ms, color 150ms",
+  border: 0,
+  cursor: "pointer",
+  bgcolor: active ? "primary.main" : "transparent",
+  color: active ? "#fff" : "text.secondary",
+  boxShadow: active ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+  "&:hover": { bgcolor: active ? "primary.main" : "var(--color-surface-3)", color: active ? "#fff" : "text.primary" },
+});
+
 function PeriodSelector({ period, setPeriod, fetching }) {
   return (
-        <div className="flex w-full items-center gap-2 sm:w-auto sm:self-end">
-          <div className="grid flex-1 grid-cols-6 items-center gap-1 rounded-lg border border-border bg-bg-subtle p-1 sm:flex sm:flex-none">
-            {PERIODS.map((p) => (
-              <button type="button"
-                key={p.value}
-                onClick={() => setPeriod(p.value)}
-                disabled={fetching}
-                className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${period === p.value ? "bg-primary text-white shadow-sm" : "text-text-muted hover:bg-bg-hover hover:text-text"}`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-          {fetching && (
-            <span className="material-symbols-outlined text-[16px] text-text-muted animate-spin">progress_activity</span>
-          )}
-        </div>
+    <Box sx={{ display: "flex", width: "100%", alignItems: "center", gap: 1, flexDirection: { xs: "row", sm: "row" }, alignSelf: { sm: "flex-end" }, width: { sm: "auto" } }}>
+      <Box sx={{ display: "grid", flex: 1, gridTemplateColumns: "repeat(6, 1fr)", alignItems: "center", gap: 0.5, borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "var(--color-surface-2)", p: 0.5, ...({ "@media (min-width:600px)": { display: "flex", flex: "none" } }) }}>
+        {PERIODS.map((p) => (
+          <Box
+            component="button"
+            type="button"
+            key={p.value}
+            onClick={() => setPeriod(p.value)}
+            disabled={fetching}
+            sx={periodBtnSx(period === p.value)}
+          >
+            {p.label}
+          </Box>
+        ))}
+      </Box>
+      {fetching && (
+        <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 16, color: "var(--color-text-muted)" }}>progress_activity</span>
+      )}
+    </Box>
   );
 }
 
@@ -465,23 +497,23 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
           emptyMessage: "No usage recorded yet.",
           renderSummaryCells: (group) => (
             <>
-              <td className="px-6 py-3">
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.provider ? (
                   <Badge variant={group.summary.pending > 0 ? "primary" : "neutral"} size="sm">{group.summary.provider}</Badge>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3 text-right">{fmt(group.summary.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(group.summary.lastUsed)}</td>
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(group.summary.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(group.summary.lastUsed)}</TableCell>
             </>
           ),
           renderDetailCells: (item) => (
             <>
-              <td className={`px-6 py-3 font-medium transition-colors ${item.pending > 0 ? "text-primary" : ""}`}>{item.rawModel}</td>
-              <td className="px-6 py-3"><Badge variant={item.pending > 0 ? "primary" : "neutral"} size="sm">{item.provider}</Badge></td>
-              <td className="px-6 py-3 text-right">{fmt(item.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(item.lastUsed)}</td>
+              <TableCell sx={{ px: 3, py: 1.5, fontWeight: 500, transition: "color 150ms", color: item.pending > 0 ? "primary.main" : undefined }}>{item.rawModel}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}><Badge variant={item.pending > 0 ? "primary" : "neutral"} size="sm">{item.provider}</Badge></TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(item.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(item.lastUsed)}</TableCell>
             </>
           ),
         };
@@ -504,31 +536,31 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
           emptyMessage: "No account-specific usage recorded yet.",
           renderSummaryCells: (group) => (
             <>
-              <td className="px-6 py-3">
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.rawModel ? (
-                  <span className="font-medium text-text-main">{group.summary.rawModel}</span>
+                  <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>{group.summary.rawModel}</Box>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3">
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.provider ? (
                   <Badge variant={group.summary.pending > 0 ? "primary" : "neutral"} size="sm">{group.summary.provider}</Badge>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3 text-right">{fmt(group.summary.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(group.summary.lastUsed)}</td>
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(group.summary.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(group.summary.lastUsed)}</TableCell>
             </>
           ),
           renderDetailCells: (item) => (
             <>
-              <td className={`px-6 py-3 font-medium transition-colors ${item.pending > 0 ? "text-primary" : ""}`}>{item.accountName || `Account ${item.connectionId?.slice(0, 8)}...`}</td>
-              <td className={`px-6 py-3 font-medium transition-colors ${item.pending > 0 ? "text-primary" : ""}`}>{item.rawModel}</td>
-              <td className="px-6 py-3"><Badge variant={item.pending > 0 ? "primary" : "neutral"} size="sm">{item.provider}</Badge></td>
-              <td className="px-6 py-3 text-right">{fmt(item.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(item.lastUsed)}</td>
+              <TableCell sx={{ px: 3, py: 1.5, fontWeight: 500, transition: "color 150ms", color: item.pending > 0 ? "primary.main" : undefined }}>{item.accountName || `Account ${item.connectionId?.slice(0, 8)}...`}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, fontWeight: 500, transition: "color 150ms", color: item.pending > 0 ? "primary.main" : undefined }}>{item.rawModel}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}><Badge variant={item.pending > 0 ? "primary" : "neutral"} size="sm">{item.provider}</Badge></TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(item.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(item.lastUsed)}</TableCell>
             </>
           ),
         };
@@ -541,31 +573,31 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
           emptyMessage: "No API key usage recorded yet.",
           renderSummaryCells: (group) => (
             <>
-              <td className="px-6 py-3">
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.rawModel ? (
-                  <span className="font-medium text-text-main">{group.summary.rawModel}</span>
+                  <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>{group.summary.rawModel}</Box>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3">
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.provider ? (
                   <Badge variant="neutral" size="sm">{group.summary.provider}</Badge>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3 text-right">{fmt(group.summary.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(group.summary.lastUsed)}</td>
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(group.summary.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(group.summary.lastUsed)}</TableCell>
             </>
           ),
           renderDetailCells: (item) => (
             <>
-              <td className="px-6 py-3 font-medium">{item.keyName}</td>
-              <td className="px-6 py-3">{item.rawModel}</td>
-              <td className="px-6 py-3"><Badge variant="neutral" size="sm">{item.provider}</Badge></td>
-              <td className="px-6 py-3 text-right">{fmt(item.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(item.lastUsed)}</td>
+              <TableCell sx={{ px: 3, py: 1.5, fontWeight: 500 }}>{item.keyName}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}>{item.rawModel}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}><Badge variant="neutral" size="sm">{item.provider}</Badge></TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(item.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(item.lastUsed)}</TableCell>
             </>
           ),
         };
@@ -579,31 +611,31 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
           emptyMessage: "No endpoint usage recorded yet.",
           renderSummaryCells: (group) => (
             <>
-              <td className="px-6 py-3">
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.rawModel ? (
-                  <span className="font-medium text-text-main">{group.summary.rawModel}</span>
+                  <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>{group.summary.rawModel}</Box>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3">
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}>
                 {group.summary.provider ? (
                   <Badge variant="neutral" size="sm">{group.summary.provider}</Badge>
                 ) : (
-                  <span className="text-text-muted">—</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>—</Box>
                 )}
-              </td>
-              <td className="px-6 py-3 text-right">{fmt(group.summary.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(group.summary.lastUsed)}</td>
+              </TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(group.summary.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(group.summary.lastUsed)}</TableCell>
             </>
           ),
           renderDetailCells: (item) => (
             <>
-              <td className="px-6 py-3 font-medium font-mono text-sm">{item.endpoint}</td>
-              <td className="px-6 py-3">{item.rawModel}</td>
-              <td className="px-6 py-3"><Badge variant="neutral" size="sm">{item.provider}</Badge></td>
-              <td className="px-6 py-3 text-right">{fmt(item.requests)}</td>
-              <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">{fmtTime(item.lastUsed)}</td>
+              <TableCell sx={{ px: 3, py: 1.5, fontWeight: 500, fontFamily: "ui-monospace, monospace", fontSize: 14 }}>{item.endpoint}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}>{item.rawModel}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5 }}><Badge variant="neutral" size="sm">{item.provider}</Badge></TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right" }}>{fmt(item.requests)}</TableCell>
+              <TableCell sx={{ px: 3, py: 1.5, textAlign: "right", color: "text.secondary", whiteSpace: "nowrap" }}>{fmtTime(item.lastUsed)}</TableCell>
             </>
           ),
         };
@@ -611,10 +643,10 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
     }
   }, [stats, tableView, sortBy, sortOrder]);
 
-  if (!stats && !loading) return <div className="text-text-muted">Failed to load usage statistics.</div>;
+  if (!stats && !loading) return <Box sx={{ color: "text.secondary" }}>Failed to load usage statistics.</Box>;
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: "column", gap: 3 }}>
       {/* Period selector (hidden when controlled by parent) */}
       {!hidePeriodSelector && <PeriodSelector period={period} setPeriod={setPeriod} fetching={fetching} />}
 
@@ -623,7 +655,7 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
 
       {/* Provider topology + Recent Requests */}
       {loading || !idleReadyForTopology ? topologySkeleton : (
-        <div className="grid min-w-0 grid-cols-1 items-stretch gap-2 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+        <Box sx={{ display: "grid", minWidth: 0, gridTemplateColumns: { xs: "1fr", lg: "minmax(0,2fr) minmax(280px,1fr)" }, alignItems: "stretch", gap: 1 }}>
           <ProviderTopology
             providers={providers}
             activeRequests={stats.activeRequests || []}
@@ -631,7 +663,7 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
             errorProvider={stats.errorProvider || ""}
           />
           <RecentRequests requests={stats.recentRequests || []} />
-        </div>
+        </Box>
       )}
 
       {/* Token / Cost chart - sync period. `chartsRef` marks the first recharts
@@ -639,46 +671,41 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
           recharts charts (UsageChart + the byProvider/byModel pair below).
           `chartSkeleton` is sized to UsageChart's full height so this swap does
           not move the table. */}
-      <div ref={chartsRef}>
+      <Box ref={chartsRef}>
         {loading || !chartsInView ? chartSkeleton : <UsageChart period={period} />}
-      </div>
+      </Box>
 
       {/* Provider and model breakdown charts */}
       {!loading && chartsInView && (stats.byProvider || stats.byModel) && (
-        <div className="grid min-w-0 grid-cols-1 gap-2 lg:grid-cols-2">
+        <Box sx={{ display: "grid", minWidth: 0, gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 1 }}>
           <ProviderBarChart byProvider={stats.byProvider} />
           <TopModelsChart byModel={stats.byModel} />
-        </div>
+        </Box>
       )}
 
       {/* Table with dropdown selector */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <select
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" } }}>
+          <Box
+            component="select"
             value={tableView}
             onChange={(e) => setTableView(e.target.value)}
-            className="w-full rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50 sm:w-auto"
-            style={{ colorScheme: 'auto' }}
+            sx={{ width: { xs: "100%", sm: "auto" }, borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "var(--color-surface)", px: 1.5, py: 0.75, fontSize: 14, fontWeight: 500, color: "text.primary", outline: "none", "&:focus": { boxShadow: "0 0 0 2px rgba(229,106,74,0.5)" } }}
+            style={{ colorScheme: "auto" }}
           >
             {TABLE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
-          </select>
-          <div className="grid grid-cols-2 items-center gap-1 rounded-lg border border-border bg-bg-subtle p-1 sm:flex">
-            <button type="button"
-              onClick={() => setViewMode("costs")}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${viewMode === "costs" ? "bg-primary text-white shadow-sm" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
-            >
+          </Box>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", gap: 0.5, borderRadius: "8px", border: "1px solid var(--color-border)", bgcolor: "var(--color-surface-2)", p: 0.5, ...({ "@media (min-width:600px)": { display: "flex" } }) }}>
+            <Box component="button" type="button" onClick={() => setViewMode("costs")} sx={periodBtnSx(viewMode === "costs")}>
               Costs
-            </button>
-            <button type="button"
-              onClick={() => setViewMode("tokens")}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${viewMode === "tokens" ? "bg-primary text-white shadow-sm" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
-            >
+            </Box>
+            <Box component="button" type="button" onClick={() => setViewMode("tokens")} sx={periodBtnSx(viewMode === "tokens")}>
               Tokens
-            </button>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
         {loading ? tableSkeleton : activeTableConfig && (
           <UsageTable
             title=""
@@ -695,7 +722,7 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
             emptyMessage={activeTableConfig.emptyMessage}
           />
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

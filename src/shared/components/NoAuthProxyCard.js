@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import Card from "./Card";
 import Select from "./Select";
 import Badge from "./Badge";
@@ -100,20 +102,20 @@ export default function NoAuthProxyCard({ providerId, isFreeNoAuth = true }) {
 
   return (
     <Card>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 text-green-500">
-          <span className="material-symbols-outlined text-[20px]">lan</span>
-        </div>
-        <div className="flex-1">
-          <p className="text-sm font-medium">Proxy Routing & Strategy</p>
-          <p className="text-xs text-text-muted">
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+        <Box sx={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: "50%", bgcolor: "rgba(34,197,94,0.1)", color: "#22c55e" }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>lan</span>
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Proxy Routing &amp; Strategy</Typography>
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
             Configure how traffic for this provider is routed through proxy pools.
-          </p>
-        </div>
+          </Typography>
+        </Box>
         {savedFlash && <Badge variant="success" size="sm">Saved</Badge>}
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
         <Select
           label="Proxy Strategy"
           value={rotateStrategy}
@@ -140,44 +142,59 @@ export default function NoAuthProxyCard({ providerId, isFreeNoAuth = true }) {
               ]}
             />
           ) : (
-            <div className="flex flex-col justify-end pb-1.5">
-              <span className="text-xs text-text-muted italic">
+            <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", pb: 0.75 }}>
+              <Box component="span" sx={{ fontSize: 12, color: "text.secondary", fontStyle: "italic" }}>
                 Using connection-level proxy settings. Select specific proxies on connections below or click &quot;Apply Proxy&quot;.
-              </span>
-            </div>
+              </Box>
+            </Box>
           )
         ) : (
-          <div className="flex flex-col justify-end pb-1.5">
-            <span className="text-xs text-brand-500 font-medium">
+          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", pb: 0.75 }}>
+            <Box component="span" sx={{ fontSize: 12, color: "var(--color-brand-500)", fontWeight: 500 }}>
               🔄 Dynamic Rotation active. Individual connection proxy settings will be bypassed.
-            </span>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {rotateStrategy !== "none" && (
-        <div className="mt-4 rounded-xl border border-border/60 bg-surface/40 p-4">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div>
-              <p className="text-sm font-medium">Rotation proxy pool subset</p>
-              <p className="text-xs text-text-muted">
+            <Box sx={{ mt: 2, borderRadius: "12px", border: "1px solid var(--color-border)", bgcolor: "color-mix(in srgb, var(--color-surface) 40%, transparent)", p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 1.5 }}>
+            <Box>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Rotation proxy pool subset</Typography>
+              <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                 Select which active pools are eligible for {rotateStrategy}. Leave empty to use all active pools.
-              </p>
-            </div>
+              </Typography>
+            </Box>
             <Badge variant="secondary" size="sm">
               {targetProxyPoolIds.length || proxyPools.length} / {proxyPools.length || 0} pools
             </Badge>
-          </div>
+          </Box>
           {proxyPools.length === 0 ? (
-            <p className="text-xs text-warning">No active proxy pools with URLs found.</p>
+            <Typography sx={{ fontSize: 12, color: "warning.main" }}>No active proxy pools with URLs found.</Typography>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1 }}>
               {proxyPools.map((pool) => {
                 const checked = targetProxyPoolIds.includes(pool.id);
                 return (
-                  <label
+                  <Box
+                    component="label"
                     key={pool.id}
-                    className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-primary/60 bg-primary/10" : "border-border/50 hover:bg-surface-2"}`}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      borderRadius: "8px",
+                      border: "1px solid",
+                      px: 1.5,
+                      py: 1,
+                      fontSize: 14,
+                      cursor: "pointer",
+                      transition: "all 150ms",
+                      borderColor: checked ? "rgba(229,106,74,0.6)" : "var(--color-border)",
+                      bgcolor: checked ? "rgba(229,106,74,0.1)" : "transparent",
+                      "&:hover": { bgcolor: checked ? "rgba(229,106,74,0.15)" : "var(--color-surface-2)" },
+                    }}
                   >
                     <input
                       type="checkbox"
@@ -185,14 +202,14 @@ export default function NoAuthProxyCard({ providerId, isFreeNoAuth = true }) {
                       disabled={saving}
                       onChange={() => toggleTargetPool(pool.id)}
                     />
-                    <span className="min-w-0 flex-1 truncate">{pool.name || pool.id}</span>
-                    <span className="text-[10px] text-text-muted font-mono">{pool.id.slice(0, 8)}</span>
-                  </label>
+                    <Box component="span" sx={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pool.name || pool.id}</Box>
+                    <Box component="span" sx={{ fontSize: 10, color: "text.secondary", fontFamily: "ui-monospace, monospace" }}>{pool.id.slice(0, 8)}</Box>
+                  </Box>
                 );
               })}
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
     </Card>
   );

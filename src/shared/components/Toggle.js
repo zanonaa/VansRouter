@@ -1,11 +1,12 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import { cn } from "@/shared/utils/cn";
 
 const TOGGLE_SIZES = {
-  sm: { track: "w-8 h-4", thumb: "size-3", translate: "translate-x-4" },
-  md: { track: "w-11 h-6", thumb: "size-5", translate: "translate-x-5" },
-  lg: { track: "w-14 h-7", thumb: "size-6", translate: "translate-x-7" },
+  sm: { trackW: 32, trackH: 16, thumb: 12, translate: 16, thumbTop: 2, thumbLeftOff: 2 },
+  md: { trackW: 44, trackH: 24, thumb: 20, translate: 20, thumbTop: 2, thumbLeftOff: 2 },
+  lg: { trackW: 56, trackH: 28, thumb: 24, translate: 28, thumbTop: 2, thumbLeftOff: 2 },
 };
 
 export default function Toggle({
@@ -19,56 +20,63 @@ export default function Toggle({
   "aria-label": ariaLabel,
   title,
 }) {
-  const sizes = TOGGLE_SIZES;
+  const dims = TOGGLE_SIZES[size] || TOGGLE_SIZES.md;
 
   const handleClick = () => {
     if (!disabled && onChange) onChange(!checked);
   };
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3",
-        disabled && "opacity-50 cursor-not-allowed",
-        className
-      )}
+    <Box
+      className={cn(className)}
+      sx={{ display: "flex", alignItems: "center", gap: 1.5, opacity: disabled ? 0.5 : 1, cursor: disabled ? "not-allowed" : "default" }}
     >
-      <button
+      <Box
+        component="button"
         type="button"
         role="switch"
         aria-checked={checked}
         aria-label={ariaLabel || label || title || "Toggle"}
         disabled={disabled}
         onClick={handleClick}
-        className={cn(
-          "relative inline-flex shrink-0 cursor-pointer rounded-full",
-          "transition-colors duration-200 ease-in-out",
-          "focus:outline-none focus:ring-2 focus:ring-brand-500/30",
-          checked ? "bg-brand-500" : "bg-surface-3",
-          sizes[size].track,
-          disabled && "cursor-not-allowed"
-        )}
+        sx={{
+          position: "relative",
+          display: "inline-flex",
+          flexShrink: 0,
+          cursor: "pointer",
+          borderRadius: "9999px",
+          border: 0,
+          p: 0,
+          transition: "background-color 200ms ease-in-out",
+          "&:focus": { outline: "none", boxShadow: "0 0 0 2px rgba(229,106,74,0.3)" },
+          bgcolor: checked ? "var(--color-brand-500)" : "var(--color-surface-3)",
+          width: dims.trackW,
+          height: dims.trackH,
+        }}
       >
-        <span
-          className={cn(
-            "pointer-events-none inline-block rounded-full bg-white shadow-sm",
-            "transform transition duration-200 ease-in-out",
-            checked ? sizes[size].translate : "translate-x-0.5",
-            sizes[size].thumb,
-            "mt-0.5"
-          )}
+        <Box
+          component="span"
+          sx={{
+            pointerEvents: "none",
+            display: "inline-block",
+            borderRadius: "50%",
+            bgcolor: "#fff",
+            boxShadow: "0 1px 2px 0 rgba(0,0,0,0.05)",
+            width: dims.thumb,
+            height: dims.thumb,
+            position: "absolute",
+            top: dims.thumbTop,
+            left: checked ? dims.thumbLeftOff + dims.translate : dims.thumbLeftOff,
+            transition: "left 200ms ease-in-out",
+          }}
         />
-      </button>
+      </Box>
       {(label || description) && (
-        <div className="flex flex-col">
-          {label && (
-            <span className="text-sm font-medium text-text-main">{label}</span>
-          )}
-          {description && (
-            <span className="text-xs text-text-muted">{description}</span>
-          )}
-        </div>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          {label && <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>{label}</Box>}
+          {description && <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>{description}</Box>}
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

@@ -1,14 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import Box from "@mui/material/Box";
 import { cn } from "@/shared/utils/cn";
 
 const AVATAR_SIZES = {
-  xs: "size-6 text-xs",
-  sm: "size-8 text-sm",
-  md: "size-10 text-base",
-  lg: "size-12 text-lg",
-  xl: "size-16 text-xl",
+  xs: { size: 24, fontSize: 12 },
+  sm: { size: 32, fontSize: 14 },
+  md: { size: 40, fontSize: 16 },
+  lg: { size: 48, fontSize: 18 },
+  xl: { size: 64, fontSize: 20 },
 };
 
 // Get initials from name
@@ -21,30 +22,18 @@ function getInitials(name) {
   return name.substring(0, 2).toUpperCase();
 }
 
-// Generate color from name
+// Generate color from name (previously bg-*-500 Tailwind utilities)
+const COLORS = [
+  "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16",
+  "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9",
+  "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef",
+  "#ec4899", "#f43f5e",
+];
+
 function getColorFromName(name) {
-  if (!name) return "bg-primary";
-  const colors = [
-    "bg-red-500",
-    "bg-orange-500",
-    "bg-amber-500",
-    "bg-yellow-500",
-    "bg-lime-500",
-    "bg-green-500",
-    "bg-emerald-500",
-    "bg-teal-500",
-    "bg-cyan-500",
-    "bg-sky-500",
-    "bg-blue-500",
-    "bg-indigo-500",
-    "bg-violet-500",
-    "bg-purple-500",
-    "bg-fuchsia-500",
-    "bg-pink-500",
-    "bg-rose-500",
-  ];
-  const index = name.charCodeAt(0) % colors.length;
-  return colors[index];
+  if (!name) return "var(--color-primary)";
+  const index = name.charCodeAt(0) % COLORS.length;
+  return COLORS[index];
 }
 
 export default function Avatar({
@@ -54,40 +43,60 @@ export default function Avatar({
   size = "md",
   className,
 }) {
+  const dims = AVATAR_SIZES[size] || AVATAR_SIZES.md;
+  const ring = {
+    outline: "2px solid var(--color-surface, #fff)",
+    outlineOffset: 0,
+    boxShadow: "0 1px 2px 0 rgba(0,0,0,0.05)",
+  };
+
   if (src) {
     return (
-      <span
-        className={cn(
-          "relative inline-block rounded-full overflow-hidden",
-          "ring-2 ring-white dark:ring-surface-dark shadow-sm",
-          AVATAR_SIZES[size],
-          className
-        )}
+      <Box
+        component="span"
+        className={cn(className)}
+        sx={{
+          position: "relative",
+          display: "inline-block",
+          borderRadius: "50%",
+          overflow: "hidden",
+          width: dims.size,
+          height: dims.size,
+          ...ring,
+        }}
       >
         <Image
           src={src}
           alt={alt}
           fill
           sizes="48px"
-          className="object-cover"
+          style={{ objectFit: "cover" }}
           unoptimized
         />
-      </span>
+      </Box>
     );
   }
 
   return (
-    <span
-      className={cn(
-        "rounded-full flex items-center justify-center font-semibold text-white",
-        "ring-2 ring-white dark:ring-surface-dark shadow-sm",
-        AVATAR_SIZES[size],
-        getColorFromName(name),
-        className
-      )}
+    <Box
+      component="span"
+      className={cn(className)}
       aria-label={alt}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "50%",
+        fontWeight: 600,
+        color: "#fff",
+        width: dims.size,
+        height: dims.size,
+        fontSize: dims.fontSize,
+        bgcolor: getColorFromName(name),
+        ...ring,
+      }}
     >
       {getInitials(name)}
-    </span>
+    </Box>
   );
 }

@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Switch from "@mui/material/Switch";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
 import Card from "./Card";
 
 export default function RequestLogger() {
@@ -40,50 +48,40 @@ export default function RequestLogger() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Request Logs</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-text-muted flex items-center gap-2 cursor-pointer">
-            <span>Auto Refresh (3s)</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={autoRefresh}
-              aria-label="Auto Refresh (3s)"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${autoRefresh ? "bg-primary" : "bg-bg-subtle border border-border"
-                }`}
-            >
-              <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${autoRefresh ? "translate-x-5" : "translate-x-1"
-                  }`}
-              />
-            </button>
-          </span>
-        </div>
-      </div>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography variant="h6" sx={{ fontSize: 20, fontWeight: 600 }}>Request Logs</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box component="span" sx={{ fontSize: 14, fontWeight: 500, color: "text.secondary" }}>Auto Refresh (3s)</Box>
+            <Switch
+              checked={autoRefresh}
+              onChange={() => setAutoRefresh(!autoRefresh)}
+              size="small"
+              inputProps={{ "aria-label": "Auto Refresh (3s)" }}
+            />
+          </Box>
+        </Box>
+      </Box>
 
-      <Card className="overflow-hidden bg-black/5 dark:bg-black/20">
-        <div className="p-0 overflow-x-auto max-h-[600px] overflow-y-auto font-mono text-xs">
+      <Card sx={{ overflow: "hidden", bgcolor: "var(--color-surface-2)" }}>
+        <Box sx={{ overflowX: "auto", maxHeight: 600, overflowY: "auto", fontFamily: "ui-monospace, monospace", fontSize: 12 }}>
           {loading && logs.length === 0 ? (
-            <div className="p-8 text-center text-text-muted">Loading logs...</div>
+            <Box sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>Loading logs...</Box>
           ) : logs.length === 0 ? (
-            <div className="p-8 text-center text-text-muted">No logs recorded yet.</div>
+            <Box sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>No logs recorded yet.</Box>
           ) : (
-            <table className="w-full text-left border-collapse whitespace-nowrap">
-              <thead className="sticky top-0 bg-bg-subtle border-b border-border z-10">
-                <tr>
-                  <th className="px-3 py-2 border-r border-border">DateTime</th>
-                  <th className="px-3 py-2 border-r border-border">Model</th>
-                  <th className="px-3 py-2 border-r border-border">Provider</th>
-                  <th className="px-3 py-2 border-r border-border">Account</th>
-                  <th className="px-3 py-2 border-r border-border">In</th>
-                  <th className="px-3 py-2 border-r border-border">Out</th>
-                  <th className="px-3 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
+            <Table sx={{ width: "100%", whiteSpace: "nowrap" }}>
+              <TableHead sx={{ position: "sticky", top: 0, zIndex: 10, bgcolor: "var(--color-surface-2)" }}>
+                <TableRow>
+                  {["DateTime", "Model", "Provider", "Account", "In", "Out", "Status"].map((h) => (
+                    <TableCell key={h} sx={{ px: 1.5, py: 1, borderRight: "1px solid var(--color-border)", color: "text.secondary", fontWeight: 600 }}>
+                      {h}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {logs.map((log, i) => {
                   const parts = log.split(" | ");
                   if (parts.length < 7) return null;
@@ -92,36 +90,34 @@ export default function RequestLogger() {
                   const isPending = status.includes("PENDING");
                   const isFailed = status.includes("FAILED");
                   const isSuccess = status.includes("OK");
+                  const cellSx = { px: 1.5, py: 0.75, borderRight: "1px solid var(--color-border)" };
 
                   return (
-                    <tr key={`${parts[0]}-${parts[1]}-${parts[3]}`} className={`hover:bg-primary/5 transition-colors ${isPending ? 'bg-primary/5' : ''}`}>
-                      <td className="px-3 py-1.5 border-r border-border text-text-muted">{parts[0]}</td>
-                      <td className="px-3 py-1.5 border-r border-border font-medium">{parts[1]}</td>
-                      <td className="px-3 py-1.5 border-r border-border">
-                        <span className="px-1.5 py-0.5 rounded bg-bg-subtle border border-border text-[10px] uppercase font-bold">
+                    <TableRow key={`${parts[0]}-${parts[1]}-${parts[3]}`} hover sx={{ bgcolor: isPending ? "rgba(229,106,74,0.05)" : undefined }}>
+                      <TableCell sx={{ ...cellSx, color: "text.secondary" }}>{parts[0]}</TableCell>
+                      <TableCell sx={{ ...cellSx, fontWeight: 500 }}>{parts[1]}</TableCell>
+                      <TableCell sx={cellSx}>
+                        <Box component="span" sx={{ px: 0.75, py: 0.25, borderRadius: "4px", bgcolor: "var(--color-surface-2)", border: "1px solid var(--color-border)", fontSize: 10, textTransform: "uppercase", fontWeight: 700 }}>
                           {parts[2]}
-                        </span>
-                      </td>
-                      <td className="px-3 py-1.5 border-r border-border truncate max-w-[150px]" title={parts[3]}>{parts[3]}</td>
-                      <td className="px-3 py-1.5 border-r border-border text-right text-primary">{parts[4]}</td>
-                      <td className="px-3 py-1.5 border-r border-border text-right text-success">{parts[5]}</td>
-                      <td className={`px-3 py-1.5 font-bold ${isSuccess ? 'text-success' :
-                          isFailed ? 'text-error' :
-                            'text-primary animate-pulse'
-                        }`}>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ ...cellSx, maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis" }} title={parts[3]}>{parts[3]}</TableCell>
+                      <TableCell sx={{ ...cellSx, textAlign: "right", color: "primary.main" }}>{parts[4]}</TableCell>
+                      <TableCell sx={{ ...cellSx, textAlign: "right", color: "success.main" }}>{parts[5]}</TableCell>
+                      <TableCell sx={{ px: 1.5, py: 0.75, fontWeight: 700, color: isSuccess ? "success.main" : isFailed ? "error.main" : "primary.main", animation: !isSuccess && !isFailed ? "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" : undefined }}>
                         {status}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
-        </div>
+        </Box>
       </Card>
-      <div className="text-[10px] text-text-muted italic">
+      <Box sx={{ fontSize: 10, color: "text.secondary", fontStyle: "italic" }}>
         Logs are loaded from the request history database.
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Modal, Button } from "@/shared/components";
 
 /**
@@ -115,71 +117,69 @@ export default function ZedAuthModal({ isOpen, providerInfo, onSuccess, onClose 
 
   return (
     <Modal isOpen={isOpen} title={title} onClose={onClose} size="lg">
-      <div className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {(phase === "booting" || phase === "importing") && (
-          <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-sidebar/50">
-            <span className="material-symbols-outlined text-base text-primary animate-spin">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1.5, py: 1, border: "1px solid var(--color-border)", borderRadius: "8px", bgcolor: "rgba(244,241,236,0.5)" }}>
+            <span className="material-symbols-outlined" style={{ animation: "spin 1s linear infinite",  fontSize: 16, color: "var(--color-primary)" }}>
               progress_activity
             </span>
-            <span className="text-sm">
+            <Typography sx={{ fontSize: 14 }}>
               {phase === "importing"
                 ? "Importing session from Zed IDE…"
                 : "Detecting Zed IDE session…"}
-            </span>
-          </div>
+            </Typography>
+          </Box>
         )}
 
         {phase === "ide-found" && ideSession && (
-          <div className="space-y-3">
-            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-              <div className="flex gap-2">
-                <span className="material-symbols-outlined text-green-600 dark:text-green-400">
-                  check_circle
-                </span>
-                <p className="text-sm text-green-800 dark:text-green-200">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Box sx={{ bgcolor: "rgba(34,197,94,0.1)", p: 1.5, borderRadius: "8px", border: "1px solid rgba(34,197,94,0.3)" }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <span className="material-symbols-outlined" style={{ color: "#16a34a" }}>check_circle</span>
+                <Typography sx={{ fontSize: 14, color: "#166534" }}>
                   Zed IDE session detected (user {ideSession.userId}). Import failed — retry below.
-                </p>
-              </div>
-            </div>
+                </Typography>
+              </Box>
+            </Box>
             {reason && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{reason}</p>
-              </div>
+              <Box sx={{ bgcolor: "rgba(239,68,68,0.1)", p: 1.5, borderRadius: "8px", border: "1px solid rgba(239,68,68,0.3)" }}>
+                <Typography sx={{ fontSize: 14, color: "#dc2626" }}>{reason}</Typography>
+              </Box>
             )}
             <Button onClick={() => importIdeSession(ideSession)} fullWidth disabled={busy}>
               {busy ? "Importing…" : "Import from Zed IDE"}
             </Button>
-          </div>
+          </Box>
         )}
 
         {phase === "success" && (
-          <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 text-sm text-green-800 dark:text-green-200">
+          <Box sx={{ bgcolor: "rgba(34,197,94,0.1)", p: 1.5, borderRadius: "8px", border: "1px solid rgba(34,197,94,0.3)", fontSize: 14, color: "#166534" }}>
             Connected successfully.
-          </div>
+          </Box>
         )}
 
         {phase === "unavailable" && (
-          <div className="space-y-3">
-            <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/30">
-              <div className="flex gap-2">
-                <span className="material-symbols-outlined text-yellow-500">warning</span>
-                <div className="space-y-1">
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Box sx={{ bgcolor: "rgba(234,179,8,0.1)", p: 1.5, borderRadius: "8px", border: "1px solid rgba(234,179,8,0.3)" }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <span className="material-symbols-outlined" style={{ color: "#eab308" }}>warning</span>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                  <Typography sx={{ fontSize: 14, color: "#a16207" }}>
                     {reason}
-                  </p>
-                  <p className="text-xs text-text-muted">
+                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                     Sign in to the Zed IDE on this machine first, then reopen this dialog —
                     the session is read from the OS keyring.
-                  </p>
-                </div>
-              </div>
-            </div>
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
             <Button onClick={onClose} variant="ghost" fullWidth>
               Close
             </Button>
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }

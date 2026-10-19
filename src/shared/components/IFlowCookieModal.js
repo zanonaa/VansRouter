@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Modal, Button, Input } from "@/shared/components";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { Modal, Button } from "@/shared/components";
 
 /**
  * iFlow Cookie Authentication Modal
@@ -65,72 +67,80 @@ export default function IFlowCookieModal({ isOpen, onSuccess, onClose }) {
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="iFlow Cookie Authentication">
-      <div className="space-y-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {success ? (
-          <div className="text-center py-8">
-            <div className="text-6xl mb-4">✅</div>
-            <p className="text-lg font-medium text-text-primary">Authentication Successful!</p>
-            <p className="text-sm text-text-muted mt-2">Fresh API key obtained</p>
-          </div>
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Box sx={{ fontSize: 60, mb: 2 }}>✅</Box>
+            <Typography sx={{ fontSize: 18, fontWeight: 500, color: "text.primary" }}>Authentication Successful!</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 1 }}>Fresh API key obtained</Typography>
+          </Box>
         ) : (
           <>
-            <div className="space-y-2">
-              <p className="text-sm text-text-muted">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
                 To get a fresh API key, paste your browser cookie from{" "}
-                <a
-                  href="https://platform.iflow.cn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
+                <Box component="a" href="https://platform.iflow.cn" target="_blank" rel="noopener noreferrer" sx={{ color: "primary.main", "&:hover": { textDecoration: "underline" } }}>
                   platform.iflow.cn
-                </a>
-              </p>
-              <div className="bg-surface-secondary p-3 rounded-lg text-xs space-y-2">
-                <p className="font-medium text-text-primary">How to get cookie:</p>
-                <ol className="list-decimal list-inside space-y-1 text-text-muted">
+                </Box>
+              </Typography>
+              <Box sx={{ bgcolor: "var(--color-surface-2)", p: 1.5, borderRadius: "8px", fontSize: 12, display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography sx={{ fontWeight: 500, color: "text.primary" }}>How to get cookie:</Typography>
+                <Box component="ol" sx={{ listStyle: "decimal", pl: 2.5, m: 0, display: "flex", flexDirection: "column", gap: 0.5, color: "text.secondary" }}>
                   <li>Open platform.iflow.cn in your browser</li>
                   <li>Login to your account</li>
                   <li>Open DevTools (F12) → Application/Storage → Cookies</li>
                   <li>Copy the entire cookie string (must include BXAuth)</li>
                   <li>Paste it below</li>
-                </ol>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
 
-            <div className="space-y-2">
-              <label htmlFor="iflow-cookie-string" className="block text-sm font-medium text-text-primary">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box component="label" htmlFor="iflow-cookie-string" sx={{ display: "block", fontSize: 14, fontWeight: 500, color: "text.primary" }}>
                 Cookie String
-              </label>
-              <textarea
+              </Box>
+              <Box
+                component="textarea"
                 id="iflow-cookie-string"
                 value={cookie}
                 onChange={(e) => setCookie(e.target.value)}
                 placeholder="BXAuth=xxx; ..."
-                className="w-full px-3 py-2 bg-surface-secondary border border-border rounded-lg text-sm text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                 rows={4}
                 disabled={loading}
+                sx={{
+                  width: "100%",
+                  px: 1.5,
+                  py: 1,
+                  bgcolor: "var(--color-surface-2)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "8px",
+                  fontSize: 14,
+                  color: "text.primary",
+                  resize: "none",
+                  outline: "none",
+                  "&::placeholder": { color: "text.secondary" },
+                  "&:focus": { boxShadow: "0 0 0 2px rgba(229,106,74,0.3)" },
+                }}
               />
-            </div>
+            </Box>
 
             {error && (
-              <div className="p-3 bg-error/10 border border-error/20 rounded-lg">
-                <p className="text-sm text-error">{error}</p>
-              </div>
+              <Box sx={{ p: 1.5, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "8px" }}>
+                <Typography sx={{ fontSize: 14, color: "error.main" }}>{error}</Typography>
+              </Box>
             )}
 
-            <div className="flex gap-3 pt-2">
+            <Box sx={{ display: "flex", gap: 1.5, pt: 1 }}>
               <Button variant="secondary" onClick={handleClose} disabled={loading} fullWidth>
                 Cancel
               </Button>
               <Button onClick={handleSubmit} loading={loading} fullWidth>
                 Authenticate
               </Button>
-            </div>
+            </Box>
           </>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }
-

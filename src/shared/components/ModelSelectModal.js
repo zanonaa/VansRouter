@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import Modal from "./Modal";
 import ProviderIcon from "./ProviderIcon";
 import CapacityBadges from "./CapacityBadges";
@@ -70,6 +72,20 @@ function useLiveProviderModels(isOpen, connectionIds, label) {
 
   return models;
 }
+
+const chipBaseSx = {
+  px: 1,
+  py: 0.5,
+  borderRadius: "12px",
+  fontSize: 12,
+  fontWeight: 500,
+  transition: "all 150ms",
+  border: "1px solid var(--color-border)",
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 0.5,
+};
 
 export default function ModelSelectModal({
   isOpen,
@@ -492,6 +508,8 @@ export default function ModelSelectModal({
     }
   };
 
+  const headerSx = { display: "flex", alignItems: "center", gap: 0.75, mb: 0.75, position: "sticky", top: 0, bgcolor: "background.paper", py: 0.25, zIndex: 1 };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -501,74 +519,74 @@ export default function ModelSelectModal({
       }}
       title={title}
       size="md"
-      className="p-4!"
       footer={null}
     >
       {/* Info bar */}
-      <div className="flex items-center gap-2 mb-3 px-2.5 py-2 bg-primary/8 border border-primary/20 rounded-lg text-xs text-text-muted">
-        <span className="material-symbols-outlined text-primary shrink-0" style={{ fontSize: "14px" }}>info</span>
-        <span>Click to add, click again to remove. Changes are saved automatically.</span>
-      </div>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, px: 1.25, py: 1, bgcolor: "rgba(229,106,74,0.08)", border: "1px solid rgba(229,106,74,0.2)", borderRadius: "8px", fontSize: 12, color: "text.secondary" }}>
+        <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", flexShrink: 0, fontSize: 14 }}>info</span>
+        <Box component="span">Click to add, click again to remove. Changes are saved automatically.</Box>
+      </Box>
 
       {/* Search - compact */}
-      <div className="mb-3">
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
+      <Box sx={{ mb: 1.5 }}>
+        <Box sx={{ position: "relative" }}>
+          <span className="material-symbols-outlined" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)", fontSize: 16 }}>
             search
           </span>
-          <input
+          <Box
+            component="input"
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-surface border border-border rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+            sx={{ width: "100%", pl: 4, pr: 1.5, py: 0.75, bgcolor: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: "4px", fontSize: 12, color: "text.primary", outline: "none", "&:focus": { boxShadow: "0 0 0 1px rgba(229,106,74,0.5)" } }}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Models grouped by provider - compact */}
-      <div className="max-h-[400px] overflow-y-auto space-y-3">
+      <Box sx={{ maxHeight: 400, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1.5 }}>
         {/* Combos section - always first */}
         {filteredCombos.length > 0 && (
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5 sticky top-0 bg-surface py-0.5">
-              <span className="material-symbols-outlined text-primary text-[14px]">layers</span>
-              <span className="text-xs font-medium text-primary">Combos</span>
-              <span className="text-[10px] text-text-muted">({filteredCombos.length})</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
+          <Box>
+            <Box sx={headerSx}>
+              <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", fontSize: 14 }}>layers</span>
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 500, color: "primary.main" }}>Combos</Box>
+              <Box component="span" sx={{ fontSize: 10, color: "text.secondary" }}>({filteredCombos.length})</Box>
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
               {filteredCombos.map((combo) => {
                 const isSelected = selectedModel === combo.name;
+                const added = addedModelValues.includes(combo.name);
                 return (
-                  <button
+                  <Box
+                    component="button"
                     key={combo.id}
                     onClick={() => handleSelect({ id: combo.name, name: combo.name, value: combo.name })}
-                    className={`
-                      px-2 py-1 rounded-xl text-xs font-medium transition-all border hover:cursor-pointer flex items-center gap-1
-                      ${isSelected
-                        ? "bg-primary text-white border-primary"
-                        : addedModelValues.includes(combo.name)
-                          ? "bg-primary border-primary text-white hover:bg-primary-hover"
-                          : "bg-surface border-border text-text-main hover:border-primary/50 hover:bg-primary/5"
-                      }
-                    `}
+                    sx={{
+                      ...chipBaseSx,
+                      bgcolor: isSelected || added ? "primary.main" : "var(--color-surface)",
+                      color: isSelected || added ? "#fff" : "text.primary",
+                      borderColor: isSelected || added ? "primary.main" : "var(--color-border)",
+                      "&:hover": { borderColor: added ? "primary.dark" : "rgba(229,106,74,0.5)", bgcolor: added ? "primary.dark" : isSelected ? "primary.main" : "rgba(229,106,74,0.05)" },
+                    }}
                   >
-                    {addedModelValues.includes(combo.name) && (
-                      <span className="material-symbols-outlined leading-none" style={{ fontSize: "10px" }}>check</span>
+                    {added && (
+                      <span className="material-symbols-outlined" style={{ fontSize: 10, lineHeight: 1 }}>check</span>
                     )}
                     {combo.name}
-                  </button>
+                  </Box>
                 );
               })}
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
 
         {/* Provider models */}
         {Object.entries(filteredGroups).map(([providerId, group]) => (
-          <div key={providerId}>
+          <Box key={providerId}>
             {/* Provider header */}
-            <div className="flex items-center gap-1.5 mb-1.5 sticky top-0 bg-surface py-0.5">
+            <Box sx={headerSx}>
               <ProviderIcon
                 src={`/providers/${providerId}.png`}
                 alt={group.name}
@@ -576,48 +594,47 @@ export default function ModelSelectModal({
                 fallbackText={(group.name || providerId).slice(0, 2).toUpperCase()}
                 fallbackColor={group.color}
               />
-              <span className="text-xs font-medium text-primary">
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 500, color: "primary.main" }}>
                 {group.name}
-              </span>
-              <span className="text-[10px] text-text-muted">
+              </Box>
+              <Box component="span" sx={{ fontSize: 10, color: "text.secondary" }}>
                 ({group.models.length})
-              </span>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="flex flex-wrap gap-1.5">
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
               {group.models.map((model) => {
                 const isSelected = selectedModel === model.value;
                 const isPlaceholder = model.isPlaceholder;
+                const added = addedModelValues.includes(model.value);
                 return (
-                  <button
+                  <Box
+                    component="button"
                     key={model.value}
                     onClick={() => handleSelect(model)}
                     title={isPlaceholder ? "Select to pre-fill, then edit model ID in the input" : undefined}
-                    className={`
-                      px-2 py-1 rounded-xl text-xs font-medium transition-all border hover:cursor-pointer
-                      ${isPlaceholder
-                        ? "border-dashed border-border text-text-muted hover:border-primary/50 hover:text-primary bg-surface italic"
-                        : isSelected
-                          ? "bg-primary text-white border-primary"
-                          : addedModelValues.includes(model.value)
-                            ? "bg-primary border-primary text-white hover:bg-primary-hover"
-                            : "bg-surface border-border text-text-main hover:border-primary/50 hover:bg-primary/5"
-                      }
-                    `}
+                    sx={{
+                      ...chipBaseSx,
+                      ...(isPlaceholder
+                        ? { borderStyle: "dashed", color: "text.secondary", bgcolor: "var(--color-surface)", fontStyle: "italic", "&:hover": { borderColor: "rgba(229,106,74,0.5)", color: "primary.main" } }
+                        : isSelected || added
+                          ? { bgcolor: "primary.main", color: "#fff", borderColor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }
+                          : { bgcolor: "var(--color-surface)", color: "text.primary", "&:hover": { borderColor: "rgba(229,106,74,0.5)", bgcolor: "rgba(229,106,74,0.05)" } }),
+                    }}
                   >
-                    <span className="flex items-center gap-1">
-                      {addedModelValues.includes(model.value) && !isPlaceholder && (
-                        <span className="material-symbols-outlined leading-none" style={{ fontSize: "10px" }}>check</span>
+                    <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      {added && !isPlaceholder && (
+                        <span className="material-symbols-outlined" style={{ fontSize: 10, lineHeight: 1 }}>check</span>
                       )}
                       {isPlaceholder ? (
                         <>
-                          <span className="material-symbols-outlined text-[11px]">edit</span>
+                          <span className="material-symbols-outlined" style={{ fontSize: 11 }}>edit</span>
                           {model.name}
                         </>
                       ) : model.isCustom ? (
                         <>
                           {model.name}
-                          <span className="text-[9px] opacity-60 font-normal">custom</span>
+                          <Box component="span" sx={{ fontSize: 9, opacity: 0.6, fontWeight: 400 }}>custom</Box>
                           <CapacityBadges caps={getCaps(model.value)} />
                         </>
                       ) : (
@@ -626,23 +643,23 @@ export default function ModelSelectModal({
                           <CapacityBadges caps={getCaps(model.value)} />
                         </>
                       )}
-                    </span>
-                  </button>
+                    </Box>
+                  </Box>
                 );
               })}
-            </div>
-          </div>
+            </Box>
+          </Box>
         ))}
 
         {Object.keys(filteredGroups).length === 0 && filteredCombos.length === 0 && (
-          <div className="text-center py-4 text-text-muted">
-            <span className="material-symbols-outlined text-2xl mb-1 block">
+          <Box sx={{ textAlign: "center", py: 2, color: "text.secondary" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 24, display: "block", marginBottom: 4 }}>
               search_off
             </span>
-            <p className="text-xs">No models found</p>
-          </div>
+            <Typography sx={{ fontSize: 12 }}>No models found</Typography>
+          </Box>
         )}
-      </div>
+      </Box>
     </Modal>
   );
 }
