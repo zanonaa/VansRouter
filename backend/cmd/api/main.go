@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/zanonaa/VansRouter/backend/internal/auth"
 	"github.com/zanonaa/VansRouter/backend/internal/config"
 	"github.com/zanonaa/VansRouter/backend/internal/database"
 	"github.com/zanonaa/VansRouter/backend/internal/http/router"
@@ -35,12 +36,37 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	sessions, err := auth.LoadSessions(cfg.DataDir, os.Getenv("JWT_SECRET"))
+	if err != nil {
+		return err
+	}
+	initial, valid := auth.InitialPassword(os.Getenv("INITIAL_PASSWORD"), os.Getenv("NODE_ENV"))
+	authentication := &auth.HTTP{
+		Sessions: sessions,
+		Limiter:  auth.NewLimiter(),
+		Settings: func(ctx context.Context) (map[string]any, error) {
+			raw, err := database.ReadAuthSettings(ctx, db)
+			if err != nil {
+				return nil, err
+			}
+			return database.MergeWithDefaults(raw), nil
+		},
+		ChangeP: func(ctx context.Context, hash string) (map[string]any, error) {
+			return database.ChangePassword(ctx, db, hash)
+		},
+		Initial:           initial,
+		InitialValid:      valid,
+		ForceSecure:       os.Getenv("AUTH_COOKIE_SECURE") == "true",
+		CheckConfigured:   os.Getenv("JWT_SECRET") != "",
+		EnableRequestLogs: os.Getenv("ENABLE_REQUEST_LOGS") == "true",
+		EnableTranslator:  os.Getenv("ENABLE_TRANSLATOR") == "true",
+	}
 	server := &http.Server{
 		Addr: cfg.Address,
-		Handler: router.New(func(ctx context.Context) error {
+		Handler: router.NewWithAuth(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}),
+		}, authentication),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.
