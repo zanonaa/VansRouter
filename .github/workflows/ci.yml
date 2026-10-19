@@ -44,9 +44,7 @@ jobs:
       - name: Run JavaScript tests
         run: pnpm test
 
-      - name: Build application
-        run: pnpm run build
-
+      # Dockerfile runs scripts/build.js; do not compile the app a second time here.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
 
