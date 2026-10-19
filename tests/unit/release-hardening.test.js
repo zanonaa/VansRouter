@@ -29,7 +29,9 @@ describe("release hardening contracts", () => {
   it("keeps the web gateway CI focused on tests, build, and Linux multi-arch Docker", () => {
     const workflow = read(".github/workflows/ci.yml");
     expect(workflow).toContain("pnpm test");
-    expect(workflow).toContain("pnpm run build");
+    expect(workflow).not.toMatch(/run:\s*pnpm run build/);
+    expect(read("Dockerfile")).toContain("RUN pnpm run build");
+    expect(JSON.parse(read("package.json")).scripts.build).toBe("node scripts/build.js");
     expect(workflow).toContain("platforms: linux/amd64,linux/arm64");
     expect(workflow).toContain("push:");
     expect(workflow).not.toContain("windows-latest");
