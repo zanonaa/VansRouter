@@ -1,68 +1,86 @@
 "use client";
 
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+const LINK_SX = {
+  color: "#9ca3af",
+  fontSize: 14,
+  textDecoration: "none",
+  transition: "color 150ms",
+  "&:hover": { color: "#6366f1" },
+};
+
+const BOTTOM_LINK_SX = {
+  color: "#4b5563",
+  fontSize: 14,
+  textDecoration: "none",
+  transition: "color 150ms",
+  "&:hover": { color: "#ffffff" },
+};
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#3a2f27] bg-[#0f0d1a] pt-16 pb-8 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-16">
+    <Box component="footer" sx={{ borderTop: "1px solid #3a2f27", bgcolor: "#0f0d1a", pt: 8, pb: 4, px: 3 }}>
+      <Box sx={{ maxWidth: 1280, mx: "auto" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", md: "repeat(4, 1fr)", lg: "repeat(5, 1fr)" }, gap: 4, mb: 8 }}>
           {/* Brand */}
-          <div className="col-span-2 lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="size-6 rounded bg-[#6366f1] flex items-center justify-center text-white">
-                <svg viewBox="0 0 32 32" className="w-4 h-4" fill="none">
-                  <path d="M16 5L22 14L16 27L10 14L16 5Z" fill="white" opacity="0.9"/>
-                  <path d="M10 14L16 27L10 20L6 14H10Z" fill="white" opacity="0.6"/>
-                  <path d="M22 14L16 27L22 20L26 14H22Z" fill="white" opacity="0.6"/>
-                  <circle cx="16" cy="9" r="2" fill="white"/>
-                </svg>
-              </div>
-              <h3 className="text-white text-lg font-bold">VansRouter</h3>
-            </div>
-            <p className="text-gray-500 text-sm max-w-xs mb-6">
+          <Box sx={{ gridColumn: { xs: "span 2", lg: "span 2" } }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+              <Box sx={{ width: 24, height: 24, borderRadius: "4px", bgcolor: "#6366f1", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
+                <Box component="svg" viewBox="0 0 32 32" sx={{ width: 16, height: 16 }} fill="none">
+                  <path d="M16 5L22 14L16 27L10 14L16 5Z" fill="white" opacity="0.9" />
+                  <path d="M10 14L16 27L10 20L6 14H10Z" fill="white" opacity="0.6" />
+                  <path d="M22 14L16 27L22 20L26 14H22Z" fill="white" opacity="0.6" />
+                  <circle cx="16" cy="9" r="2" fill="white" />
+                </Box>
+              </Box>
+              <Typography component="h3" sx={{ color: "#ffffff", fontSize: 18, fontWeight: 700 }}>VansRouter</Typography>
+            </Box>
+            <Typography sx={{ color: "#6b7280", fontSize: 14, maxWidth: 320, mb: 3 }}>
               The unified endpoint for AI generation. Connect, route, and manage your AI providers with ease.
-            </p>
-            <div className="flex gap-4">
-              <a className="text-gray-400 hover:text-white transition-colors" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer">
-                <span className="material-symbols-outlined">code</span>
-              </a>
-            </div>
-          </div>
-          
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Box component="a" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer" sx={{ color: "#9ca3af", transition: "color 150ms", "&:hover": { color: "#ffffff" } }}>
+                <Icon className="material-symbols-outlined" baseClassName="">code</Icon>
+              </Box>
+            </Box>
+          </Box>
+
           {/* Product */}
-          <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-white">Product</h4>
-            <a className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="#features">Features</a>
-            <Link className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="/dashboard">Dashboard</Link>
-            <a className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer">Changelog</a>
-          </div>
-          
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography component="h4" sx={{ fontWeight: 700, color: "#ffffff" }}>Product</Typography>
+            <Box component="a" href="#features" sx={LINK_SX}>Features</Box>
+            <Box component={Link} href="/dashboard" sx={LINK_SX}>Dashboard</Box>
+            <Box component="a" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer" sx={LINK_SX}>Changelog</Box>
+          </Box>
+
           {/* Resources */}
-          <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-white">Resources</h4>
-            <a className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="https://github.com/Vanszs/VansRouter#readme" target="_blank" rel="noopener noreferrer">Documentation</a>
-            <a className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="https://www.npmjs.com/package/vansrouter" target="_blank" rel="noopener noreferrer">NPM</a>
-          </div>
-          
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography component="h4" sx={{ fontWeight: 700, color: "#ffffff" }}>Resources</Typography>
+            <Box component="a" href="https://github.com/Vanszs/VansRouter#readme" target="_blank" rel="noopener noreferrer" sx={LINK_SX}>Documentation</Box>
+            <Box component="a" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer" sx={LINK_SX}>GitHub</Box>
+            <Box component="a" href="https://www.npmjs.com/package/vansrouter" target="_blank" rel="noopener noreferrer" sx={LINK_SX}>NPM</Box>
+          </Box>
+
           {/* Legal */}
-          <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-white">Legal</h4>
-            <a className="text-gray-400 hover:text-[#6366f1] text-sm transition-colors" href="https://github.com/Vanszs/VansRouter/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
-          </div>
-        </div>
-        
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Typography component="h4" sx={{ fontWeight: 700, color: "#ffffff" }}>Legal</Typography>
+            <Box component="a" href="https://github.com/Vanszs/VansRouter/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" sx={LINK_SX}>MIT License</Box>
+          </Box>
+        </Box>
+
         {/* Bottom */}
-        <div className="border-t border-[#3a2f27] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-600 text-sm">© 2025 VansRouter. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a className="text-gray-600 hover:text-white text-sm transition-colors" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a className="text-gray-600 hover:text-white text-sm transition-colors" href="https://www.npmjs.com/package/vansrouter" target="_blank" rel="noopener noreferrer">NPM</a>
-          </div>
-        </div>
-      </div>
-    </footer>
+        <Box sx={{ borderTop: "1px solid #3a2f27", pt: 4, display: "flex", flexDirection: { xs: "column", md: "row" }, justifyContent: "space-between", alignItems: "center", gap: 2 }}>
+          <Typography sx={{ color: "#4b5563", fontSize: 14 }}>© 2025 VansRouter. All rights reserved.</Typography>
+          <Box sx={{ display: "flex", gap: 3 }}>
+            <Box component="a" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer" sx={BOTTOM_LINK_SX}>GitHub</Box>
+            <Box component="a" href="https://www.npmjs.com/package/vansrouter" target="_blank" rel="noopener noreferrer" sx={BOTTOM_LINK_SX}>NPM</Box>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
-

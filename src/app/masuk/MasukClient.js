@@ -5,6 +5,21 @@ import Card from "@/shared/components/Card";
 import Button from "@/shared/components/Button";
 import Input from "@/shared/components/Input";
 import { useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
+
+function Code({ children }) {
+  return (
+    <Box
+      component="code"
+      sx={{ bgcolor: "var(--color-sidebar)", px: 0.5, borderRadius: "4px", fontFamily: "ui-monospace, monospace" }}
+    >
+      {children}
+    </Box>
+  );
+}
 
 function handleOidcLogin() {
   window.location.href = "/api/auth/oidc/start";
@@ -100,62 +115,79 @@ export default function MasukClient({ initialAuth }) {
 
   if (hasPassword === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg p-4">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-text-muted mt-4">Loading...</p>
-        </div>
-      </div>
+      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default", p: 2 }}>
+        <Box sx={{ textAlign: "center" }}>
+          <CircularProgress size={32} />
+          <Typography sx={{ color: "text.secondary", mt: 2 }}>Loading...</Typography>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <main role="main" className="min-h-screen flex items-center justify-center bg-bg p-4 relative overflow-hidden">
-      <div className="landing-grid absolute inset-0 pointer-events-none" aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <svg viewBox="0 0 32 32" className="w-12 h-12" fill="none">
-              <path d="M16 5L22 14L16 27L10 14L16 5Z" fill="#6366f1" opacity="0.9"/>
-              <path d="M10 14L16 27L10 20L6 14H10Z" fill="#6366f1" opacity="0.6"/>
-              <path d="M22 14L16 27L22 20L26 14H22Z" fill="#6366f1" opacity="0.6"/>
-              <circle cx="16" cy="9" r="2" fill="#6366f1"/>
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-primary mb-2">VansAI</h1>
-          <p className="text-text-muted text-sm">
+    <Box
+      component="main"
+      role="main"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+        p: 2,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Box className="landing-grid" aria-hidden="true" sx={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+      <Box sx={{ position: "relative", zIndex: 10, width: "100%", maxWidth: 448 }}>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+            <Box component="svg" viewBox="0 0 32 32" sx={{ width: 48, height: 48 }} fill="none">
+              <path d="M16 5L22 14L16 27L10 14L16 5Z" fill="#6366f1" opacity="0.9" />
+              <path d="M10 14L16 27L10 20L6 14H10Z" fill="#6366f1" opacity="0.6" />
+              <path d="M22 14L16 27L22 20L26 14H22Z" fill="#6366f1" opacity="0.6" />
+              <circle cx="16" cy="9" r="2" fill="#6366f1" />
+            </Box>
+          </Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "primary.main", mb: 1 }}>
+            VansAI
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {authMode === "oidc" && oidcConfigured
               ? "Masuk dengan OIDC provider untuk mengakses dashboard"
               : "Masukkan password untuk mengakses dashboard"}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         <Card>
-          <div className="flex flex-col gap-4">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {oidcAvailable && (
-              <Button type="button" variant="primary" className="w-full" onClick={handleOidcLogin}>
+              <Button type="button" variant="primary" fullWidth onClick={handleOidcLogin}>
                 {oidcLoginLabel}
               </Button>
             )}
 
-            {oidcAvailable && passwordAvailable && <div className="h-px bg-border/60" />}
+            {oidcAvailable && passwordAvailable && <Divider sx={{ borderColor: "divider" }} />}
 
             {passwordAvailable && !mustChangePassword ? (
-              <form onSubmit={handleLogin} className="flex flex-col gap-4">
+              <Box component="form" onSubmit={handleLogin} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {((authMode === "oidc" && !oidcConfigured) || (authMode === "both" && !oidcConfigured)) && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 text-center">
+                  <Typography variant="caption" sx={{ color: "warning.main", textAlign: "center" }}>
                     OIDC login aktif, tapi issuer/client belum dikonfigurasi. Password login masih tersedia.
-                  </p>
+                  </Typography>
                 )}
 
                 {authMode === "both" && oidcConfigured && (
-                  <p className="text-xs text-text-muted text-center">
+                  <Typography variant="caption" sx={{ color: "text.secondary", textAlign: "center" }}>
                     Password dan OIDC login keduanya aktif.
-                  </p>
+                  </Typography>
                 )}
 
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="masuk-password" className="text-sm font-semibold text-text-main">Password</label>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Typography component="label" htmlFor="masuk-password" variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                    Password
+                  </Typography>
                   <Input
                     id="masuk-password"
                     type="password"
@@ -165,23 +197,27 @@ export default function MasukClient({ initialAuth }) {
                     required
                     autoFocus={!oidcAvailable}
                   />
-                  {error && <p className="text-xs text-red-500">{error}</p>}
+                  {error && (
+                    <Typography variant="caption" sx={{ color: "error.main" }}>
+                      {error}
+                    </Typography>
+                  )}
                   {retryAfter > 0 && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
-                      Terkunci. Coba lagi dalam <span className="font-mono">{retryAfter}s</span>.
-                    </p>
+                    <Typography variant="caption" sx={{ color: "warning.main" }}>
+                      Terkunci. Coba lagi dalam <Box component="span" sx={{ fontFamily: "ui-monospace, monospace" }}>{retryAfter}s</Box>.
+                    </Typography>
                   )}
                   {resetHint && (
-                    <p className="text-xs text-text-muted">
-                      Lupa password? Buka <code className="bg-sidebar px-1 rounded">vansrouter</code> CLI di host → <b>Settings</b> → <b>Set/Replace Dashboard Password</b>.
-                    </p>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Lupa password? Buka <Code>vansrouter</Code> CLI di host → <b>Settings</b> → <b>Set/Replace Dashboard Password</b>.
+                    </Typography>
                   )}
-                </div>
+                </Box>
 
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full"
+                  fullWidth
                   loading={loading}
                   disabled={retryAfter > 0}
                 >
@@ -189,17 +225,19 @@ export default function MasukClient({ initialAuth }) {
                 </Button>
 
                 {hasPassword === false && (
-                  <p className="text-xs text-center text-amber-600 dark:text-amber-400">
-                    Password default instalasi baru: <code className="bg-sidebar px-1 rounded">123456</code>. Ganti sebelum dashboard dipublikasikan.
-                  </p>
+                  <Typography variant="caption" sx={{ textAlign: "center", color: "warning.main" }}>
+                    Password default instalasi baru: <Code>123456</Code>. Ganti sebelum dashboard dipublikasikan.
+                  </Typography>
                 )}
-              </form>
+              </Box>
             ) : null}
 
             {mustChangePassword ? (
-              <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="ganti-password-baru" className="text-sm font-semibold text-text-main">Password baru</label>
+              <Box component="form" onSubmit={handleChangePassword} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Typography component="label" htmlFor="ganti-password-baru" variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                    Password baru
+                  </Typography>
                   <Input
                     id="ganti-password-baru"
                     type="password"
@@ -210,19 +248,23 @@ export default function MasukClient({ initialAuth }) {
                     minLength={12}
                     autoFocus
                   />
-                  <p className="text-xs text-text-muted">
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
                     Password default hanya berlaku di komputer ini. Ganti dengan password strong (minimal 12 karakter) sebelum melanjutkan.
-                  </p>
-                  {error && <p className="text-xs text-red-500">{error}</p>}
-                </div>
-                <Button type="submit" variant="primary" className="w-full" loading={loading} disabled={newPassword.length < 12}>
+                  </Typography>
+                  {error && (
+                    <Typography variant="caption" sx={{ color: "error.main" }}>
+                      {error}
+                    </Typography>
+                  )}
+                </Box>
+                <Button type="submit" variant="primary" fullWidth loading={loading} disabled={newPassword.length < 12}>
                   Simpan &amp; Lanjutkan
                 </Button>
-              </form>
+              </Box>
             ) : null}
-          </div>
+          </Box>
         </Card>
-      </div>
-    </main>
+      </Box>
+    </Box>
   );
 }

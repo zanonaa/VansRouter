@@ -2,6 +2,21 @@
 
 import { useEffect } from "react";
 import "./globals.css";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import MuiButton from "@mui/material/Button";
+import Icon from "@mui/material/Icon";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
+import MuiProviders from "@/shared/mui/MuiProviders";
+
+function MsIcon({ children, sx }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 24, ...sx }}>
+      {children}
+    </Icon>
+  );
+}
 
 export default function GlobalError({ error, reset }) {
   useEffect(() => {
@@ -11,30 +26,80 @@ export default function GlobalError({ error, reset }) {
   return (
     <html lang="en">
       <body>
-        <main className="flex min-h-screen items-center justify-center bg-bg px-6 py-16 text-text-main">
-          <section className="w-full max-w-lg rounded-lg border border-border bg-surface p-6 shadow-soft">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
-              <span className="material-symbols-outlined text-[24px]">emergency_home</span>
-            </div>
-            <h1 className="text-xl font-semibold">VansAI could not load</h1>
-            <p className="mt-2 text-sm leading-6 text-text-muted">
-              A critical error stopped the app shell from rendering. Try loading it again.
-            </p>
-            {error?.message ? (
-              <pre className="mt-4 max-h-36 overflow-auto rounded-md border border-border bg-surface-2 p-3 text-xs text-text-muted">
-                {error.message}
-              </pre>
-            ) : null}
-            <button
-              type="button"
-              onClick={reset}
-              className="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+        {/* global-error replaces the root layout, so the MUI cache + theme have
+            to be provided locally here. */}
+        <AppRouterCacheProvider options={{ key: "mui" }}>
+          <MuiProviders>
+            <Box
+              component="main"
+              sx={{
+                display: "flex",
+                minHeight: "100vh",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "background.default",
+                color: "text.primary",
+                px: 3,
+                py: 8,
+              }}
             >
-              <span className="material-symbols-outlined text-[18px]">refresh</span>
-              Reload
-            </button>
-          </section>
-        </main>
+              <Paper
+                elevation={0}
+                variant="outlined"
+                sx={{ width: "100%", maxWidth: 512, borderRadius: "10px", borderColor: "divider", bgcolor: "background.paper", p: 3, boxShadow: "var(--shadow-soft)" }}
+              >
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: "flex",
+                    height: 44,
+                    width: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "10px",
+                    bgcolor: "rgba(239,68,68,0.10)",
+                    color: "error.main",
+                  }}
+                >
+                  <MsIcon>emergency_home</MsIcon>
+                </Box>
+                <Typography sx={{ fontSize: 20, fontWeight: 600 }}>VansAI could not load</Typography>
+                <Typography variant="body2" sx={{ mt: 1, lineHeight: 1.6, color: "text.secondary" }}>
+                  A critical error stopped the app shell from rendering. Try loading it again.
+                </Typography>
+                {error?.message ? (
+                  <Box
+                    component="pre"
+                    sx={{
+                      mt: 2,
+                      maxHeight: 144,
+                      overflow: "auto",
+                      borderRadius: "6px",
+                      border: 1,
+                      borderColor: "divider",
+                      bgcolor: "var(--color-surface-2)",
+                      p: 1.5,
+                      fontSize: 12,
+                      color: "text.secondary",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {error.message}
+                  </Box>
+                ) : null}
+                <MuiButton
+                  variant="contained"
+                  disableElevation
+                  onClick={reset}
+                  sx={{ mt: 3 }}
+                  startIcon={<MsIcon sx={{ fontSize: 18 }}>refresh</MsIcon>}
+                >
+                  Reload
+                </MuiButton>
+              </Paper>
+            </Box>
+          </MuiProviders>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

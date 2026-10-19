@@ -1,14 +1,64 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
 import { Card, Button, Toggle, Input } from "@/shared/components";
 import Modal, { ConfirmModal } from "@/shared/components/Modal";
 import LanguageSwitcher from "@/shared/components/LanguageSwitcher";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { cn } from "@/shared/utils/cn";
 import { APP_CONFIG } from "@/shared/constants/config";
 import { LOCALE_COOKIE, normalizeLocale } from "@/i18n/config";
 import { LOCALE_FLAGS } from "@/shared/constants/locales";
+
+function MsIcon({ children, sx }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={sx}>
+      {children}
+    </Icon>
+  );
+}
+
+/** Card section header: tinted icon box + title (matches the old Tailwind header). */
+function CardHeader({ icon, title, subtitle, color = "#E56A4A", iconFontSize = 20, sx }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, ...sx }}>
+      <Box sx={{ p: 1, borderRadius: "8px", bgcolor: `${color}1a`, color, flexShrink: 0, display: "grid", placeItems: "center" }}>
+        <MsIcon sx={{ fontSize: iconFontSize }}>{icon}</MsIcon>
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography sx={{ fontSize: 16, fontWeight: 600 }}>{title}</Typography>
+        {subtitle && <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{subtitle}</Typography>}
+      </Box>
+    </Box>
+  );
+}
+
+/** Row: label block on the left, control on the right (stacked on mobile). */
+function SettingRow({ title, description, control, sx }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: { xs: "flex-start", sm: "center" }, justifyContent: "space-between", gap: 2, ...sx }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>{title}</Typography>
+        {description && (
+          <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary" }}>{description}</Typography>
+        )}
+      </Box>
+      {control}
+    </Box>
+  );
+}
+
+/** Full-width on mobile, auto on desktop, matching the old `w-full sm:w-auto`. */
+function ResponsiveButton({ children, ...props }) {
+  return (
+    <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+      <Button fullWidth {...props}>{children}</Button>
+    </Box>
+  );
+}
 
 function getLocaleFromCookie() {
   if (typeof document === "undefined") return "en";
@@ -577,129 +627,155 @@ export default function ProfilePage() {
     }
   };
 
+  const statusColor = (type) => (type === "error" ? "#dc2626" : "#16a34a");
+
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-0">
-      <div className="flex flex-col gap-6">
+    <Box sx={{ maxWidth: 672, mx: "auto", px: { xs: 2, sm: 0 } }}>
+      <Stack spacing={3}>
         {/* Local Mode Info */}
         <Card>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="size-10 sm:size-12 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-xl sm:text-2xl">computer</span>
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-semibold">Local Mode</h2>
-                <p className="text-sm text-text-muted">Running on your machine</p>
-              </div>
-            </div>
-            <div className="inline-flex p-1 rounded-lg bg-black/5 dark:bg-white/5 w-full sm:w-auto">
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, gap: 2, mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2 } }}>
+              <Box sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, borderRadius: "8px", bgcolor: "rgba(34,197,94,0.10)", color: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <MsIcon sx={{ fontSize: { xs: 20, sm: 24 } }}>computer</MsIcon>
+              </Box>
+              <Box>
+                <Typography sx={{ fontSize: { xs: 18, sm: 20 }, fontWeight: 600 }}>Local Mode</Typography>
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>Running on your machine</Typography>
+              </Box>
+            </Box>
+            <Box
+              sx={(theme) => ({
+                display: "inline-flex",
+                p: 0.5,
+                borderRadius: "8px",
+                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                width: { xs: "100%", sm: "auto" },
+              })}
+            >
               {["light", "dark", "system"].map((option) => (
-                <button
+                <Box
                   key={option}
+                  component="button"
                   type="button"
                   onClick={() => setTheme(option)}
-                  className={cn(
-                    "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-md font-medium transition-all flex-1 sm:flex-initial",
-                    theme === option
-                      ? "bg-white dark:bg-white/10 text-text-main shadow-sm"
-                      : "text-text-muted hover:text-text-main"
-                  )}
+                  sx={(theme) => ({
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: { xs: 0.5, sm: 0.75 },
+                    px: { xs: 1, sm: 1.5 },
+                    py: 0.75,
+                    borderRadius: "6px",
+                    fontWeight: 500,
+                    transition: "all 150ms",
+                    flex: { xs: 1, sm: "initial" },
+                    cursor: "pointer",
+                    border: 0,
+                    bgcolor: theme === option ? (theme.palette.mode === "dark" ? "rgba(255,255,255,0.10)" : "#ffffff") : "transparent",
+                    color: theme === option ? theme.palette.text.primary : theme.palette.text.secondary,
+                    boxShadow: theme === option ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+                    "&:hover": { color: theme.palette.text.primary },
+                  })}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
+                  <MsIcon sx={{ fontSize: 18 }}>
                     {option === "light" ? "light_mode" : option === "dark" ? "dark_mode" : "contrast"}
-                  </span>
-                  <span className="capitalize text-xs sm:text-sm">{option}</span>
-                </button>
+                  </MsIcon>
+                  <Box component="span" sx={{ textTransform: "capitalize", fontSize: { xs: 12, sm: 14 } }}>{option}</Box>
+                </Box>
               ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 pt-4 border-t border-border">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-bg border border-border gap-2">
-              <div>
-                <p className="font-medium text-sm sm:text-base">Database Location</p>
-                <p className="text-xs sm:text-sm text-text-muted font-mono break-all">~/.9router/db/data.sqlite</p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button
+            </Box>
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, pt: 2, borderTop: 1, borderColor: "divider" }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, p: 1.5, borderRadius: "8px", bgcolor: "background.default", border: 1, borderColor: "divider", gap: 1 }}>
+              <Box>
+                <Typography sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Database Location</Typography>
+                <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>
+                  ~/.9router/db/data.sqlite
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1 }}>
+              <ResponsiveButton
                 variant="secondary"
                 icon="download"
                 onClick={() => setDbAuth({ open: true, mode: "export", password: "" })}
                 loading={dbLoading}
-                className="w-full sm:w-auto"
               >
                 Download Backup
-              </Button>
-              <Button
+              </ResponsiveButton>
+              <ResponsiveButton
                 variant="outline"
                 icon="upload"
                 onClick={() => importFileRef.current?.click()}
                 disabled={dbLoading}
-                className="w-full sm:w-auto"
               >
                 Import Backup
-              </Button>
-              <input
+              </ResponsiveButton>
+              <Box
+                component="input"
                 ref={importFileRef}
                 type="file"
                 accept="application/json,.json"
-                className="hidden"
                 onChange={handleImportDatabase}
+                sx={{ display: "none" }}
               />
-            </div>
+            </Box>
             {dbStatus.message && (
-              <p className={`text-sm ${dbStatus.type === "error" ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
+              <Typography sx={{ fontSize: 14, color: statusColor(dbStatus.type) }}>
                 {dbStatus.message}
-              </p>
+              </Typography>
             )}
-          </div>
+          </Box>
         </Card>
 
         {/* Language */}
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="size-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px]">language</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold">Language</h3>
-          </div>
-          <button
+          <CardHeader icon="language" title="Language" color="#3b82f6" />
+          <Box
+            component="button"
             onClick={() => setLangOpen(true)}
-            className="flex items-center justify-between w-full p-3 rounded-lg bg-bg border border-border hover:border-primary/50 transition-colors"
             data-i18n-skip="true"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              p: 1.5,
+              borderRadius: "8px",
+              bgcolor: "background.default",
+              border: 1,
+              borderColor: "divider",
+              cursor: "pointer",
+              transition: "border-color 150ms",
+              "&:hover": { borderColor: "rgba(229,106,74,0.5)" },
+            }}
           >
-            <span className="text-sm text-text-muted">Display language</span>
-            <span className="text-2xl">{LOCALE_FLAGS[locale] || "🌐"}</span>
-          </button>
+            <Box component="span" sx={{ fontSize: 14, color: "text.secondary" }}>Display language</Box>
+            <Box component="span" sx={{ fontSize: 24 }}>{LOCALE_FLAGS[locale] || "🌐"}</Box>
+          </Box>
         </Card>
 
         {/* Security */}
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-              <span className="material-symbols-outlined text-[20px]">shield</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold">Security</h3>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start sm:items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm sm:text-base">Require login</p>
-                <p className="text-xs sm:text-sm text-text-muted">
-                  When ON, dashboard requires password. When OFF, access without login.
-                </p>
-              </div>
-              <Toggle
-                checked={settings.requireLogin === true}
-                onChange={() => updateRequireLogin(!settings.requireLogin)}
-                disabled={loading}
-              />
-            </div>
+          <CardHeader icon="shield" title="Security" color="#E56A4A" />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <SettingRow
+              title="Require login"
+              description="When ON, dashboard requires password. When OFF, access without login."
+              control={
+                <Toggle
+                  checked={settings.requireLogin === true}
+                  onChange={() => updateRequireLogin(!settings.requireLogin)}
+                  disabled={loading}
+                />
+              }
+            />
             {settings.requireLogin === true && (
-              <form onSubmit={handlePasswordChange} className="flex flex-col gap-4 pt-4 border-t border-border/50">
+              <Box component="form" onSubmit={handlePasswordChange} sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2, borderTop: 1, borderColor: "divider" }}>
                 {settings.hasPassword && (
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs sm:text-sm font-medium">Current Password</label>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <Typography component="label" sx={{ fontSize: { xs: 12, sm: 14 }, fontWeight: 500 }}>Current Password</Typography>
                     <Input
                       type="password"
                       placeholder="Enter current password"
@@ -707,18 +783,11 @@ export default function ProfilePage() {
                       onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
                       required
                     />
-                  </div>
+                  </Box>
                 )}
-                {/* {!settings.hasPassword && (
-                  <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                    <p className="text-sm text-blue-600 dark:text-blue-400">
-                      Setting password for the first time. Leave current password empty and use a strong new password.
-                    </p>
-                  </div>
-                )} */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs sm:text-sm font-medium">New Password</label>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <Typography component="label" sx={{ fontSize: { xs: 12, sm: 14 }, fontWeight: 500 }}>New Password</Typography>
                     <Input
                       type="password"
                       placeholder="Enter new password"
@@ -726,9 +795,9 @@ export default function ProfilePage() {
                       onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
                       required
                     />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs sm:text-sm font-medium">Confirm New Password</label>
+                  </Box>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <Typography component="label" sx={{ fontSize: { xs: 12, sm: 14 }, fontWeight: 500 }}>Confirm New Password</Typography>
                     <Input
                       type="password"
                       placeholder="Confirm new password"
@@ -736,54 +805,55 @@ export default function ProfilePage() {
                       onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
                       required
                     />
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
                 {passStatus.message && (
-                  <p className={`text-xs sm:text-sm ${passStatus.type === "error" ? "text-red-500" : "text-green-500"}`}>
+                  <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: statusColor(passStatus.type) }}>
                     {passStatus.message}
-                  </p>
+                  </Typography>
                 )}
 
-                <div className="pt-2">
-                  <Button type="submit" variant="primary" loading={passLoading} className="w-full sm:w-auto">
+                <Box sx={{ pt: 1 }}>
+                  <ResponsiveButton type="submit" variant="primary" loading={passLoading}>
                     {settings.hasPassword ? "Update Password" : "Set Password"}
-                  </Button>
-                </div>
-              </form>
+                  </ResponsiveButton>
+                </Box>
+              </Box>
             )}
-          </div>
+          </Box>
         </Card>
 
         {/* OIDC */}
         <Card>
-          <button
+          <Box
+            component="button"
             type="button"
             onClick={() => setOidcExpanded((v) => !v)}
-            className="w-full flex items-center gap-3 text-left"
+            sx={{ width: "100%", display: "flex", alignItems: "center", gap: 1.5, textAlign: "left", background: "none", border: 0, p: 0, cursor: "pointer", color: "inherit" }}
           >
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">lock_open</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg font-semibold">OIDC Dashboard Login</h3>
-              <p className="text-xs text-text-muted">
+            <Box sx={{ p: 1, borderRadius: "8px", bgcolor: "rgba(99,102,241,0.10)", color: "#6366f1", flexShrink: 0, display: "grid", placeItems: "center" }}>
+              <MsIcon sx={{ fontSize: 20 }}>lock_open</MsIcon>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontSize: { xs: 16, sm: 18 }, fontWeight: 600 }}>OIDC Dashboard Login</Typography>
+              <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                 {settings.authMode === "oidc" ? "OIDC active" : settings.authMode === "both" ? "Password + OIDC active" : "Optional SSO via Authentik/Keycloak/Google"}
-              </p>
-            </div>
-            <span className="material-symbols-outlined text-text-muted shrink-0">
+              </Typography>
+            </Box>
+            <MsIcon sx={{ color: "text.secondary", flexShrink: 0 }}>
               {oidcExpanded ? "expand_less" : "expand_more"}
-            </span>
-          </button>
+            </MsIcon>
+          </Box>
           {oidcExpanded && (
-          <div className="flex flex-col gap-4 mt-4">
-            <p className="text-xs sm:text-sm text-text-muted">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary" }}>
               Use Authentik or any OIDC provider to sign in to the dashboard. You can enable password-only, OIDC-only, or both for the dashboard; model API access still uses API keys.
-            </p>
+            </Typography>
 
-            <div className="flex flex-col gap-2">
-              <label className="font-medium text-sm sm:text-base">Auth Mode</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Auth Mode</Typography>
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" }, gap: 1 }}>
                 {[
                   {
                     value: "password",
@@ -803,49 +873,59 @@ export default function ProfilePage() {
                 ].map((option) => {
                   const active = oidcForm.authMode === option.value;
                   return (
-                    <button
+                    <Box
                       key={option.value}
+                      component="button"
                       type="button"
                       onClick={() => updateOidcForm("authMode", option.value)}
-                      className={cn(
-                        "text-left rounded-lg border p-3 transition-colors",
-                        active
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-bg hover:bg-black/5 dark:hover:bg-white/5"
-                      )}
                       disabled={loading || oidcLoading}
+                      sx={(theme) => ({
+                        textAlign: "left",
+                        borderRadius: "8px",
+                        border: 1,
+                        p: 1.5,
+                        cursor: "pointer",
+                        transition: "border-color 150ms, background-color 150ms",
+                        borderColor: active ? "primary.main" : theme.palette.divider,
+                        bgcolor: active
+                          ? "rgba(229,106,74,0.05)"
+                          : theme.palette.mode === "dark"
+                            ? theme.palette.background.default
+                            : theme.palette.background.default,
+                        "&:hover": { bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" },
+                      })}
                     >
-                      <p className="font-medium text-sm sm:text-base">{option.title}</p>
-                      <p className="text-xs sm:text-sm text-text-muted mt-1">{option.desc}</p>
-                    </button>
+                      <Typography sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>{option.title}</Typography>
+                      <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary", mt: 0.5 }}>{option.desc}</Typography>
+                    </Box>
                   );
                 })}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-sm sm:text-base">Issuer URL</label>
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr", gap: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Issuer URL</Typography>
                 <Input
                   placeholder="https://auth.example.com/application/o/9router/"
                   value={oidcForm.oidcIssuerUrl}
                   onChange={(e) => updateOidcForm("oidcIssuerUrl", e.target.value)}
                   disabled={loading || oidcLoading}
                 />
-              </div>
+              </Box>
 
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-sm sm:text-base">Client ID</label>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Client ID</Typography>
                 <Input
                   placeholder="9router-dashboard"
                   value={oidcForm.oidcClientId}
                   onChange={(e) => updateOidcForm("oidcClientId", e.target.value)}
                   disabled={loading || oidcLoading}
                 />
-              </div>
+              </Box>
 
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-sm sm:text-base">Client Secret</label>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Client Secret</Typography>
                 <Input
                   type="password"
                   placeholder="Leave blank to keep existing secret"
@@ -853,265 +933,246 @@ export default function ProfilePage() {
                   onChange={(e) => setOidcClientSecret(e.target.value)}
                   disabled={loading || oidcLoading}
                 />
-                <p className="text-xs sm:text-sm text-text-muted">This value is write-only after saving.</p>
-              </div>
+                <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary" }}>This value is write-only after saving.</Typography>
+              </Box>
 
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-sm sm:text-base">Scopes</label>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Scopes</Typography>
                 <Input
                   placeholder="openid profile email"
                   value={oidcForm.oidcScopes}
                   onChange={(e) => updateOidcForm("oidcScopes", e.target.value)}
                   disabled={loading || oidcLoading}
                 />
-              </div>
+              </Box>
 
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-sm sm:text-base">Login Button Label</label>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Login Button Label</Typography>
                 <Input
                   placeholder="Sign in with OIDC"
                   value={oidcForm.oidcLoginLabel}
                   onChange={(e) => updateOidcForm("oidcLoginLabel", e.target.value)}
                   disabled={loading || oidcLoading}
                 />
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="rounded-lg border border-border bg-bg p-3 text-xs sm:text-sm text-text-muted">
-              <p className="font-medium text-text-main mb-1">Redirect URI</p>
-              <code className="block break-all font-mono">{oidcRedirectUri}</code>
-            </div>
+            <Box sx={{ borderRadius: "8px", border: 1, borderColor: "divider", bgcolor: "background.default", p: 1.5, fontSize: { xs: 12, sm: 14 }, color: "text.secondary" }}>
+              <Typography sx={{ fontWeight: 500, color: "text.primary", mb: 0.5 }}>Redirect URI</Typography>
+              <Box component="code" sx={{ display: "block", wordBreak: "break-all", fontFamily: "ui-monospace, monospace" }}>{oidcRedirectUri}</Box>
+            </Box>
 
-            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-border/50">
-              <Button type="button" variant="primary" loading={oidcLoading} onClick={() => saveOidcSettings()} className="w-full sm:w-auto">
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, pt: 1, borderTop: 1, borderColor: "divider" }}>
+              <ResponsiveButton type="button" variant="primary" loading={oidcLoading} onClick={() => saveOidcSettings()}>
                 Save auth mode
-              </Button>
-              <Button type="button" variant="outline" loading={oidcTestLoading} onClick={testOidcConnection} className="w-full sm:w-auto">
+              </ResponsiveButton>
+              <ResponsiveButton type="button" variant="outline" loading={oidcTestLoading} onClick={testOidcConnection}>
                 Test connection
-              </Button>
-            </div>
+              </ResponsiveButton>
+            </Box>
 
             {oidcTestStatus.message && (
-              <p className={`text-xs sm:text-sm ${oidcTestStatus.type === "error" ? "text-red-500" : "text-green-500"}`}>
+              <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: statusColor(oidcTestStatus.type) }}>
                 {oidcTestStatus.message}
-              </p>
+              </Typography>
             )}
 
             {oidcStatus.message && (
-              <p className={`text-xs sm:text-sm ${oidcStatus.type === "error" ? "text-red-500" : "text-green-500"}`}>
+              <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: statusColor(oidcStatus.type) }}>
                 {oidcStatus.message}
-              </p>
+              </Typography>
             )}
 
             {settings.authMode === "oidc" && (
-              <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400">
+              <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#d97706" }}>
                 OIDC login is currently active. Password login is disabled until you switch back.
-              </p>
+              </Typography>
             )}
 
             {settings.authMode === "both" && (
-              <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400">
+              <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#d97706" }}>
                 Password and OIDC login are both active.
-              </p>
+              </Typography>
             )}
-          </div>
+          </Box>
           )}
         </Card>
 
         {/* Routing Preferences */}
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">route</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold">Routing Strategy</h3>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start sm:items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm sm:text-base">Round Robin</p>
-                <p className="text-xs sm:text-sm text-text-muted">
-                  Cycle through accounts to distribute load
-                </p>
-              </div>
-              <Toggle
-                checked={settings.fallbackStrategy === "round-robin"}
-                onChange={() => updateFallbackStrategy(settings.fallbackStrategy === "round-robin" ? "fill-first" : "round-robin")}
-                disabled={loading}
-              />
-            </div>
+          <CardHeader icon="route" title="Routing Strategy" color="#3b82f6" />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <SettingRow
+              title="Round Robin"
+              description="Cycle through accounts to distribute load"
+              control={
+                <Toggle
+                  checked={settings.fallbackStrategy === "round-robin"}
+                  onChange={() => updateFallbackStrategy(settings.fallbackStrategy === "round-robin" ? "fill-first" : "round-robin")}
+                  disabled={loading}
+                />
+              }
+            />
 
             {/* Sticky Round Robin Limit */}
             {settings.fallbackStrategy === "round-robin" && (
-              <div className="flex items-start sm:items-center justify-between gap-4 pt-2 border-t border-border/50">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm sm:text-base">Sticky Limit</p>
-                  <p className="text-xs sm:text-sm text-text-muted">
-                    Calls per account before switching
-                  </p>
-                </div>
-                <Input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={settings.stickyRoundRobinLimit || 3}
-                  onChange={(e) => updateStickyLimit(e.target.value)}
-                  disabled={loading}
-                  className="w-16 sm:w-20 text-center shrink-0"
-                />
-              </div>
+              <SettingRow
+                title="Sticky Limit"
+                description="Calls per account before switching"
+                sx={{ pt: 1, borderTop: 1, borderColor: "divider" }}
+                control={
+                  <Box sx={{ width: { xs: 64, sm: 80 }, flexShrink: 0 }}>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={settings.stickyRoundRobinLimit || 3}
+                      onChange={(e) => updateStickyLimit(e.target.value)}
+                      disabled={loading}
+                      inputClassName="text-center"
+                    />
+                  </Box>
+                }
+              />
             )}
 
             {/* Combo Round Robin */}
-            <div className="flex items-start sm:items-center justify-between gap-4 pt-4 border-t border-border/50">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm sm:text-base">Combo Round Robin</p>
-                <p className="text-xs sm:text-sm text-text-muted">
-                  Cycle through providers in combos instead of always starting with first
-                </p>
-              </div>
-              <Toggle
-                checked={settings.comboStrategy === "round-robin"}
-                onChange={() => updateComboStrategy(settings.comboStrategy === "round-robin" ? "fallback" : "round-robin")}
-                disabled={loading}
-              />
-            </div>
+            <SettingRow
+              title="Combo Round Robin"
+              description="Cycle through providers in combos instead of always starting with first"
+              sx={{ pt: 2, borderTop: 1, borderColor: "divider" }}
+              control={
+                <Toggle
+                  checked={settings.comboStrategy === "round-robin"}
+                  onChange={() => updateComboStrategy(settings.comboStrategy === "round-robin" ? "fallback" : "round-robin")}
+                  disabled={loading}
+                />
+              }
+            />
 
             {/* Combo Sticky Round Robin Limit */}
             {settings.comboStrategy === "round-robin" && (
-              <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                <div>
-                  <p className="font-medium">Combo Sticky Limit</p>
-                  <p className="text-sm text-text-muted">
-                    Calls per combo model before switching
-                  </p>
-                </div>
-                <Input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={settings.comboStickyRoundRobinLimit || 1}
-                  onChange={(e) => updateComboStickyLimit(e.target.value)}
-                  disabled={loading}
-                  className="w-20 text-center"
-                />
-              </div>
+              <SettingRow
+                title="Combo Sticky Limit"
+                description="Calls per combo model before switching"
+                sx={{ pt: 1, borderTop: 1, borderColor: "divider" }}
+                control={
+                  <Box sx={{ width: 80 }}>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={settings.comboStickyRoundRobinLimit || 1}
+                      onChange={(e) => updateComboStickyLimit(e.target.value)}
+                      disabled={loading}
+                      inputClassName="text-center"
+                    />
+                  </Box>
+                }
+              />
             )}
 
-            <p className="text-xs text-text-muted italic pt-2 border-t border-border/50">
+            <Typography sx={{ fontSize: 12, color: "text.secondary", fontStyle: "italic", pt: 1, borderTop: 1, borderColor: "divider" }}>
               {settings.fallbackStrategy === "round-robin"
                 ? `Currently distributing requests across all available accounts with ${settings.stickyRoundRobinLimit || 3} calls per account.`
                 : "Currently using accounts in priority order (Fill First)."}
               {settings.comboStrategy === "round-robin"
                 ? ` Combos rotate after ${settings.comboStickyRoundRobinLimit || 1} call${(settings.comboStickyRoundRobinLimit || 1) === 1 ? "" : "s"} per model.`
                 : " Combos always start with their first model."}
-            </p>
-          </div>
+            </Typography>
+          </Box>
         </Card>
 
         {/* Network */}
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">wifi</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold">Network</h3>
-          </div>
+          <CardHeader icon="wifi" title="Network" color="#a855f7" />
 
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start sm:items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm sm:text-base">Outbound Proxy</p>
-                <p className="text-xs sm:text-sm text-text-muted">Enable proxy for OAuth + provider outbound requests.</p>
-              </div>
-              <Toggle
-                checked={settings.outboundProxyEnabled === true}
-                onChange={() => updateOutboundProxyEnabled(!(settings.outboundProxyEnabled === true))}
-                disabled={loading || proxyLoading}
-              />
-            </div>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <SettingRow
+              title="Outbound Proxy"
+              description="Enable proxy for OAuth + provider outbound requests."
+              control={
+                <Toggle
+                  checked={settings.outboundProxyEnabled === true}
+                  onChange={() => updateOutboundProxyEnabled(!(settings.outboundProxyEnabled === true))}
+                  disabled={loading || proxyLoading}
+                />
+              }
+            />
 
             {settings.outboundProxyEnabled === true && (
-              <form onSubmit={updateOutboundProxy} className="flex flex-col gap-4 pt-2 border-t border-border/50">
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium text-sm sm:text-base">Proxy URL</label>
+              <Box component="form" onSubmit={updateOutboundProxy} sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, borderTop: 1, borderColor: "divider" }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>Proxy URL</Typography>
                   <Input
                     placeholder="http://127.0.0.1:7897"
                     value={proxyForm.outboundProxyUrl}
                     onChange={(e) => setProxyForm((prev) => ({ ...prev, outboundProxyUrl: e.target.value }))}
                     disabled={loading || proxyLoading}
                   />
-                  <p className="text-xs sm:text-sm text-text-muted">Leave empty to inherit existing env proxy (if any).</p>
-                </div>
+                  <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary" }}>Leave empty to inherit existing env proxy (if any).</Typography>
+                </Box>
 
-                <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
-                  <label className="font-medium text-sm sm:text-base">No Proxy</label>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, pt: 1, borderTop: 1, borderColor: "divider" }}>
+                  <Typography component="label" sx={{ fontWeight: 500, fontSize: { xs: 14, sm: 16 } }}>No Proxy</Typography>
                   <Input
                     placeholder="localhost,127.0.0.1"
                     value={proxyForm.outboundNoProxy}
                     onChange={(e) => setProxyForm((prev) => ({ ...prev, outboundNoProxy: e.target.value }))}
                     disabled={loading || proxyLoading}
                   />
-                  <p className="text-xs sm:text-sm text-text-muted">Comma-separated hostnames/domains to bypass the proxy.</p>
-                </div>
+                  <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "text.secondary" }}>Comma-separated hostnames/domains to bypass the proxy.</Typography>
+                </Box>
 
-                <div className="pt-2 border-t border-border/50 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <Button
+                <Box sx={{ pt: 1, borderTop: 1, borderColor: "divider", display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { sm: "center" }, gap: 1 }}>
+                  <ResponsiveButton
                     type="button"
                     variant="secondary"
                     loading={proxyTestLoading}
                     disabled={loading || proxyLoading}
                     onClick={testOutboundProxy}
-                    className="w-full sm:w-auto"
                   >
                     Test proxy URL
-                  </Button>
-                  <Button type="submit" variant="primary" loading={proxyLoading} className="w-full sm:w-auto">
+                  </ResponsiveButton>
+                  <ResponsiveButton type="submit" variant="primary" loading={proxyLoading}>
                     Apply
-                  </Button>
-                </div>
-              </form>
+                  </ResponsiveButton>
+                </Box>
+              </Box>
             )}
 
             {proxyStatus.message && (
-              <p className={`text-xs sm:text-sm ${proxyStatus.type === "error" ? "text-red-500" : "text-green-500"} pt-2 border-t border-border/50`}>
+              <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: statusColor(proxyStatus.type), pt: 1, borderTop: 1, borderColor: "divider" }}>
                 {proxyStatus.message}
-              </p>
+              </Typography>
             )}
-          </div>
+          </Box>
         </Card>
 
         {/* Observability Settings */}
         <Card>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">monitoring</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold">Observability</h3>
-          </div>
-          <div className="flex items-start sm:items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm sm:text-base">Enable Observability</p>
-              <p className="text-xs sm:text-sm text-text-muted">
-                Record request details for inspection in the logs view
-              </p>
-            </div>
-            <Toggle
-              checked={observabilityEnabled}
-              onChange={updateObservabilityEnabled}
-              disabled={loading}
-            />
-          </div>
+          <CardHeader icon="monitoring" title="Observability" color="#f97316" />
+          <SettingRow
+            title="Enable Observability"
+            description="Record request details for inspection in the logs view"
+            control={
+              <Toggle
+                checked={observabilityEnabled}
+                onChange={updateObservabilityEnabled}
+                disabled={loading}
+              />
+            }
+          />
         </Card>
 
         {/* Account actions */}
-        <div className="flex flex-col sm:flex-row gap-2">
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1 }}>
           <Button
             variant="outline"
             fullWidth
             icon="power_settings_new"
             onClick={() => setShutdownOpen(true)}
-            className="text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300"
+            sx={{ color: "#ef4444", borderColor: "rgba(239,68,68,0.4)", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "rgba(239,68,68,0.05)", borderColor: "rgba(239,68,68,0.5)" } }}
           >
             Shutdown
           </Button>
@@ -1123,14 +1184,14 @@ export default function ProfilePage() {
           >
             Logout
           </Button>
-        </div>
+        </Box>
 
         {/* App Info */}
-        <div className="text-center text-xs sm:text-sm text-text-muted py-4">
-          <p>{APP_CONFIG.name} v{APP_CONFIG.version}</p>
-          <p className="mt-1">Local Mode - All data stored on your machine</p>
-        </div>
-      </div>
+        <Box sx={{ textAlign: "center", fontSize: { xs: 12, sm: 14 }, color: "text.secondary", py: 2 }}>
+          <Box component="p" sx={{ m: 0 }}>{APP_CONFIG.name} v{APP_CONFIG.version}</Box>
+          <Box component="p" sx={{ mt: 0.5, mb: 0 }}>Local Mode - All data stored on your machine</Box>
+        </Box>
+      </Stack>
 
       <LanguageSwitcher
         hideTrigger
@@ -1168,9 +1229,9 @@ export default function ProfilePage() {
           </>
         }
       >
-        <p className="text-text-muted mb-3 text-sm">
+        <Typography sx={{ color: "text.secondary", mb: 1.5, fontSize: 14 }}>
           Enter your current password to {dbAuth.mode === "export" ? "export" : "import"} the database.
-        </p>
+        </Typography>
         <Input
           type="password"
           value={dbAuth.password}
@@ -1180,6 +1241,6 @@ export default function ProfilePage() {
           autoFocus
         />
       </Modal>
-    </div>
+    </Box>
   );
 }

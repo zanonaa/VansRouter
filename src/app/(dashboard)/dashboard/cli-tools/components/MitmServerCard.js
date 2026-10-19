@@ -1,9 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback, useReducer } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import MuiButton from "@mui/material/Button";
 import { Card, Button, Badge, Input } from "@/shared/components";
 
 const DEFAULT_MITM_ROUTER_BASE = "http://localhost:20128";
+
+function MsIcon({ children, sx }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={sx}>
+      {children}
+    </Icon>
+  );
+}
 
 /**
  * Shared MITM infrastructure card — manages SSL cert + server start/stop.
@@ -13,65 +30,61 @@ function MitmServerModals({ showPasswordModal, sudoPassword, dispatch, loading, 
   return (
     <>
       {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="mx-4 flex w-full max-w-sm flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
-            <h3 className="font-semibold text-text-main">Sudo Password Required</h3>
-            <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <span className="material-symbols-outlined text-yellow-500 text-[20px]">warning</span>
-              <p className="text-xs text-text-muted">Required for SSL certificate and server startup</p>
-            </div>
-            <Input
-              type="password"
-              placeholder="Enter sudo password"
-              value={sudoPassword}
-              onChange={(e) => dispatch({ sudoPassword: e.target.value })}
-              onKeyDown={(e) => { if (e.key === "Enter" && !loading) handleConfirmPassword(); }}
-            />
-            {modalError && (
-              <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600">
-                <span className="material-symbols-outlined text-[14px]">error</span>
-                <span>{modalError}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { dispatch({ showPasswordModal: false }); dispatch({ sudoPassword: "" }); dispatch({ modalError: null }); }} disabled={loading}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleConfirmPassword} loading={loading}>
-                Confirm
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={showPasswordModal} onClose={() => !loading && dispatch({ showPasswordModal: false })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>Sudo Password Required</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "8px !important" }}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, p: 1.5, bgcolor: "rgba(234,179,8,0.10)", border: 1, borderColor: "rgba(234,179,8,0.30)", borderRadius: "8px" }}>
+            <MsIcon sx={{ color: "#eab308", fontSize: 20 }}>warning</MsIcon>
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Required for SSL certificate and server startup</Typography>
+          </Box>
+          <Input
+            type="password"
+            placeholder="Enter sudo password"
+            value={sudoPassword}
+            onChange={(e) => dispatch({ sudoPassword: e.target.value })}
+            onKeyDown={(e) => { if (e.key === "Enter" && !loading) handleConfirmPassword(); }}
+          />
+          {modalError && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1, py: 0.75, borderRadius: "4px", fontSize: 12, bgcolor: "rgba(239,68,68,0.10)", color: "#dc2626" }}>
+              <MsIcon sx={{ fontSize: 14 }}>error</MsIcon>
+              <Box component="span">{modalError}</Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="ghost" size="sm" onClick={() => { dispatch({ showPasswordModal: false }); dispatch({ sudoPassword: "" }); dispatch({ modalError: null }); }} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleConfirmPassword} loading={loading}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Port 443 Conflict Modal */}
-      {port443Conflict && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="mx-4 flex w-full max-w-md flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
-            <h3 className="font-semibold text-text-main">Port 443 Already In Use</h3>
-            <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <span className="material-symbols-outlined text-yellow-500 text-[20px]">warning</span>
-              <div className="flex flex-col gap-1 text-xs text-text-muted">
-                <p>Port 443 is currently used by another process:</p>
-                <p className="font-mono text-text-main" data-i18n-skip="true">
-                  {port443Conflict.owner.name} (PID {port443Conflict.owner.pid})
-                </p>
-                <p>Kill this process to start MITM Server?</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { dispatch({ port443Conflict: null }); dispatch({ loading: false }); }} disabled={loading}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleKillAndStart} loading={loading}>
-                Kill & Start
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={!!port443Conflict} onClose={() => !loading && dispatch({ port443Conflict: null })} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>Port 443 Already In Use</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "8px !important" }}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, p: 1.5, bgcolor: "rgba(234,179,8,0.10)", border: 1, borderColor: "rgba(234,179,8,0.30)", borderRadius: "8px" }}>
+            <MsIcon sx={{ color: "#eab308", fontSize: 20 }}>warning</MsIcon>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, fontSize: 12, color: "text.secondary" }}>
+              <Box component="p" sx={{ m: 0 }}>Port 443 is currently used by another process:</Box>
+              <Box component="p" sx={{ m: 0, fontFamily: "ui-monospace, monospace", color: "text.primary" }} data-i18n-skip="true">
+                {port443Conflict?.owner?.name} (PID {port443Conflict?.owner?.pid})
+              </Box>
+              <Box component="p" sx={{ m: 0 }}>Kill this process to start MITM Server?</Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="ghost" size="sm" onClick={() => { dispatch({ port443Conflict: null }); dispatch({ loading: false }); }} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleKillAndStart} loading={loading}>
+            Kill &amp; Start
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
@@ -194,75 +207,84 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
   };
 
   const isRunning = status?.running;
+  const compactInputSx = {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12,
+    bgcolor: "background.paper",
+    "& .MuiOutlinedInput-input": { py: 0.75, px: 1 },
+    "& .MuiOutlinedInput-notchedOutline": { borderColor: "divider" },
+  };
 
   return (
     <>
-      <Card padding="sm" className="border-primary/20 bg-primary/5">
-        <div className="flex flex-col gap-3">
+      <Card padding="sm" sx={{ borderColor: "rgba(229,106,74,0.20)", bgcolor: "rgba(229,106,74,0.05)" }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           {/* Header */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[20px]">security</span>
-              <span className="font-semibold text-sm text-text-main">MITM Server</span>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" } }}>
+            <Box sx={{ display: "flex", minWidth: 0, flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+              <MsIcon sx={{ color: "primary.main", fontSize: 20 }}>security</MsIcon>
+              <Typography component="span" sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}>MITM Server</Typography>
               {isRunning ? (
                 <Badge variant="success" size="sm">Running</Badge>
               ) : (
                 <Badge variant="default" size="sm">Stopped</Badge>
               )}
-            </div>
-            <div className="flex flex-wrap items-center gap-1 text-xs text-text-muted" data-i18n-skip="true">
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.5, fontSize: 12, color: "text.secondary" }} data-i18n-skip="true">
               {[
                 { label: "Cert", ok: status?.certExists },
                 { label: "Trusted", ok: status?.certTrusted },
                 { label: "Server", ok: isRunning },
               ].map(({ label, ok }) => (
-                <span key={label} className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded ${ok ? "text-green-600" : "text-text-muted"}`}>
-                  <span className="material-symbols-outlined text-[12px]">
+                <Box component="span" key={label} sx={{ display: "flex", alignItems: "center", gap: 0.25, px: 0.75, py: 0.25, borderRadius: "4px", color: ok ? "#16a34a" : "text.secondary" }}>
+                  <MsIcon sx={{ fontSize: 12 }}>
                     {ok ? "check_circle" : "cancel"}
-                  </span>
+                  </MsIcon>
                   {label}
-                </span>
+                </Box>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Purpose & How it works */}
-          <div className="px-2 py-2 rounded-lg bg-surface/50 border border-border/50 flex flex-col gap-2">
-            <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">Purpose:</span> Use Antigravity IDE & GitHub Copilot → with ANY provider/model from VansAI
-            </p>
-            <p className="text-[11px] text-text-muted leading-relaxed">
-              <span className="font-medium text-text-main">How it works:</span> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → MITM proxy intercepts → VansAI → response to Antigravity/Copilot
-            </p>
-          </div>
+          <Box sx={{ px: 1, py: 1, borderRadius: "8px", bgcolor: "rgba(255,255,255,0.5)", border: 1, borderColor: "rgba(229,231,235,0.5)", display: "flex", flexDirection: "column", gap: 1 }}>
+            <Typography sx={{ fontSize: 11, color: "text.secondary", lineHeight: 1.6 }}>
+              <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>Purpose:</Box> Use Antigravity IDE & GitHub Copilot → with ANY provider/model from VansAI
+            </Typography>
+            <Typography sx={{ fontSize: 11, color: "text.secondary", lineHeight: 1.6 }}>
+              <Box component="span" sx={{ fontWeight: 500, color: "text.primary" }}>How it works:</Box> Antigravity/Copilot IDE request → DNS redirect to localhost:443 → MITM proxy intercepts → VansAI → response to Antigravity/Copilot
+            </Typography>
+          </Box>
 
           {/* Base URL + API Key — same row pattern as Claude Code / cli-tools */}
-          <div className="flex flex-col gap-2">
-            <div className="grid gap-1 sm:grid-cols-[8rem_auto_1fr] sm:items-center sm:gap-2">
-              <span className="text-xs font-semibold text-text-main sm:text-right sm:text-sm">VansAI Base URL</span>
-              <span className="material-symbols-outlined hidden text-text-muted text-[14px] sm:inline">arrow_forward</span>
-              <input
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box sx={{ display: "grid", gap: 0.5, gridTemplateColumns: { xs: "1fr", sm: "8rem auto 1fr" }, alignItems: { sm: "center" }, columnGap: { sm: 1 } }}>
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "text.primary", textAlign: { sm: "right" } }}>VansAI Base URL</Box>
+              <MsIcon sx={{ display: { xs: "none", sm: "inline" }, color: "text.secondary", fontSize: 14 }}>arrow_forward</MsIcon>
+              <OutlinedInput
                 type="text"
                 value={mitmRouterBaseUrl}
                 onChange={(e) => dispatch({ mitmRouterBaseUrl: e.target.value })}
                 placeholder={DEFAULT_MITM_ROUTER_BASE}
                 disabled={isRunning}
-                aria-label="VansAI Base URL"
-                className="flex-1 min-w-0 px-2 py-1.5 bg-surface rounded border border-border text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50 disabled:opacity-50"
+                inputProps={{ "aria-label": "VansAI Base URL" }}
+                size="small"
+                sx={compactInputSx}
               />
-            </div>
+            </Box>
             {!isRunning && (
-              <div className="grid gap-1 sm:grid-cols-[8rem_auto_1fr] sm:items-center sm:gap-2">
-                <span className="text-xs font-semibold text-text-main sm:text-right sm:text-sm">API Key</span>
-                <span className="material-symbols-outlined hidden text-text-muted text-[14px] sm:inline">arrow_forward</span>
-                <input
+              <Box sx={{ display: "grid", gap: 0.5, gridTemplateColumns: { xs: "1fr", sm: "8rem auto 1fr" }, alignItems: { sm: "center" }, columnGap: { sm: 1 } }}>
+                <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "text.primary", textAlign: { sm: "right" } }}>API Key</Box>
+                <MsIcon sx={{ display: { xs: "none", sm: "inline" }, color: "text.secondary", fontSize: 14 }}>arrow_forward</MsIcon>
+                <OutlinedInput
                   type="text"
-                  list="mitm-api-keys"
                   value={selectedApiKey}
                   onChange={(e) => setSelectedApiKey(e.target.value)}
                   placeholder={cloudEnabled ? "Enter or pick API key" : "sk_9router (default)"}
-                  aria-label="API Key"
-                  className="flex-1 min-w-0 px-2 py-1.5 bg-surface rounded border border-border text-xs text-text-main focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  inputProps={{ "aria-label": "API Key", list: "mitm-api-keys" }}
+                  size="small"
+                  sx={compactInputSx}
                 />
                 {apiKeys?.length > 0 && (
                   <datalist id="mitm-api-keys">
@@ -271,63 +293,72 @@ export default function MitmServerCard({ apiKeys, cloudEnabled, onStatusChange }
                     ))}
                   </datalist>
                 )}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Action buttons */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" data-i18n-skip="true">
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, flexWrap: { sm: "wrap" }, alignItems: { sm: "center" }, gap: 1 }} data-i18n-skip="true">
             {status?.certExists && !status?.certTrusted && (
-              <button type="button"
+              <MuiButton
+                type="button"
+                variant="outlined"
+                size="small"
                 onClick={() => handleAction("trust-cert")}
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-xs font-medium text-yellow-600 transition-colors hover:bg-yellow-500/20 disabled:opacity-50 sm:w-auto sm:py-1.5"
+                startIcon={<MsIcon sx={{ fontSize: 16 }}>verified_user</MsIcon>}
+                sx={{ width: { xs: "100%", sm: "auto" }, fontSize: 12, fontWeight: 500, textTransform: "none", color: "#ca8a04", borderColor: "rgba(234,179,8,0.30)", bgcolor: "rgba(234,179,8,0.10)", py: { sm: 0.75 }, "&:hover": { bgcolor: "rgba(234,179,8,0.20)", borderColor: "rgba(234,179,8,0.30)" } }}
               >
-                <span className="material-symbols-outlined text-[16px]">verified_user</span>
                 Trust Cert
-              </button>
+              </MuiButton>
             )}
             {isRunning ? (
-              <button type="button"
+              <MuiButton
+                type="button"
+                variant="outlined"
+                size="small"
                 onClick={() => handleAction("stop")}
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50 sm:w-auto sm:py-1.5"
+                startIcon={<MsIcon sx={{ fontSize: 16 }}>stop_circle</MsIcon>}
+                sx={{ width: { xs: "100%", sm: "auto" }, fontSize: 12, fontWeight: 500, textTransform: "none", color: "#ef4444", borderColor: "rgba(239,68,68,0.30)", bgcolor: "rgba(239,68,68,0.10)", py: { sm: 0.75 }, "&:hover": { bgcolor: "rgba(239,68,68,0.20)", borderColor: "rgba(239,68,68,0.30)" } }}
               >
-                <span className="material-symbols-outlined text-[16px]">stop_circle</span>
                 Stop Server
-              </button>
+              </MuiButton>
             ) : (
-              <button type="button"
+              <MuiButton
+                type="button"
+                variant="outlined"
+                size="small"
                 onClick={() => handleAction("start")}
                 disabled={loading || !status || (serverIsWindows && !isAdmin)}
                 title={serverIsWindows && !isAdmin ? "Administrator required" : undefined}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 sm:w-auto sm:py-1.5"
+                startIcon={<MsIcon sx={{ fontSize: 16 }}>play_circle</MsIcon>}
+                sx={{ width: { xs: "100%", sm: "auto" }, fontSize: 12, fontWeight: 500, textTransform: "none", color: "primary.main", borderColor: "rgba(229,106,74,0.30)", bgcolor: "rgba(229,106,74,0.10)", py: { sm: 0.75 }, "&:hover": { bgcolor: "rgba(229,106,74,0.20)", borderColor: "rgba(229,106,74,0.30)" } }}
               >
-                <span className="material-symbols-outlined text-[16px]">play_circle</span>
                 Start Server
-              </button>
+              </MuiButton>
             )}
             {isRunning && (
-              <p className="text-xs text-text-muted">Enable DNS per tool below to activate interception</p>
+              <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Enable DNS per tool below to activate interception</Typography>
             )}
-          </div>
+          </Box>
 
           {/* Action error */}
           {actionError && (
-            <div className="flex items-start gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
-              <span className="material-symbols-outlined text-[14px] mt-0.5 shrink-0">error</span>
-              <span>{actionError}</span>
-            </div>
+            <Box sx={(theme) => ({ display: "flex", alignItems: "flex-start", gap: 1, px: 1, py: 0.75, borderRadius: "4px", fontSize: 12, bgcolor: "rgba(239,68,68,0.10)", color: theme.palette.mode === "dark" ? "#f87171" : "#dc2626", border: 1, borderColor: "rgba(239,68,68,0.20)" })}>
+              <MsIcon sx={{ fontSize: 14, mt: 0.25, flexShrink: 0 }}>error</MsIcon>
+              <Box component="span">{actionError}</Box>
+            </Box>
           )}
 
           {/* Windows admin warning */}
           {serverIsWindows && !isAdmin && (
-            <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600 border border-red-500/20">
-              <span className="material-symbols-outlined text-[14px]">shield_lock</span>
-              <span>Administrator required — restart VansAI as Administrator to use MITM</span>
-            </div>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1, py: 0.75, borderRadius: "4px", fontSize: 12, bgcolor: "rgba(239,68,68,0.10)", color: "#dc2626", border: 1, borderColor: "rgba(239,68,68,0.20)" }}>
+              <MsIcon sx={{ fontSize: 14 }}>shield_lock</MsIcon>
+              <Box component="span">Administrator required — restart VansAI as Administrator to use MITM</Box>
+            </Box>
           )}
-        </div>
+        </Box>
       </Card>
 
       <MitmServerModals showPasswordModal={showPasswordModal} sudoPassword={sudoPassword} dispatch={dispatch} loading={loading} modalError={modalError} handleConfirmPassword={handleConfirmPassword} port443Conflict={port443Conflict} handleKillAndStart={handleKillAndStart} />

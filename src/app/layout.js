@@ -2,6 +2,8 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/shared/components/ThemeProvider";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
+import MuiProviders from "@/shared/mui/MuiProviders";
 import "@/lib/network/initOutboundProxy"; // Auto-initialize outbound proxy env
 import "@/shared/services/bootstrap"; // Auto-run initializeApp (watchdog, auto-resume tunnel)
 import { initConsoleLogCapture } from "@/lib/consoleLogBuffer";
@@ -36,10 +38,15 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${materialSymbols.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${materialSymbols.variable}`}>
         <ThemeProvider>
           <RuntimeI18nProvider>
-            {children}
+            {/* MUI is the app-wide UI layer now. The emotion cache + theme live at
+                the root so every route (login, landing, dashboard) resolves the
+                9Router palette without each page wrapping its own providers. */}
+            <AppRouterCacheProvider options={{ key: "mui" }}>
+              <MuiProviders>{children}</MuiProviders>
+            </AppRouterCacheProvider>
           </RuntimeI18nProvider>
         </ThemeProvider>
       </body>

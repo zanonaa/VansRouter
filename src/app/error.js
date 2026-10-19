@@ -2,6 +2,19 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import MuiButton from "@mui/material/Button";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 24, ...sx }}>
+      {children}
+    </Icon>
+  );
+}
 
 export default function Error({ error, reset }) {
   useEffect(() => {
@@ -9,38 +22,89 @@ export default function Error({ error, reset }) {
   }, [error]);
 
   return (
-    <main className="flex min-h-[70vh] items-center justify-center bg-bg px-6 py-16 text-text-main">
-      <section className="w-full max-w-lg rounded-lg border border-border bg-surface p-6 shadow-soft">
-        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
-          <span className="material-symbols-outlined text-[24px]">error</span>
-        </div>
-        <h1 className="text-xl font-semibold">Something went wrong</h1>
-        <p className="mt-2 text-sm leading-6 text-text-muted">
+    <Box
+      component="main"
+      sx={{
+        display: "flex",
+        minHeight: "70vh",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+        color: "text.primary",
+        px: 3,
+        py: 8,
+      }}
+    >
+      <Paper
+        elevation={0}
+        variant="outlined"
+        sx={{ width: "100%", maxWidth: 512, borderRadius: "10px", borderColor: "divider", bgcolor: "background.paper", p: 3, boxShadow: "var(--shadow-soft)" }}
+      >
+        <Box
+          sx={{
+            mb: 2,
+            display: "flex",
+            height: 44,
+            width: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "10px",
+            bgcolor: "rgba(239,68,68,0.10)",
+            color: "error.main",
+          }}
+        >
+          <MsIcon>error</MsIcon>
+        </Box>
+        <Typography sx={{ fontSize: 20, fontWeight: 600 }}>Something went wrong</Typography>
+        <Typography variant="body2" sx={{ mt: 1, lineHeight: 1.6, color: "text.secondary" }}>
           The page hit an unexpected error. Try again, or return to the dashboard if it keeps happening.
-        </p>
+        </Typography>
         {error?.message ? (
-          <pre className="mt-4 max-h-36 overflow-auto rounded-md border border-border bg-surface-2 p-3 text-xs text-text-muted">
+          <Box
+            component="pre"
+            sx={{
+              mt: 2,
+              maxHeight: 144,
+              overflow: "auto",
+              borderRadius: "6px",
+              border: 1,
+              borderColor: "divider",
+              bgcolor: "var(--color-surface-2)",
+              p: 1.5,
+              fontSize: 12,
+              color: "text.secondary",
+              whiteSpace: "pre-wrap",
+            }}
+          >
             {error.message}
-          </pre>
+          </Box>
         ) : null}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            type="button"
+        <Box sx={{ mt: 3, display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+          <MuiButton
+            variant="contained"
+            disableElevation
             onClick={reset}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+            startIcon={<MsIcon sx={{ fontSize: 18 }}>refresh</MsIcon>}
           >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
             Try again
-          </button>
-          <Link
+          </MuiButton>
+          <MuiButton
+            component={Link}
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-text-main transition-colors hover:bg-surface-2"
+            variant="outlined"
+            color="inherit"
+            startIcon={<MsIcon sx={{ fontSize: 18 }}>dashboard</MsIcon>}
+            sx={{
+              borderColor: "divider",
+              color: "text.primary",
+              bgcolor: "background.paper",
+              "&:hover": { bgcolor: "var(--color-surface-2)", borderColor: "divider" },
+            }}
           >
-            <span className="material-symbols-outlined text-[18px]">dashboard</span>
             Dashboard
-          </Link>
-        </div>
-      </section>
-    </main>
+          </MuiButton>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

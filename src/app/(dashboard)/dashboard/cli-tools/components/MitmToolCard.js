@@ -1,12 +1,38 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import MuiButton from "@mui/material/Button";
 import { Card, Button, Badge, Input, ModelSelectModal } from "@/shared/components";
 import { TOOL_HOSTS } from "@/shared/constants/mitmToolHosts.cjs";
 import Image from "next/image";
 
 const EMPTY_ALIASES = {};
 const EMPTY_STATUS = {};
+
+function MsIcon({ children, sx }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={sx}>
+      {children}
+    </Icon>
+  );
+}
+
+const compactInputSx = {
+  width: "100%",
+  minWidth: 0,
+  fontSize: 12,
+  bgcolor: "background.paper",
+  "& .MuiOutlinedInput-input": { py: 1, px: 1 },
+  "& .MuiOutlinedInput-notchedOutline": { borderColor: "divider" },
+};
 
 /**
  * Per-tool MITM card — shows DNS status + model mappings.
@@ -16,107 +42,127 @@ const EMPTY_STATUS = {};
  */
 function MitmExpandedSection({ dnsActive, handleDnsToggle, handleMappingBlur, handleModelMappingChange, hasActiveProviders, loading, mitmHosts, modelMappings, openModelSelector, saveMappings, serverRunning, tool, warning }) {
   return (
-          <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">
-            {/* Hosts */}
-            {mitmHosts.length > 0 && (
-              <div className="mt-2 rounded-md border border-border bg-surface/50 px-2 py-1.5">
-                <p className="text-[10px] font-medium tracking-wide text-text-main/80 mb-1">
-                  Edit hosts file manually to add the following entries:
-                </p>
-                <ul className="list-none space-y-0.5 font-mono text-[10px] text-text-muted break-all">
-                  {mitmHosts.map((h) => (
-                    <li key={h}>127.0.0.1 {h}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {/* Info */}
-            <div className="flex flex-col gap-0.5 text-[11px] text-text-muted px-1">
-              <p>Toggle DNS to redirect {tool.name} traffic through VansAI via MITM.</p>
-              {!dnsActive && (
-                <p className="text-amber-600 text-[10px] mt-1">
-                  ⚠️ Enable DNS to edit model mappings
-                </p>
-              )}
-            </div>
+    <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: "divider", display: "flex", flexDirection: "column", gap: 2 }}>
+      {/* Hosts */}
+      {mitmHosts.length > 0 && (
+        <Box sx={{ mt: 1, borderRadius: "6px", border: 1, borderColor: "divider", bgcolor: "rgba(255,255,255,0.5)", px: 1, py: 0.75 }}>
+          <Typography sx={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.3, color: "text.primary", opacity: 0.8, mb: 0.5 }}>
+            Edit hosts file manually to add the following entries:
+          </Typography>
+          <Box component="ul" sx={{ listStyle: "none", m: 0, p: 0, fontFamily: "ui-monospace, monospace", fontSize: 10, color: "text.secondary", wordBreak: "break-all", "& li + li": { mt: 0.25 } }}>
+            {mitmHosts.map((h) => (
+              <li key={h}>127.0.0.1 {h}</li>
+            ))}
+          </Box>
+        </Box>
+      )}
+      {/* Info */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, fontSize: 11, color: "text.secondary", px: 1 }}>
+        <Box component="p" sx={{ m: 0 }}>Toggle DNS to redirect {tool.name} traffic through VansAI via MITM.</Box>
+        {!dnsActive && (
+          <Typography sx={{ color: "#d97706", fontSize: 10, mt: 0.5 }}>
+            ⚠️ Enable DNS to edit model mappings
+          </Typography>
+        )}
+      </Box>
 
-            {/* Model Mappings */}
-            {tool.defaultModels?.length > 0 && (
-              <div className="flex flex-col gap-2">
-                {tool.defaultModels.map((model) => (
-                  <div key={model.alias} className="grid grid-cols-1 gap-1.5 sm:grid-cols-[9rem_auto_1fr_auto] sm:items-center sm:gap-2">
-                    <span className="text-xs font-semibold text-text-main sm:text-right">{model.name}</span>
-                    <span className="material-symbols-outlined hidden text-text-muted text-[14px] sm:inline">arrow_forward</span>
-                    <div className="relative w-full min-w-0">
-                      <input
-                        type="text"
-                        value={modelMappings[model.alias] || ""}
-                        onChange={(e) => handleModelMappingChange(model.alias, e.target.value)}
-                        onBlur={(e) => handleMappingBlur(model.alias, e.target.value)}
-                        aria-label="Model ID" placeholder="provider/model-id"
-                        disabled={!dnsActive}
-                        className={`w-full min-w-0 pl-2 pr-7 py-2 bg-surface rounded border border-border text-xs focus:outline-none focus:ring-1 focus:ring-primary/50 sm:py-1.5 ${!dnsActive ? "opacity-50 cursor-not-allowed" : ""}`}
-                      />
-                      {modelMappings[model.alias] && (
-                        <button type="button"
-                          onClick={() => {
-                            handleModelMappingChange(model.alias, "");
-                            saveMappings({ ...modelMappings, [model.alias]: "" });
-                          }}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-text-muted hover:text-red-500 rounded transition-colors"
-                          title="Clear"
-                        >
-                          <span className="material-symbols-outlined text-[14px]">close</span>
-                        </button>
-                      )}
-                    </div>
-                    <button type="button"
-                      onClick={() => openModelSelector(model.alias)}
-                      disabled={!hasActiveProviders || !dnsActive}
-                      className={`rounded border px-2 py-2 text-xs transition-colors sm:py-1.5 ${hasActiveProviders && dnsActive ? "bg-surface border-border hover:border-primary cursor-pointer" : "opacity-50 cursor-not-allowed border-border"}`}
-                    >
-                      Select
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+      {/* Model Mappings */}
+      {tool.defaultModels?.length > 0 && (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          {tool.defaultModels.map((model) => (
+            <Box key={model.alias} sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "9rem auto 1fr auto" }, gap: 0.75, alignItems: { sm: "center" }, columnGap: { sm: 1 } }}>
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "text.primary", textAlign: { sm: "right" } }}>{model.name}</Box>
+              <MsIcon sx={{ display: { xs: "none", sm: "inline" }, color: "text.secondary", fontSize: 14 }}>arrow_forward</MsIcon>
+              <Box sx={{ position: "relative", width: "100%", minWidth: 0 }}>
+                <OutlinedInput
+                  type="text"
+                  value={modelMappings[model.alias] || ""}
+                  onChange={(e) => handleModelMappingChange(model.alias, e.target.value)}
+                  onBlur={(e) => handleMappingBlur(model.alias, e.target.value)}
+                  inputProps={{ "aria-label": "Model ID", placeholder: "provider/model-id" }}
+                  disabled={!dnsActive}
+                  size="small"
+                  sx={{ ...compactInputSx, pr: 3.5, opacity: dnsActive ? 1 : 0.5 }}
+                />
+                {modelMappings[model.alias] && (
+                  <MuiButton
+                    type="button"
+                    onClick={() => {
+                      handleModelMappingChange(model.alias, "");
+                      saveMappings({ ...modelMappings, [model.alias]: "" });
+                    }}
+                    title="Clear"
+                    sx={{ position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)", minWidth: 0, p: 0.25, color: "text.secondary", "&:hover": { color: "#ef4444", bgcolor: "transparent" } }}
+                  >
+                    <MsIcon sx={{ fontSize: 14 }}>close</MsIcon>
+                  </MuiButton>
+                )}
+              </Box>
+              <MuiButton
+                type="button"
+                onClick={() => openModelSelector(model.alias)}
+                disabled={!hasActiveProviders || !dnsActive}
+                variant="outlined"
+                size="small"
+                sx={{
+                  fontSize: 12,
+                  textTransform: "none",
+                  py: { xs: 1, sm: 0.75 },
+                  opacity: hasActiveProviders && dnsActive ? 1 : 0.5,
+                  borderColor: "divider",
+                  color: "text.primary",
+                  bgcolor: "background.paper",
+                  "&:hover": { borderColor: hasActiveProviders && dnsActive ? "primary.main" : "divider", bgcolor: "background.paper" },
+                }}
+              >
+                Select
+              </MuiButton>
+            </Box>
+          ))}
+        </Box>
+      )}
 
-            {tool.defaultModels?.length === 0 && (
-              <p className="text-xs text-text-muted px-1">Model mappings will be available soon.</p>
-            )}
+      {tool.defaultModels?.length === 0 && (
+        <Typography sx={{ fontSize: 12, color: "text.secondary", px: 1 }}>Model mappings will be available soon.</Typography>
+      )}
 
-            {/* Start / Stop DNS button */}
-            <div className="flex flex-col gap-2 sm:items-start">
-              {dnsActive ? (
-                <button type="button"
-                  onClick={handleDnsToggle}
-                  disabled={!serverRunning || loading}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-1.5"
-                >
-                  <span className="material-symbols-outlined text-[16px]">stop_circle</span>
-                  Stop DNS
-                </button>
-              ) : (
-                <button type="button"
-                  onClick={handleDnsToggle}
-                  disabled={!serverRunning || loading}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-1.5"
-                >
-                  <span className="material-symbols-outlined text-[16px]">play_circle</span>
-                  Start DNS
-                </button>
-              )}
+      {/* Start / Stop DNS button */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1, alignItems: { sm: "flex-start" } }}>
+        {dnsActive ? (
+          <MuiButton
+            type="button"
+            variant="outlined"
+            size="small"
+            onClick={handleDnsToggle}
+            disabled={!serverRunning || loading}
+            startIcon={<MsIcon sx={{ fontSize: 16 }}>stop_circle</MsIcon>}
+            sx={{ width: { xs: "100%", sm: "auto" }, fontSize: 12, fontWeight: 500, textTransform: "none", color: "#ef4444", borderColor: "rgba(239,68,68,0.30)", bgcolor: "rgba(239,68,68,0.10)", py: { sm: 0.75 }, "&:hover": { bgcolor: "rgba(239,68,68,0.20)", borderColor: "rgba(239,68,68,0.30)" } }}
+          >
+            Stop DNS
+          </MuiButton>
+        ) : (
+          <MuiButton
+            type="button"
+            variant="outlined"
+            size="small"
+            onClick={handleDnsToggle}
+            disabled={!serverRunning || loading}
+            startIcon={<MsIcon sx={{ fontSize: 16 }}>play_circle</MsIcon>}
+            sx={{ width: { xs: "100%", sm: "auto" }, fontSize: 12, fontWeight: 500, textTransform: "none", color: "primary.main", borderColor: "rgba(229,106,74,0.30)", bgcolor: "rgba(229,106,74,0.10)", py: { sm: 0.75 }, "&:hover": { bgcolor: "rgba(229,106,74,0.20)", borderColor: "rgba(229,106,74,0.30)" } }}
+          >
+            Start DNS
+          </MuiButton>
+        )}
 
-              {/* Warning below button */}
-              {warning && (
-                <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-amber-500">
-                  <span className="material-symbols-outlined text-[14px]">warning</span>
-                  <span>{warning}</span>
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Warning below button */}
+        {warning && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1, py: 0.75, borderRadius: "4px", fontSize: 12, color: "#f59e0b" }}>
+            <MsIcon sx={{ fontSize: 14 }}>warning</MsIcon>
+            <Box component="span">{warning}</Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 }
 
@@ -250,25 +296,32 @@ export default function MitmToolCard({
 
   return (
     <>
-      <Card padding="xs" className="overflow-hidden">
-        <button type="button" className="flex w-full items-start justify-between gap-3 hover:cursor-pointer sm:items-center text-left" onClick={onToggle} aria-expanded={isExpanded} aria-label="Toggle section">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="size-8 flex items-center justify-center shrink-0">
+      <Card padding="xs" sx={{ overflow: "hidden" }}>
+        <Box
+          component="button"
+          type="button"
+          onClick={onToggle}
+          aria-expanded={isExpanded}
+          aria-label="Toggle section"
+          sx={{ display: "flex", width: "100%", alignItems: { xs: "flex-start", sm: "center" }, justifyContent: "space-between", gap: 1.5, cursor: "pointer", textAlign: "left", background: "none", border: 0, p: 0, color: "inherit" }}
+        >
+          <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Image
                 src={tool.image}
                 alt={tool.name}
                 width={32}
                 height={32}
-                className="size-8 object-contain rounded-lg"
+                style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 8 }}
                 sizes="32px"
                 onError={(e) => { e.target.style.display = "none"; }}
-              loading="lazy"
-              decoding="async"
+                loading="lazy"
+                decoding="async"
               />
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-medium text-sm">{tool.name}</h3>
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+                <Typography component="h3" sx={{ fontWeight: 500, fontSize: 14 }}>{tool.name}</Typography>
                 {!serverRunning ? (
                   <Badge variant="default" size="sm">Server off</Badge>
                 ) : dnsActive ? (
@@ -276,51 +329,49 @@ export default function MitmToolCard({
                 ) : (
                   <Badge variant="warning" size="sm">DNS off</Badge>
                 )}
-              </div>
-              <p className="text-xs text-text-muted sm:truncate">Intercept {tool.name} requests via MITM proxy</p>
-            </div>
-          </div>
-          <span className={`material-symbols-outlined text-text-muted text-[20px] transition-transform ${isExpanded ? "rotate-180" : ""}`}>
+              </Box>
+              <Typography sx={{ fontSize: 12, color: "text.secondary", overflow: { sm: "hidden" }, textOverflow: { sm: "ellipsis" }, whiteSpace: { sm: "nowrap" } }}>Intercept {tool.name} requests via MITM proxy</Typography>
+            </Box>
+          </Box>
+          <MsIcon sx={{ color: "text.secondary", fontSize: 20, transition: "transform 150ms", transform: isExpanded ? "rotate(180deg)" : "none", flexShrink: 0 }}>
             expand_more
-          </span>
-        </button>
+          </MsIcon>
+        </Box>
 
       {isExpanded && <MitmExpandedSection dnsActive={dnsActive} handleDnsToggle={handleDnsToggle} handleMappingBlur={handleMappingBlur} handleModelMappingChange={handleModelMappingChange} hasActiveProviders={hasActiveProviders} loading={loading} mitmHosts={mitmHosts} modelMappings={modelMappings} openModelSelector={openModelSelector} saveMappings={saveMappings} serverRunning={serverRunning} tool={tool} warning={warning} />}
       </Card>
 
       {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="mx-4 flex w-full max-w-sm flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xl sm:p-6">
-            <h3 className="font-semibold text-text-main">Sudo Password Required</h3>
-            <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <span className="material-symbols-outlined text-yellow-500 text-[20px]">warning</span>
-              <p className="text-xs text-text-muted">Required to modify /etc/hosts and flush DNS cache</p>
-            </div>
-            <Input
-              type="password"
-              placeholder="Enter sudo password"
-              value={sudoPassword}
-              onChange={(e) => setSudoPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !loading) handleConfirmPassword(); }}
-            />
-            {modalError && (
-              <div className="flex items-center gap-2 px-2 py-1.5 rounded text-xs bg-red-500/10 text-red-600">
-                <span className="material-symbols-outlined text-[14px]">error</span>
-                <span>{modalError}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { setShowPasswordModal(false); setSudoPassword(""); setModalError(null); }} disabled={loading}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleConfirmPassword} loading={loading}>
-                Confirm
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={showPasswordModal} onClose={() => !loading && setShowPasswordModal(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>Sudo Password Required</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "8px !important" }}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, p: 1.5, bgcolor: "rgba(234,179,8,0.10)", border: 1, borderColor: "rgba(234,179,8,0.30)", borderRadius: "8px" }}>
+            <MsIcon sx={{ color: "#eab308", fontSize: 20 }}>warning</MsIcon>
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Required to modify /etc/hosts and flush DNS cache</Typography>
+          </Box>
+          <Input
+            type="password"
+            placeholder="Enter sudo password"
+            value={sudoPassword}
+            onChange={(e) => setSudoPassword(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !loading) handleConfirmPassword(); }}
+          />
+          {modalError && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1, py: 0.75, borderRadius: "4px", fontSize: 12, bgcolor: "rgba(239,68,68,0.10)", color: "#dc2626" }}>
+              <MsIcon sx={{ fontSize: 14 }}>error</MsIcon>
+              <Box component="span">{modalError}</Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="ghost" size="sm" onClick={() => { setShowPasswordModal(false); setSudoPassword(""); setModalError(null); }} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleConfirmPassword} loading={loading}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Model Select Modal */}
       {modalOpen && (

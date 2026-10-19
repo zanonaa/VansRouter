@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import MuiButton from "@mui/material/Button";
 import Card from "@/shared/components/Card";
 import PricingModal from "@/shared/components/PricingModal";
 
@@ -53,123 +57,128 @@ export default function PricingSettingsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Pricing Settings</h1>
-          <p className="text-text-muted mt-1">
-            Configure pricing rates for cost tracking and calculations
-          </p>
-        </div>
-        <button type="button"
-          onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
-        >
-          Edit Pricing
-        </button>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="text-text-muted text-sm uppercase font-semibold">
-            Total Models
-          </div>
-          <div className="text-2xl font-bold mt-1">
-            {loading ? "..." : getModelCount()}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-text-muted text-sm uppercase font-semibold">
-            Providers
-          </div>
-          <div className="text-2xl font-bold mt-1">
-            {loading ? "..." : getProviders().length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-text-muted text-sm uppercase font-semibold">
-            Status
-          </div>
-          <div className="text-2xl font-bold mt-1 text-success">
-            {loading ? "..." : "Active"}
-          </div>
-        </Card>
-      </div>
-
-      {/* Info Section */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">How Pricing Works</h2>
-        <div className="space-y-3 text-sm text-text-muted">
-          <p>
-            <strong>Cost Calculation:</strong> Costs are calculated based on token usage and pricing rates.
-            Each request&apos;s cost is determined by: (input_tokens × input_rate) + (output_tokens × output_rate) + (cached_tokens × cached_rate)
-          </p>
-          <p>
-            <strong>Pricing Format:</strong> All rates are in <strong>dollars per million tokens</strong> ($/1M tokens).
-            Example: An input rate of 2.50 means $2.50 per 1,000,000 input tokens.
-          </p>
-          <p>
-            <strong>Token Types:</strong>
-          </p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li><strong>Input:</strong> Standard prompt tokens</li>
-            <li><strong>Output:</strong> Completion/response tokens</li>
-            <li><strong>Cached:</strong> Cached input tokens (typically 50% of input rate)</li>
-            <li><strong>Reasoning:</strong> Special reasoning/thinking tokens (fallback to output rate)</li>
-            <li><strong>Cache Creation:</strong> Tokens used to create cache entries (fallback to input rate)</li>
-          </ul>
-          <p>
-            <strong>Custom Pricing:</strong> You can override default pricing for specific models.
-            Reset to defaults anytime to restore standard rates.
-          </p>
-        </div>
-      </Card>
-
-      {/* Current Pricing Preview */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Current Pricing Overview</h2>
-          <button type="button"
+    <Box sx={{ maxWidth: 1152, mx: "auto", p: 3 }}>
+      <Stack spacing={3}>
+        {/* Header */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box>
+            <Typography sx={{ fontSize: 30, fontWeight: 700, lineHeight: 1.2 }}>Pricing Settings</Typography>
+            <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
+              Configure pricing rates for cost tracking and calculations
+            </Typography>
+          </Box>
+          <MuiButton
+            variant="contained"
+            disableElevation
             onClick={() => setShowModal(true)}
-            className="text-primary hover:underline text-sm"
           >
-            View Full Details
-          </button>
-        </div>
+            Edit Pricing
+          </MuiButton>
+        </Box>
 
-        {loading ? (
-          <div className="text-center py-4 text-text-muted">Loading pricing data...</div>
-        ) : currentPricing ? (
-          <div className="space-y-3">
-            {Object.keys(currentPricing).slice(0, 5).map(provider => (
-              <div key={provider} className="text-sm">
-                <span className="font-semibold">{provider.toUpperCase()}:</span>{" "}
-                <span className="text-text-muted">
-                  {Object.keys(currentPricing[provider]).length} models
-                </span>
-              </div>
-            ))}
-            {Object.keys(currentPricing).length > 5 && (
-              <div className="text-sm text-text-muted">
-                + {Object.keys(currentPricing).length - 5} more providers
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-text-muted">No pricing data available</div>
+        {/* Quick Stats */}
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" }, gap: 2 }}>
+          <Card padding="sm">
+            <Typography sx={{ color: "text.secondary", fontSize: 14, textTransform: "uppercase", fontWeight: 600 }}>
+              Total Models
+            </Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 700, mt: 0.5 }}>
+              {loading ? "..." : getModelCount()}
+            </Typography>
+          </Card>
+          <Card padding="sm">
+            <Typography sx={{ color: "text.secondary", fontSize: 14, textTransform: "uppercase", fontWeight: 600 }}>
+              Providers
+            </Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 700, mt: 0.5 }}>
+              {loading ? "..." : getProviders().length}
+            </Typography>
+          </Card>
+          <Card padding="sm">
+            <Typography sx={{ color: "text.secondary", fontSize: 14, textTransform: "uppercase", fontWeight: 600 }}>
+              Status
+            </Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 700, mt: 0.5, color: "success.main" }}>
+              {loading ? "..." : "Active"}
+            </Typography>
+          </Card>
+        </Box>
+
+        {/* Info Section */}
+        <Card padding="md">
+          <Typography sx={{ fontSize: 20, fontWeight: 600, mb: 2 }}>How Pricing Works</Typography>
+          <Stack spacing={1.5} sx={{ fontSize: 14, color: "text.secondary" }}>
+            <Typography variant="inherit" sx={{ fontSize: 14, color: "text.secondary" }}>
+              <strong>Cost Calculation:</strong> Costs are calculated based on token usage and pricing rates.
+              Each request&apos;s cost is determined by: (input_tokens × input_rate) + (output_tokens × output_rate) + (cached_tokens × cached_rate)
+            </Typography>
+            <Typography variant="inherit" sx={{ fontSize: 14, color: "text.secondary" }}>
+              <strong>Pricing Format:</strong> All rates are in <strong>dollars per million tokens</strong> ($/1M tokens).
+              Example: An input rate of 2.50 means $2.50 per 1,000,000 input tokens.
+            </Typography>
+            <Typography variant="inherit" sx={{ fontSize: 14, color: "text.secondary" }}>
+              <strong>Token Types:</strong>
+            </Typography>
+            <Box component="ul" sx={{ listStyle: "disc", listStylePosition: "inside", ml: 2, "& li": { mb: 0.5 } }}>
+              <li><strong>Input:</strong> Standard prompt tokens</li>
+              <li><strong>Output:</strong> Completion/response tokens</li>
+              <li><strong>Cached:</strong> Cached input tokens (typically 50% of input rate)</li>
+              <li><strong>Reasoning:</strong> Special reasoning/thinking tokens (fallback to output rate)</li>
+              <li><strong>Cache Creation:</strong> Tokens used to create cache entries (fallback to input rate)</li>
+            </Box>
+            <Typography variant="inherit" sx={{ fontSize: 14, color: "text.secondary" }}>
+              <strong>Custom Pricing:</strong> You can override default pricing for specific models.
+              Reset to defaults anytime to restore standard rates.
+            </Typography>
+          </Stack>
+        </Card>
+
+        {/* Current Pricing Preview */}
+        <Card padding="md">
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Typography sx={{ fontSize: 20, fontWeight: 600 }}>Current Pricing Overview</Typography>
+            <MuiButton
+              variant="text"
+              size="small"
+              onClick={() => setShowModal(true)}
+              sx={{ color: "primary.main", textTransform: "none", "&:hover": { textDecoration: "underline", bgcolor: "transparent" } }}
+            >
+              View Full Details
+            </MuiButton>
+          </Box>
+
+          {loading ? (
+            <Box sx={{ textAlign: "center", py: 2, color: "text.secondary" }}>Loading pricing data...</Box>
+          ) : currentPricing ? (
+            <Stack spacing={1.5}>
+              {Object.keys(currentPricing).slice(0, 5).map((provider) => (
+                <Typography key={provider} sx={{ fontSize: 14 }}>
+                  <Box component="span" sx={{ fontWeight: 600 }}>{provider.toUpperCase()}:</Box>{" "}
+                  <Box component="span" sx={{ color: "text.secondary" }}>
+                    {Object.keys(currentPricing[provider]).length} models
+                  </Box>
+                </Typography>
+              ))}
+              {Object.keys(currentPricing).length > 5 && (
+                <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
+                  + {Object.keys(currentPricing).length - 5} more providers
+                </Typography>
+              )}
+            </Stack>
+          ) : (
+            <Typography sx={{ color: "text.secondary" }}>No pricing data available</Typography>
+          )}
+        </Card>
+
+        {/* Pricing Modal */}
+        {showModal && (
+          <PricingModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            onSave={handlePricingUpdated}
+          />
         )}
-      </Card>
-
-      {/* Pricing Modal */}
-      {showModal && (
-        <PricingModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onSave={handlePricingUpdated}
-        />
-      )}
-    </div>
+      </Stack>
+    </Box>
   );
 }

@@ -1,23 +1,39 @@
 "use client";
 
+import Box from "@mui/material/Box";
+
+const TONES = {
+  success: { bgcolor: "rgba(34,197,94,0.10)", light: "#16a34a", dark: "#4ade80" },
+  warning: { bgcolor: "rgba(234,179,8,0.10)", light: "#ca8a04", dark: "#facc15" },
+  info: { bgcolor: "rgba(59,130,246,0.10)", light: "#2563eb", dark: "#60a5fa" },
+  error: { bgcolor: "rgba(239,68,68,0.10)", light: "#dc2626", dark: "#f87171" },
+};
+
 /** Reusable status alert */
-export default function StatusAlert({ status, className = "" }) {
+export default function StatusAlert({ status, className = "", sx }) {
+  const tone = TONES[status.type] || TONES.error;
   const renderMessage = (msg) => {
     const parts = msg.split(/(https?:\/\/[^\s]+)/g);
     return parts.map((part, i) =>
       /^https?:\/\//.test(part)
-        ? <a key={i} href={part} target="_blank" rel="noreferrer" className="underline font-medium">{part}</a>
+        ? <Box key={i} component="a" href={part} target="_blank" rel="noreferrer" sx={{ textDecoration: "underline", fontWeight: 500, color: "inherit" }}>{part}</Box>
         : part
     );
   };
 
   return (
-    <div className={`p-2 rounded text-sm ${className} ${status.type === "success" ? "bg-green-500/10 text-green-600 dark:text-green-400" :
-        status.type === "warning" ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" :
-        status.type === "info" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" :
-          "bg-red-500/10 text-red-600 dark:text-red-400"
-      }`}>
+    <Box
+      className={className}
+      sx={(theme) => ({
+        p: 1,
+        borderRadius: "4px",
+        fontSize: 14,
+        bgcolor: tone.bgcolor,
+        color: theme.palette.mode === "dark" ? tone.dark : tone.light,
+        ...(typeof sx === "function" ? sx(theme) : sx),
+      })}
+    >
       {renderMessage(status.message)}
-    </div>
+    </Box>
   );
 }
