@@ -1,6 +1,6 @@
 # Base de autenticação — Fase 3, lote parcial
 
-Este pacote **ainda não está ligado ao roteador nem ao executável**. Não adiciona endpoints de login, não libera rotas protegidas e não conclui a migração da autenticação.
+Este pacote está ligado ao executável e implementa `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/status` e `GET /api/auth/check`. **Não conclui a migração da autenticação e não está pronto para corte de produção.** A leitura de settings usa a tabela existente, sem criar tabelas ou migrations. Em banco novo retorna configuração vazia; falhas de consulta/JSON não são tratadas como banco novo.
 
 Implementado:
 
@@ -15,9 +15,13 @@ Implementado:
 
 - Apenas HS256 é aceito, diferentemente da seleção implícita da biblioteca jose original; é o único algoritmo emitido pela aplicação. Essa restrição precisa de revisão antes da integração dos endpoints.
 - Arquivo jwt-secret vazio/inacessível gera erro, não regeneração silenciosa. A criação usa hard link atômico: em filesystem sem suporte, retorna erro sem substituir o arquivo.
-- A compatibilidade criptográfica com a estrutura JWT foi implementada, mas o teste cruzado com jose/bcryptjs ainda não foi executado.
+- Teste cruzado Node → Go aprovado com JWT gerado por jose 6.2.3 e hash gerado por bcryptjs 3.0.3, usando segredo/senha fictícios. Fixture versionada em testdata/node-compatibility.json. O sentido Go → Node ainda não foi verificado.
 - O helper de cookie preserva a leitura de X-Forwarded-Proto; antes de usá-lo em produção, a entrada deve ter política de proxy confiável. Este pacote não autoriza confiar em headers de identidade enviados pelo cliente.
-- Ainda faltam persistência de settings, identidade/token CLI, API keys/ACL, middleware, login/logout/status/check/reset, troca de senha e OIDC. O grant deve continuar limitado à troca de senha pelo middleware e pelo handler: verificar apenas a assinatura não basta para autorização.
+- Ainda faltam escrita de settings/migrations, identidade/token CLI, API keys/ACL, middleware geral, reset, troca de senha e OIDC. O grant deve continuar limitado à troca de senha pelo middleware e pelo handler: verificar apenas a assinatura não basta para autorização. Login remoto com senha inicial de compatibilidade emite grant, mas o endpoint que o consome ainda não existe: não disponibilizar esse fluxo como pronto.
+- auth/check exige sessão antes do handler, salvo requireLogin=false; mantém a diferença original de exigir JWT_SECRET configurado para confirmar authenticated. Token CLI ainda não é aceito.
+- Identidade de origem vem do socket TCP, ignorando headers fornecidos pelo cliente. Forwarding headers impedem classificar como acesso local; proxies ainda não têm allowlist de confiança. O limiter agrupa pelo peer TCP e não pelo XFF, podendo agrupar usuários atrás do mesmo proxy até essa integração.
+- Status retorna o fallback público quando a leitura de settings falha. Mensagens internas de erro de login foram saneadas; erros de JSON mantêm status 500, mas não reproduzem mensagens variáveis do parser JavaScript. Não declarar paridade byte a byte.
+- Cookies de logout removem os quatro nomes existentes, mas headers Expires/Max-Age ainda precisam de comparação diferencial com Next.js. OPTIONS de autenticação também permanece pendente.
 - Assim como a origem, o limiter só limpa entradas por acesso ou sucesso; gerenciamento global de memória ainda não foi modificado.
 
 ## Validação realizada
@@ -26,4 +30,4 @@ Testes focados `go test -mod=readonly -p=2 ./internal/auth` aprovados em sandbox
 
 Cobertura: criação/persistência concorrente do segredo, permissões, assinatura inválida, expiração de sessão/grant, algoritmo, cookies, senha e progressão do limiter.
 
-A suíte completa foi tentada no mesmo isolamento, mas bloqueada porque golang.org/x/sys v0.29.0 não está extraído no cache disponível e o cache é somente leitura. Não foi feito download para contornar o isolamento. Não declarar teste de corrida, build completo ou paridade diferencial aprovados neste lote.
+Na atualização deste lote, o cache offline foi preparado seletivamente a partir de arquivos locais já disponíveis, incluindo a extração de golang.org/x/sys v0.29.0. A suíte completa `go test ./...`, `go vet ./...` e o build do executável passaram sob o mesmo isolamento, sem rede e com módulos somente leitura. Testes adicionais cobrem login local/remoto, grant, bloqueio, OIDC exclusivo, status/logout/check e leitura de settings existentes/inválidas. Não foi executado detector de corrida nesta atualização (CGO desabilitado no sandbox), nem comparação HTTP diferencial completa contra Next.js.

@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/zanonaa/VansRouter/backend/internal/auth"
 	"github.com/zanonaa/VansRouter/backend/internal/config"
 	"github.com/zanonaa/VansRouter/backend/internal/database"
 	"github.com/zanonaa/VansRouter/backend/internal/http/router"
@@ -35,12 +36,18 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	sessions, err := auth.LoadSessions(cfg.DataDir, os.Getenv("JWT_SECRET"))
+	if err != nil {
+		return err
+	}
+	initial, valid := auth.InitialPassword(os.Getenv("INITIAL_PASSWORD"), os.Getenv("NODE_ENV"))
+	authentication := &auth.HTTP{Sessions: sessions, Settings: func(ctx context.Context) (map[string]any, error) { return database.ReadAuthSettings(ctx, db) }, Limiter: auth.NewLimiter(), Initial: initial, InitialValid: valid, ForceSecure: os.Getenv("AUTH_COOKIE_SECURE") == "true", CheckConfigured: os.Getenv("JWT_SECRET") != ""}
 	server := &http.Server{
 		Addr: cfg.Address,
-		Handler: router.New(func(ctx context.Context) error {
+		Handler: router.NewWithAuth(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}),
+		}, authentication),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.

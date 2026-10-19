@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -11,6 +12,29 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+func TestNodeCompatibility(t *testing.T) {
+	data, err := os.ReadFile("testdata/node-compatibility.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Token string `json:"token"`
+		Hash  string `json:"hash"`
+	}
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := LoadSessions(t.TempDir(), "segredo-ficticio-para-testes")
+	s.now = func() time.Time { return time.Unix(1900000000, 0) }
+	claims, err := s.Verify(fixture.Token)
+	if err != nil || claims["oidcName"] != "Operador" {
+		t.Fatalf("JWT jose incompatível: %v", err)
+	}
+	if !VerifyPassword("senha-de-teste-123", fixture.Hash, "") {
+		t.Fatal("hash bcryptjs incompatível")
+	}
+}
 
 func TestSessions(t *testing.T) {
 	s, err := LoadSessions(t.TempDir(), "segredo-de-teste")

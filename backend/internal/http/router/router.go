@@ -6,14 +6,21 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/zanonaa/VansRouter/backend/internal/auth"
 	"github.com/zanonaa/VansRouter/backend/internal/http/handlers"
 )
 
 func New(readiness ...handlers.Readiness) http.Handler {
-	h := handlers.Bootstrap{}
+	var ready handlers.Readiness
 	if len(readiness) > 0 {
-		h.Ready = readiness[0]
+		ready = readiness[0]
 	}
+	return NewWithAuth(ready, nil)
+}
+
+func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handler {
+	h := handlers.Bootstrap{}
+	h.Ready = ready
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +40,15 @@ func New(readiness ...handlers.Readiness) http.Handler {
 	r.Options("/api/ready", options("GET, HEAD, OPTIONS"))
 	r.Options("/api/init", options("GET, HEAD, OPTIONS"))
 	r.Options("/api/locale", options("OPTIONS, POST"))
+	if authentication != nil {
+		r.Post("/api/auth/login", authentication.Login)
+		r.Post("/api/auth/logout", authentication.Logout)
+		r.Get("/api/auth/status", authentication.Status)
+		r.Head("/api/auth/status", withoutBody(authentication.Status))
+		// auth/check aplica sua própria barreira antes de reproduzir a resposta do handler.
+		r.Get("/api/auth/check", authentication.Check)
+		r.Head("/api/auth/check", withoutBody(authentication.Check))
+	}
 	return r
 }
 
