@@ -1,3 +1,18 @@
+# v1.2.0 (2026-10-19)
+
+## Changes
+
+- Simplify release CI to a single Linux validation workflow and verify Docker
+  builds for both `linux/amd64` and `linux/arm64`; release workflow publishes
+  one multi-platform image tag for both architectures.
+- Merge the web-only gateway cleanup: remove Tunnel/Tailscale, CLI Tools/MITM,
+  and automatic Cursor/Claude combo presets. Manual combo creation remains.
+
+## Validation
+
+- PR #8 CI passed: tests, lint, standalone build, compose validation, and
+  multi-platform Docker build for AMD64 + ARM64.
+
 # v0.91.70 (2026-10-18)
 
 ## Changes (fork-only)
