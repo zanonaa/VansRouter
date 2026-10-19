@@ -14,6 +14,7 @@ import (
 	"github.com/zanonaa/VansRouter/backend/internal/auth"
 	"github.com/zanonaa/VansRouter/backend/internal/config"
 	"github.com/zanonaa/VansRouter/backend/internal/database"
+	"github.com/zanonaa/VansRouter/backend/internal/http/handlers"
 	"github.com/zanonaa/VansRouter/backend/internal/http/router"
 )
 
@@ -86,10 +87,10 @@ func run() error {
 	}
 	server := &http.Server{
 		Addr: cfg.Address,
-		Handler: router.NewWithAuth(func(ctx context.Context) error {
+		Handler: router.NewWithNodes(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}, authentication),
+		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.

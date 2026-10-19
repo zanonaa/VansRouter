@@ -19,6 +19,10 @@ func New(readiness ...handlers.Readiness) http.Handler {
 }
 
 func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handler {
+	return NewWithNodes(ready, authentication, nil)
+}
+
+func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *handlers.Nodes) http.Handler {
 	h := handlers.Bootstrap{}
 	h.Ready = ready
 	r := chi.NewRouter()
@@ -69,6 +73,12 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
 		r.Post("/api/auth/oidc/test", authentication.OIDCTest)
+	}
+	if authentication != nil && nodes != nil {
+		r.Get("/api/provider-nodes", nodes.List)
+		r.Head("/api/provider-nodes", withoutBody(nodes.List))
+		r.Post("/api/provider-nodes", nodes.Create)
+		r.Options("/api/provider-nodes", options("GET, HEAD, OPTIONS, POST"))
 	}
 	return r
 }
