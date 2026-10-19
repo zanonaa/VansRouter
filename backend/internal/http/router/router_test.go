@@ -4,7 +4,10 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+
+	"github.com/zanonaa/VansRouter/backend/internal/auth"
 )
 
 func TestHelloWorld(t *testing.T) {
@@ -45,5 +48,86 @@ func TestAPIIsNotImplementedYet(t *testing.T) {
 	New().ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/api/settings", nil))
 	if response.Code != http.StatusNotFound {
 		t.Fatalf("esperado 404, recebido %d", response.Code)
+	}
+}
+
+// wiredAuth monta um autenticador completo com gravação em memória.
+func wiredAuth(t *testing.T) (*auth.HTTP, *map[string]bool) {
+	t.Helper()
+	sessions, err := auth.LoadSessions(t.TempDir(), "segredo-ficticio-para-testes")
+	if err != nil {
+		t.Fatal(err)
+	}
+	written := map[string]bool{}
+	authentication := &auth.HTTP{
+		Sessions: sessions,
+		Limiter:  auth.NewLimiter(),
+		Settings: func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": false}, nil },
+		ChangeP:  func(context.Context, string) (map[string]any, error) { written["called"] = true; return nil, nil },
+	}
+	return authentication, &written
+}
+
+func TestSettingsRoutesRequireAuth(t *testing.T) {
+	authentication, _ := wiredAuth(t)
+	// requireLogin=true: leitura exige sessão; aqui sem cookie → 401.
+	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": true}, nil }
+	router := NewWithAuth(func(context.Context) error { return nil }, authentication)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/settings", nil))
+	if w.Code != http.StatusUnauthorized || !strings.Contains(w.Body.String(), "Unauthorized") {
+		t.Fatalf("settings sem sessão: %d %s", w.Code, w.Body.String())
+	}
+	// requireLogin=false libera a leitura.
+	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": false}, nil }
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodHead, "/api/settings", nil))
+	if w.Code != http.StatusOK || w.Body.Len() != 0 {
+		t.Fatalf("settings HEAD: %d", w.Code)
+	}
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodOptions, "/api/settings", nil))
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("settings OPTIONS: %d", w.Code)
+	}
+}
+
+func TestResetPasswordLocalOnlyGate(t *testing.T) {
+	authentication, _ := wiredAuth(t)
+	router := NewWithAuth(func(context.Context) error { return nil }, authentication)
+	request := func(remote string) *http.Request {
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/reset-password", nil)
+		req.RemoteAddr = remote
+		return req
+	}
+	// requireLogin=true: só sessão local autenticada passa.
+	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": true}, nil }
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, request("192.0.2.10:1234"))
+	if w.Code != http.StatusForbidden || !strings.Contains(w.Body.String(), "Local only: CLI token required") {
+		t.Fatalf("reset remoto: %d %s", w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, request("127.0.0.1:1234"))
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("reset local sem sessão: %d", w.Code)
+	}
+	// requireLogin=false: local passa e o handler executa (corpo vazio → 400); remoto continua bloqueado.
+	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": false}, nil }
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, request("127.0.0.1:1234"))
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("reset local com requireLogin=false deveria executar handler com corpo vazio (400): %d %s", w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, request("192.0.2.10:1234"))
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("remoto passou com requireLogin=false: %d", w.Code)
+	}
+	// OPTIONS local-only também passa pelo guard.
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodOptions, "/api/auth/reset-password", nil))
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("reset OPTIONS remoto deveria ser bloqueado: %d", w.Code)
 	}
 }

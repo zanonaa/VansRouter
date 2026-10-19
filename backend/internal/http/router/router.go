@@ -48,6 +48,13 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 		// auth/check aplica sua própria barreira antes de reproduzir a resposta do handler.
 		r.Get("/api/auth/check", authentication.Check)
 		r.Head("/api/auth/check", withoutBody(authentication.Check))
+		// Local-only do dashboardGuard; token CLI ainda não implementado.
+		r.Post("/api/auth/reset-password", authentication.LocalOnlyGuard(authentication.ResetPassword))
+		r.Options("/api/auth/reset-password", authentication.LocalOnlyGuard(options("POST, OPTIONS")))
+		r.Get("/api/settings", authentication.SettingsGuard(authentication.SettingsGet))
+		r.Head("/api/settings", withoutBody(authentication.SettingsGuard(authentication.SettingsGet)))
+		r.Patch("/api/settings", authentication.SettingsGuard(authentication.SettingsPatch))
+		r.Options("/api/settings", authentication.SettingsGuard(options("GET, HEAD, PATCH, OPTIONS")))
 	}
 	return r
 }

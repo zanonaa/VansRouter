@@ -41,7 +41,26 @@ func run() error {
 		return err
 	}
 	initial, valid := auth.InitialPassword(os.Getenv("INITIAL_PASSWORD"), os.Getenv("NODE_ENV"))
-	authentication := &auth.HTTP{Sessions: sessions, Settings: func(ctx context.Context) (map[string]any, error) { return database.ReadAuthSettings(ctx, db) }, Limiter: auth.NewLimiter(), Initial: initial, InitialValid: valid, ForceSecure: os.Getenv("AUTH_COOKIE_SECURE") == "true", CheckConfigured: os.Getenv("JWT_SECRET") != ""}
+	authentication := &auth.HTTP{
+		Sessions: sessions,
+		Limiter:  auth.NewLimiter(),
+		Settings: func(ctx context.Context) (map[string]any, error) {
+			raw, err := database.ReadAuthSettings(ctx, db)
+			if err != nil {
+				return nil, err
+			}
+			return database.MergeWithDefaults(raw), nil
+		},
+		ChangeP: func(ctx context.Context, hash string) (map[string]any, error) {
+			return database.ChangePassword(ctx, db, hash)
+		},
+		Initial:           initial,
+		InitialValid:      valid,
+		ForceSecure:       os.Getenv("AUTH_COOKIE_SECURE") == "true",
+		CheckConfigured:   os.Getenv("JWT_SECRET") != "",
+		EnableRequestLogs: os.Getenv("ENABLE_REQUEST_LOGS") == "true",
+		EnableTranslator:  os.Getenv("ENABLE_TRANSLATOR") == "true",
+	}
 	server := &http.Server{
 		Addr: cfg.Address,
 		Handler: router.NewWithAuth(func(ctx context.Context) error {

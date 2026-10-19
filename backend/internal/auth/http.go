@@ -13,15 +13,22 @@ import (
 )
 
 type SettingsReader func(context.Context) (map[string]any, error)
+type PasswordWriter func(context.Context, string) (map[string]any, error)
+
 type HTTP struct {
-	Sessions     *Sessions
-	Settings     SettingsReader
-	Limiter      *Limiter
-	Initial      string
+	Sessions *Sessions
+	Settings SettingsReader
+	ChangeP  PasswordWriter
+	Limiter  *Limiter
+	Initial  string
+	// InitialValid reproduz a política de INITIAL_PASSWORD em produção.
 	InitialValid bool
 	ForceSecure  bool
 	// CheckConfigured reproduz a exigência JWT_SECRET exclusiva de auth/check.
 	CheckConfigured bool
+	// Bandeiras de ambiente consumidas por GET /api/settings.
+	EnableRequestLogs bool
+	EnableTranslator  bool
 }
 
 const resetHint = "Forgot password? Use the VansRouter CLI on the host to set a new dashboard password."
@@ -66,6 +73,13 @@ func local(r *http.Request) bool {
 		}
 	}
 	return true
+}
+func (h *HTTP) grantOnly(r *http.Request) bool {
+	cookie, err := r.Cookie("password_change")
+	if err != nil {
+		return false
+	}
+	return h.Sessions.VerifyPasswordChange(cookie.Value)
 }
 func (h *HTTP) session(r *http.Request) map[string]any {
 	cookie, err := r.Cookie("auth_token")
@@ -153,13 +167,12 @@ func (h *HTTP) Logout(w http.ResponseWriter, r *http.Request) {
 	reply(w, 200, map[string]bool{"success": true})
 }
 func (h *HTTP) Status(w http.ResponseWriter, r *http.Request) {
-	settings, err := h.Settings(r.Context())
-	if err != nil {
-		settings = map[string]any{}
-	}
-	session := h.session(r)
-	if err != nil {
-		session = nil
+	readSettings, err := h.Settings(r.Context())
+	var settings map[string]any
+	var session map[string]any
+	if err == nil {
+		settings = readSettings
+		session = h.session(r)
 	}
 	name := strings.TrimSpace(text(session, "oidcName"))
 	email := strings.TrimSpace(text(session, "oidcEmail"))
