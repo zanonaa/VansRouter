@@ -35,20 +35,6 @@ describe("performance boundaries", () => {
     expect(valueFor("/_next/static/:path*")).toContain("immutable");
   });
 
-  it("does not let CLI smoke tests resolve Next from the host", () => {
-    const source = read("cli/scripts/smoke-package.cjs");
-    expect(source).toContain('path.join(bundledModules, "next", "package.json")');
-    expect(source).toContain("NODE_PATH: bundledModules");
-    expect(source).not.toContain("process.env.NODE_PATH");
-  });
-
-  it("keeps the external open runtime dependency in the CLI artifact", () => {
-    const build = read("cli/scripts/build-cli.js");
-    const validator = read("cli/scripts/validate-package.cjs");
-    expect(build).toContain('ensureModuleInBundle("open"');
-    expect(validator).toContain('package/app/_nm/open/package.json');
-  });
-
   it("keeps the documented custom-server port contract and Bun artifact", () => {
     expect(read("custom-server.js")).toContain('indexOf("--port")');
     expect(read("scripts/build.js")).toContain('path.join(standaloneDir, "custom-server.js")');

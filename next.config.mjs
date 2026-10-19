@@ -22,7 +22,7 @@ const nextConfig = {
   },
   outputFileTracingRoot: tracingRoot,
   outputFileTracingExcludes: {
-    "*": ["./gitbook/**/*", "./.git/**/*", "./tests/**/*", "./docs/**/*", "./.fakehome/**/*"]
+    "*": ["./.git/**/*", "./tests/**/*", "./.fakehome/**/*"]
   },
   // Disable Next.js built-in gzip/br compression so SSE chunks are flushed
   // immediately to the client instead of being batched by the compressor.
@@ -70,7 +70,7 @@ const nextConfig = {
     config.watchOptions = {
       ...config.watchOptions,
       aggregateTimeout: 300,
-      ignored: /[\\/](node_modules|\.git|logs|\.next|\.next-cli-build|gitbook|cli|open-sse\.old|tests|docs)[\\/]/,
+      ignored: /[\\/](node_modules|\.git|logs|\.next|open-sse\.old|tests)[\\/]/,
     };
     return config;
   },

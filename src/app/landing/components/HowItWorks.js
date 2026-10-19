@@ -15,15 +15,15 @@ export default function HowItWorks() {
           {/* Connection line */}
           <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-[2px] bg-linear-to-r from-gray-700 via-[#6366f1] to-gray-700 -z-10"></div>
           
-          {/* Step 1: CLI & SDKs */}
+          {/* Step 1: Web API client */}
           <div className="flex flex-col gap-6 relative group">
             <div className="w-24 h-24 rounded-2xl bg-[#141121] border border-[#3a2f27] flex items-center justify-center shadow-xl group-hover:border-gray-500 transition-colors z-10 mx-auto md:mx-0">
-              <span className="material-symbols-outlined text-4xl text-gray-300">terminal</span>
+              <span className="material-symbols-outlined text-4xl text-gray-300">language</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-2">1. CLI &amp; SDKs</h3>
+              <h3 className="text-xl font-bold mb-2">1. Web API Client</h3>
               <p className="text-sm text-gray-400">
-                Your requests start from your favorite tools or our unified SDK. Just change the base URL.
+                Send an OpenAI-compatible request to your VansRouter API endpoint.
               </p>
             </div>
           </div>

@@ -12,10 +12,6 @@ import { translateRequest } from "../../open-sse/translator/index.js";
 import { OpenCodeGoExecutor } from "../../open-sse/executors/opencode-go.js";
 import "../translator/registerAll.js";
 
-const CLI_PROVIDERS_SOURCE = await import("fs").then(({ readFileSync }) =>
-  readFileSync(new URL("../../cli/src/cli/menus/providers.js", import.meta.url), "utf8")
-);
-
 // Chat-only models (no /messages, no /responses support on opencode-go)
 const CHAT_ONLY = [
   "deepseek-flash",
@@ -80,11 +76,6 @@ function pickTransport(provider, sourceFormat, alias, model) {
 }
 
 describe("OpenCode Go model catalog", () => {
-  it("is exposed by the CLI provider setup", () => {
-    expect(CLI_PROVIDERS_SOURCE).toContain('"opencode-go": { id: "opencode-go", name: "OpenCode Go" }');
-    expect(CLI_PROVIDERS_SOURCE).toContain('"opencode-go": [');
-  });
-
   it("matches the documented model IDs", () => {
     const ids = (PROVIDER_MODELS["opencode-go"] || []).map((m) => m.id);
     expect(ids).toEqual([

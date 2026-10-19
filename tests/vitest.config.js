@@ -11,7 +11,7 @@ export default defineConfig({
     include: ["**/*.test.js"],
     // Don't scan nested agent/git worktrees — they carry their own copies of
     // tests but lack the root dependency context.
-    exclude: ["**/node_modules/**", "**/.claude/**", "**/.kilo/**", "**/.git/**", "**/dist/**", "**/all-endpoints-robust.test.js"],
+    exclude: ["**/node_modules/**", "**/.claude/**", "**/.git/**", "**/dist/**", "**/all-endpoints-robust.test.js"],
     maxConcurrency: 10,
     testTimeout: 15000,
     // Hooks re-import modules (vi.resetModules + dynamic import) and some suites

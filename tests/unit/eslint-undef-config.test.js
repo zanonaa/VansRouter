@@ -83,10 +83,4 @@ describe("eslint no-undef config (eslint.config.mjs)", () => {
     ).toBeDefined();
   });
 
-  it("does NOT flag SW `clients` global in cli/app/public/sw.js", () => {
-    const code = `self.addEventListener("fetch", (e) => { clients.claim(); });`;
-    const messages = linter.verify(code, cfg, { filename: "cli/app/public/sw.js" });
-    const undef = messages.filter((m) => m.ruleId === "no-undef");
-    expect(undef.map((m) => m.message)).toEqual([]);
-  });
 });

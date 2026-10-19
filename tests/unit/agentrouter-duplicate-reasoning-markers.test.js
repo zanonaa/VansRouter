@@ -6,7 +6,7 @@
 // OpenAI clients that already understand reasoning_content (e.g. OpenCode)
 // captured the field as `thought` but still received `<think>` and
 // `</think>` as plain content, leaking reasoning markers into the chat
-// surface. See .kimchi/docs/ferment-handoff.md Ferment 4 Phase 2.
+// surface. The assertions below lock the provider-facing behavior.
 //
 // History: this fork first fixed it partially, by wrapping only for native
 // Claude models. Upstream's 5d2cfbf3 then removed the markers entirely

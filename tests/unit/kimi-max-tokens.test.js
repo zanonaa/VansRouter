@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 // 9Router clamps max_tokens to a safe ceiling for NVIDIA-hosted Kimi models — empirically
 // a very large value (>=~32k) makes the model degenerate/loop. Smaller values pass through;
 // it never INJECTS a value when the client omits it. The clamp lives in
-// DefaultExecutor.transformRequest (per .docs/audit/03-code-state.md), which is the body
+// DefaultExecutor.transformRequest (matching the gateway's default-executor request path), which is the body
 // BaseExecutor.execute stringifies and sends upstream.
 //
 // CLI-derived refinement: the official Kimi CLI catalog (https://models.dev/api.json)
