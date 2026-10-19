@@ -5,6 +5,65 @@ import { Card, Button } from "@/shared/components";
 import { MEDIA_PROVIDER_KINDS, getProviderAlias } from "@/shared/constants/providers";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { Row } from "./exampleShared";
+import Box from "@mui/material/Box";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
+
+const inputSx = {
+  width: "100%",
+  px: 1.5,
+  py: 0.75,
+  fontSize: 14,
+  border: 1,
+  borderColor: "divider",
+  borderRadius: 2,
+  bgcolor: "background.default",
+  color: "text.primary",
+  outline: "none",
+  "&:focus": { borderColor: "primary.main" },
+};
+
+const readOnlySx = {
+  ...inputSx,
+  fontFamily: "monospace",
+  bgcolor: "action.hover",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  display: "block",
+};
+
+const copyButtonSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 0.5,
+  fontSize: 12,
+  color: "primary.main",
+  border: 0,
+  background: "none",
+  cursor: "pointer",
+  "&:hover": { textDecoration: "underline" },
+};
+
+const codeBlockSx = {
+  p: 1.5,
+  fontSize: 12,
+  fontFamily: "monospace",
+  bgcolor: "action.hover",
+  border: 1,
+  borderColor: "divider",
+  borderRadius: 2,
+  overflowX: "auto",
+  color: "text.primary",
+  m: 0,
+};
 
 const EXA_PRESETS = [
   {
@@ -227,86 +286,114 @@ export function ExaSearchExampleCard({ providerId }) {
 
   return (
     <Card>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div>
-          <h2 className="text-lg font-semibold">Exa Search 1:1 Request Playground</h2>
-          <p className="text-xs text-text-muted">
+      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 2 }}>
+        <Box>
+          <Box component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>Exa Search 1:1 Request Playground</Box>
+          <Box component="p" sx={{ fontSize: 12, color: "text.secondary", m: 0 }}>
             Test all official Exa Search API parameters including deep search, highlights, livecrawl, and HIPAA compliance.
-          </p>
-        </div>
-        <a
+          </Box>
+        </Box>
+        <Box
+          component="a"
           href="https://exa.ai/docs/reference/search-api-guide-for-coding-agents"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          sx={{ fontSize: 12, color: "primary.main", display: "inline-flex", alignItems: "center", gap: 0.5, "&:hover": { textDecoration: "underline" } }}
         >
-          <span className="material-symbols-outlined text-sm">open_in_new</span>
+          <MsIcon sx={{ fontSize: 14 }}>open_in_new</MsIcon>
           Exa Docs
-        </a>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="flex flex-col gap-3">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
         {/* Preset Tabs */}
         <Row label="Presets">
-          <div className="flex flex-wrap gap-1.5">
-            {EXA_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => handleSelectPreset(preset.id)}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
-                  activePreset === preset.id
-                    ? "bg-primary text-white"
-                    : "bg-sidebar hover:bg-border text-text-muted hover:text-text-main border border-border"
-                }`}
-              >
-                {preset.name}
-              </button>
-            ))}
-          </div>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+            {EXA_PRESETS.map((preset) => {
+              const active = activePreset === preset.id;
+              return (
+                <Box
+                  key={preset.id}
+                  component="button"
+                  type="button"
+                  onClick={() => handleSelectPreset(preset.id)}
+                  sx={{
+                    px: 1.25,
+                    py: 0.5,
+                    fontSize: 12,
+                    borderRadius: 1,
+                    fontWeight: 500,
+                    transition: "background-color 150ms ease, color 150ms ease",
+                    cursor: "pointer",
+                    bgcolor: active ? "primary.main" : "action.hover",
+                    color: active ? "#fff" : "text.secondary",
+                    border: active ? "1px solid transparent" : "1px solid",
+                    borderColor: active ? "transparent" : "divider",
+                    "&:hover": { color: active ? "#fff" : "text.primary" },
+                  }}
+                >
+                  {preset.name}
+                </Box>
+              );
+            })}
+          </Box>
         </Row>
 
         {/* Endpoint */}
         <Row label="Endpoint">
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <span className="w-full min-w-0 flex-1 px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate">
+          <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+            <Box component="span" sx={{ ...readOnlySx, minWidth: 0, flex: 1 }}>
               {endpoint}{apiPath}
-            </span>
+            </Box>
             {tunnelEndpoint && (
-              <button
+              <Box
+                component="button"
                 onClick={() => setUseTunnel((v) => !v)}
                 title={useTunnel ? "Using tunnel" : "Using local"}
-                className={`flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg border shrink-0 transition-colors ${
-                  useTunnel
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border text-text-muted hover:text-primary"
-                }`}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  fontSize: 12,
+                  px: 1,
+                  py: 0.75,
+                  borderRadius: 2,
+                  flexShrink: 0,
+                  transition: "color 150ms ease, border-color 150ms ease, background-color 150ms ease",
+                  cursor: "pointer",
+                  border: 1,
+                  borderColor: useTunnel ? "primary.main" : "divider",
+                  bgcolor: useTunnel ? "action.selected" : "transparent",
+                  color: useTunnel ? "primary.main" : "text.secondary",
+                  "&:hover": { color: "primary.main" },
+                }}
               >
-                <span className="material-symbols-outlined text-[14px]">wifi_tethering</span>
+                <MsIcon sx={{ fontSize: 14 }}>wifi_tethering</MsIcon>
                 Tunnel
-              </button>
+              </Box>
             )}
-          </div>
+          </Box>
         </Row>
 
         {/* API Key */}
         <Row label="API Key">
-          <span className="px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate block">
+          <Box component="span" sx={{ px: 1.5, py: 0.75, fontSize: 14, fontFamily: "monospace", color: "text.primary", bgcolor: "action.hover", borderRadius: 2, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {apiKey ? (
               `${apiKey.slice(0, 8)}${"\u2022".repeat(Math.min(20, apiKey.length - 8))}`
             ) : (
-              <span className="text-text-muted italic">No key configured</span>
+              <Box component="span" sx={{ color: "text.secondary", fontStyle: "italic" }}>No key configured</Box>
             )}
-          </span>
+          </Box>
         </Row>
 
         {/* Connection picker */}
         {connections.length > 0 && (
           <Row label="Connection">
-            <select
+            <Box
+              component="select"
               value={pinnedConnectionId}
               onChange={(e) => setPinnedConnectionId(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             >
               <option value="">Auto (Round-robin / Failover)</option>
               {connections.map((c) => (
@@ -314,29 +401,41 @@ export function ExaSearchExampleCard({ providerId }) {
                   {c.name || c.id.slice(0, 8)}
                 </option>
               ))}
-            </select>
+            </Box>
           </Row>
         )}
 
         {/* Editable JSON Payload */}
         <Row label="Payload">
-          <div className="flex flex-col gap-1 w-full">
-            <textarea
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, width: "100%" }}>
+            <Box
+              component="textarea"
               value={requestJson}
               onChange={(e) => setRequestJson(e.target.value)}
               rows={12}
-              className={`w-full p-2.5 text-xs font-mono border rounded-lg bg-sidebar focus:outline-none focus:border-primary ${
-                jsonError ? "border-red-500" : "border-border"
-              }`}
+              sx={{
+                width: "100%",
+                p: 1.25,
+                fontSize: 12,
+                fontFamily: "monospace",
+                border: 1,
+                borderColor: jsonError ? "error.main" : "divider",
+                borderRadius: 2,
+                bgcolor: "action.hover",
+                color: "text.primary",
+                outline: "none",
+                resize: "vertical",
+                "&:focus": { borderColor: jsonError ? "error.main" : "primary.main" },
+              }}
             />
             {jsonError && (
-              <span className="text-[11px] text-red-500 font-mono">Invalid JSON: {jsonError}</span>
+              <Box component="span" sx={{ fontSize: 11, color: "error.main", fontFamily: "monospace" }}>Invalid JSON: {jsonError}</Box>
             )}
-          </div>
+          </Box>
         </Row>
 
         {/* Action Button */}
-        <div className="flex justify-end gap-2 pt-2">
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, pt: 1 }}>
           <Button
             size="sm"
             onClick={handleRun}
@@ -345,57 +444,51 @@ export function ExaSearchExampleCard({ providerId }) {
           >
             {running ? "Searching Exa..." : "Send Request"}
           </Button>
-        </div>
+        </Box>
 
         {/* Error */}
         {error && (
-          <div className="p-3 text-xs bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 rounded-lg">
+          <Box sx={(theme) => ({ p: 1.5, fontSize: 12, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: theme.palette.mode === "dark" ? "#f87171" : "#dc2626", borderRadius: 2 })}>
             {error}
-          </div>
+          </Box>
         )}
 
         {/* cURL preview */}
-        <div className="relative mt-2">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-medium text-text-muted">cURL Request</span>
-            <button
-              onClick={() => copyCurl(curlSnippet)}
-              className="text-xs text-primary hover:underline flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-sm">
+        <Box sx={{ position: "relative", mt: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.75 }}>
+            <Box component="span" sx={{ fontSize: 12, fontWeight: 500, color: "text.secondary" }}>cURL Request</Box>
+            <Box component="button" onClick={() => copyCurl(curlSnippet)} sx={copyButtonSx}>
+              <MsIcon sx={{ fontSize: 14 }}>
                 {copiedCurl ? "check" : "content_copy"}
-              </span>
+              </MsIcon>
               {copiedCurl ? "Copied" : "Copy cURL"}
-            </button>
-          </div>
-          <pre className="p-3 text-xs font-mono bg-sidebar border border-border rounded-lg overflow-x-auto text-text-main max-h-48">
+            </Box>
+          </Box>
+          <Box component="pre" sx={{ ...codeBlockSx, maxHeight: 192 }}>
             {curlSnippet}
-          </pre>
-        </div>
+          </Box>
+        </Box>
 
         {/* Response preview */}
         {result && (
-          <div className="relative mt-2">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-medium text-text-muted">
+          <Box sx={{ position: "relative", mt: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.75 }}>
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 500, color: "text.secondary" }}>
                 Response ({result.latencyMs}ms)
-              </span>
-              <button
-                onClick={() => copyRes(resultJson)}
-                className="text-xs text-primary hover:underline flex items-center gap-1"
-              >
-                <span className="material-symbols-outlined text-sm">
+              </Box>
+              <Box component="button" onClick={() => copyRes(resultJson)} sx={copyButtonSx}>
+                <MsIcon sx={{ fontSize: 14 }}>
                   {copiedRes ? "check" : "content_copy"}
-                </span>
+                </MsIcon>
                 {copiedRes ? "Copied" : "Copy JSON"}
-              </button>
-            </div>
-            <pre className="p-3 text-xs font-mono bg-sidebar border border-border rounded-lg overflow-x-auto text-text-main max-h-96">
+              </Box>
+            </Box>
+            <Box component="pre" sx={{ ...codeBlockSx, maxHeight: 384 }}>
               {resultJson}
-            </pre>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
+      </Box>
     </Card>
   );
 }

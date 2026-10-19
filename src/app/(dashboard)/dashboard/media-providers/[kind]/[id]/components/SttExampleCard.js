@@ -7,6 +7,76 @@ import { getModelKind } from "@/shared/constants/models";
 import { getModelsByProviderId } from "@/shared/constants/models";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { Row } from "./exampleShared";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
+
+const inputSx = {
+  width: "100%",
+  px: 1.5,
+  py: 0.75,
+  fontSize: 14,
+  border: 1,
+  borderColor: "divider",
+  borderRadius: 2,
+  bgcolor: "background.default",
+  color: "text.primary",
+  outline: "none",
+  "&:focus": { borderColor: "primary.main" },
+};
+
+const readOnlySx = {
+  ...inputSx,
+  fontFamily: "monospace",
+  bgcolor: "action.hover",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  display: "block",
+};
+
+const copyButtonSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 0.5,
+  fontSize: 12,
+  color: "text.secondary",
+  border: 0,
+  background: "none",
+  cursor: "pointer",
+  transition: "color 150ms ease",
+  "&:hover": { color: "primary.main" },
+};
+
+const sectionLabelSx = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "text.secondary",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+};
+
+const codeBlockSx = {
+  bgcolor: "action.hover",
+  borderRadius: 2,
+  px: 1.5,
+  py: 1.25,
+  fontSize: 12,
+  fontFamily: "monospace",
+  color: "text.primary",
+  overflowX: "auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+  m: 0,
+};
 
 export function SttExampleCard({ providerId }) {
   const providerAlias = getProviderAlias(providerId);
@@ -111,85 +181,120 @@ export function SttExampleCard({ providerId }) {
 
   return (
     <Card>
-      <h2 className="text-lg font-semibold mb-4">Example</h2>
-      <div className="flex flex-col gap-2.5">
+      <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>Example</Typography>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
         {/* Model */}
         {sttModels.length > 0 ? (
           <Row label="Model">
-            <select
+            <Box
+              component="select"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             >
               {sttModels.map((m) => (
                 <option key={m.id} value={m.id}>{m.name || m.id}</option>
               ))}
-            </select>
+            </Box>
           </Row>
         ) : (
           <Row label="Model">
-            <input
+            <Box
+              component="input"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
               placeholder="Enter model id"
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary font-mono"
+              sx={{ ...inputSx, fontFamily: "monospace" }}
             />
           </Row>
         )}
 
         {/* Endpoint */}
         <Row label="Endpoint">
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <span className="w-full min-w-0 flex-1 px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate">
+          <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+            <Box component="span" sx={{ ...readOnlySx, minWidth: 0, flex: 1 }}>
               {endpoint}/v1/audio/transcriptions
-            </span>
+            </Box>
             {tunnelEndpoint && (
-              <button
+              <Box
+                component="button"
                 onClick={() => setUseTunnel((v) => !v)}
                 title={useTunnel ? "Using tunnel" : "Using local"}
-                className={`flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg border shrink-0 transition-colors ${
-                  useTunnel ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"
-                }`}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  fontSize: 12,
+                  px: 1,
+                  py: 0.75,
+                  borderRadius: 2,
+                  flexShrink: 0,
+                  transition: "color 150ms ease, border-color 150ms ease, background-color 150ms ease",
+                  border: 1,
+                  borderColor: useTunnel ? "primary.main" : "divider",
+                  bgcolor: useTunnel ? "action.selected" : "transparent",
+                  color: useTunnel ? "primary.main" : "text.secondary",
+                  cursor: "pointer",
+                  "&:hover": { color: "primary.main" },
+                }}
               >
-                <span className="material-symbols-outlined text-[14px]">wifi_tethering</span>
+                <MsIcon sx={{ fontSize: 14 }}>wifi_tethering</MsIcon>
                 Tunnel
-              </button>
+              </Box>
             )}
-          </div>
+          </Box>
         </Row>
 
         {/* API Key */}
         <Row label="API Key">
-          <span className="px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate block">
-            {apiKey ? `${apiKey.slice(0, 8)}${"\u2022".repeat(Math.min(20, Math.max(0, apiKey.length - 8)))}` : <span className="text-text-muted italic">No key configured</span>}
-          </span>
+          <Box component="span" sx={{ px: 1.5, py: 0.75, fontSize: 14, fontFamily: "monospace", color: "text.primary", bgcolor: "action.hover", borderRadius: 2, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {apiKey ? `${apiKey.slice(0, 8)}${"\u2022".repeat(Math.min(20, Math.max(0, apiKey.length - 8)))}` : <Box component="span" sx={{ color: "text.secondary", fontStyle: "italic" }}>No key configured</Box>}
+          </Box>
         </Row>
 
         {/* Audio file */}
         <Row label="Audio File">
-          <div className="flex flex-col gap-2">
-            <input
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box
+              component="input"
               type="file"
               accept="audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.flac,.webm,.opus"
               onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-              className="w-full text-xs text-text-muted file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border file:border-border file:bg-background file:text-text-main hover:file:bg-sidebar file:cursor-pointer"
+              sx={{
+                width: "100%",
+                fontSize: 12,
+                color: "text.secondary",
+                "&::file-selector-button": {
+                  mr: 1,
+                  py: 0.5,
+                  px: 1.25,
+                  borderRadius: 2,
+                  border: 1,
+                  borderColor: "divider",
+                  bgcolor: "background.default",
+                  color: "text.primary",
+                  cursor: "pointer",
+                },
+                "&:hover::file-selector-button": { bgcolor: "action.hover" },
+              }}
             />
             {audioFile && (
-              <span className="text-xs text-text-muted font-mono">
+              <Box component="span" sx={{ fontSize: 12, color: "text.secondary", fontFamily: "monospace" }}>
                 {audioFile.name} · {(audioFile.size / 1024).toFixed(1)} KB
-              </span>
+              </Box>
             )}
-          </div>
+          </Box>
         </Row>
 
         {/* Language (if model supports) */}
         {allowedParams.includes("language") && (
           <Row label="Language">
-            <input
+            <Box
+              component="input"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               placeholder="e.g. en, vi, ja (auto-detect if empty)"
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary font-mono"
+              sx={{ ...inputSx, fontFamily: "monospace" }}
             />
           </Row>
         )}
@@ -197,11 +302,12 @@ export function SttExampleCard({ providerId }) {
         {/* Prompt (if model supports) */}
         {allowedParams.includes("prompt") && (
           <Row label="Prompt">
-            <input
+            <Box
+              component="input"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="optional context to improve accuracy"
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             />
           </Row>
         )}
@@ -209,7 +315,8 @@ export function SttExampleCard({ providerId }) {
         {/* Temperature (if model supports) */}
         {allowedParams.includes("temperature") && (
           <Row label="Temperature">
-            <input
+            <Box
+              component="input"
               type="number"
               step="0.1"
               min="0"
@@ -217,7 +324,7 @@ export function SttExampleCard({ providerId }) {
               value={temperature}
               onChange={(e) => setTemperature(e.target.value)}
               placeholder="0 - 1 (default 0)"
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             />
           </Row>
         )}
@@ -225,70 +332,84 @@ export function SttExampleCard({ providerId }) {
         {/* Response format (if model supports) */}
         {allowedParams.includes("response_format") && (
           <Row label="Response Format">
-            <select
+            <Box
+              component="select"
               value={responseFormat}
               onChange={(e) => setResponseFormat(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             >
               <option value="json">json</option>
               <option value="text">text</option>
               <option value="srt">srt</option>
               <option value="verbose_json">verbose_json</option>
               <option value="vtt">vtt</option>
-            </select>
+            </Box>
           </Row>
         )}
 
         {/* Curl + Run */}
-        <div className="mt-1">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Request</span>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <button
-                onClick={() => copyCurl(curlSnippet)}
-                className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined text-[14px]">{copiedCurl ? "check" : "content_copy"}</span>
+        <Box sx={{ mt: 0.5 }}>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+            <Box component="span" sx={sectionLabelSx}>Request</Box>
+            <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+              <Box component="button" onClick={() => copyCurl(curlSnippet)} sx={copyButtonSx}>
+                <MsIcon sx={{ fontSize: 14 }}>{copiedCurl ? "check" : "content_copy"}</MsIcon>
                 {copiedCurl ? "Copied" : "Copy"}
-              </button>
-              <button
+              </Box>
+              <Box
+                component="button"
                 onClick={handleRun}
                 disabled={running || !audioFile || !modelFull}
-                className="flex w-full sm:w-auto items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                sx={{
+                  display: "flex",
+                  width: { xs: "100%", sm: "auto" },
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.75,
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 2,
+                  bgcolor: "primary.main",
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: 0,
+                  cursor: "pointer",
+                  transition: "background-color 150ms ease",
+                  "&:hover": { bgcolor: "primary.dark" },
+                  "&:disabled": { opacity: 0.5, cursor: "not-allowed" },
+                }}
               >
-                <span className="material-symbols-outlined text-[14px]" style={running ? { animation: "spin 1s linear infinite" } : undefined}>
+                <MsIcon sx={{ fontSize: 14, ...(running ? { animation: "spin 1s linear infinite" } : {}) }}>
                   play_arrow
-                </span>
+                </MsIcon>
                 {running ? "Transcribing..." : "Run"}
-              </button>
-            </div>
-          </div>
-          <pre className="bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all">{curlSnippet}</pre>
-        </div>
+              </Box>
+            </Box>
+          </Box>
+          <Box component="pre" sx={codeBlockSx}>{curlSnippet}</Box>
+        </Box>
 
-        {error && <p className="text-xs text-red-500 break-words">{error}</p>}
+        {error && <Typography sx={{ fontSize: 12, color: "error.main", wordBreak: "break-word" }}>{error}</Typography>}
 
         {/* Response */}
-        <div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Response {result && latency && <span className="font-normal normal-case">&#9889; {latency}ms</span>}
-            </span>
+        <Box>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+            <Box component="span" sx={sectionLabelSx}>
+              Response {result && latency && <Box component="span" sx={{ fontWeight: 400, textTransform: "none" }}>&#9889; {latency}ms</Box>}
+            </Box>
             {result && (
-              <button
-                onClick={() => copyRes(resultStr)}
-                className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined text-[14px]">{copiedRes ? "check" : "content_copy"}</span>
+              <Box component="button" onClick={() => copyRes(resultStr)} sx={copyButtonSx}>
+                <MsIcon sx={{ fontSize: 14 }}>{copiedRes ? "check" : "content_copy"}</MsIcon>
                 {copiedRes ? "Copied" : "Copy"}
-              </button>
+              </Box>
             )}
-          </div>
-          <pre className="bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all opacity-70">
+          </Box>
+          <Box component="pre" sx={{ ...codeBlockSx, opacity: 0.7 }}>
             {resultStr}
-          </pre>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </Card>
   );
 }

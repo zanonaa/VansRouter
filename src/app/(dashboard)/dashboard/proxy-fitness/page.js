@@ -3,6 +3,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardSkeleton, Input, ConfirmModal } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Table from "@mui/material/Table";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import { alpha } from "@mui/material/styles";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
 
 function recordsOf(fitness, pools, now = Date.now()) {
   const names = new Map((pools || []).map((p) => [p.id, p]));
@@ -45,24 +66,26 @@ export default function ProxyFitnessPage() {
     setConfirm(false); notify.success("Proxy fitness cleared"); fetchAll();
   };
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-1 sm:gap-6 sm:px-0">
+    <Box sx={{ mx: "auto", display: "flex", width: "100%", maxWidth: 1024, flexDirection: "column", gap: { xs: 2, sm: 3 }, px: { xs: 0.5, sm: 0 } }}>
       {loading ? (
         <CardSkeleton />
       ) : (
         <>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-semibold sm:text-2xl">Proxy Fitness</h1>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, alignItems: { sm: "flex-start" }, justifyContent: { sm: "space-between" } }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography component="h1" variant="h5" sx={{ fontWeight: 600, fontSize: { xs: 20, sm: 24 } }}>
+                  Proxy Fitness
+                </Typography>
                 <Badge variant={records.length ? "error" : "default"}>
                   {records.length} active blocks
                 </Badge>
-              </div>
-              <p className="text-sm text-text-muted mt-1">
+              </Box>
+              <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
                 Smart rotation skips pools marked unfit for a provider/model.
-              </p>
-            </div>
-            <div className="flex gap-2 sm:items-center">
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", gap: 1, alignItems: { sm: "center" } }}>
               <Button variant="secondary" size="sm" onClick={fetchAll} icon="refresh">
                 Refresh
               </Button>
@@ -71,69 +94,94 @@ export default function ProxyFitnessPage() {
                   Clear All
                 </Button>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
-              <select
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" } }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1.5 }}>
+              <Select
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
-                className="h-[42px] px-3.5 rounded-[10px] text-sm text-text-main bg-surface-2 border border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500/40 transition-all min-w-[160px] cursor-pointer"
+                size="small"
+                sx={{
+                  height: 42,
+                  minWidth: 160,
+                  fontSize: 14,
+                  bgcolor: "action.hover",
+                  borderRadius: "10px",
+                  "& fieldset": { border: "1px solid transparent" },
+                  "&:hover fieldset": { borderColor: "transparent" },
+                  "&.Mui-focused fieldset": { borderColor: "primary.main" },
+                }}
               >
-                <option value="all">All providers</option>
+                <MenuItem value="all">All providers</MenuItem>
                 {providers.map((p) => (
-                  <option key={p}>{p}</option>
+                  <MenuItem key={p} value={p}>{p}</MenuItem>
                 ))}
-              </select>
-              <div className="w-full sm:w-72">
+              </Select>
+              <Box sx={{ width: { xs: "100%", sm: 288 } }}>
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search IP / proxy / pool..."
                   icon="search"
-                  className="w-full"
                 />
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
 
-          <Card className="overflow-x-auto p-0">
-            <table className="w-full min-w-[650px] text-sm">
-              <thead>
-                <tr className="border-b border-border-subtle text-left text-xs uppercase text-text-muted">
-                  <th className="px-5 py-3">Provider</th>
-                  <th className="px-5 py-3">Model</th>
-                  <th className="px-5 py-3">Pool</th>
-                  <th className="px-5 py-3">Reason</th>
-                  <th className="px-5 py-3">Until</th>
-                  <th className="px-5 py-3 text-right" />
-                </tr>
-              </thead>
-              <tbody>
+          <Card padding="none" sx={{ overflowX: "auto" }}>
+            <TableContainer>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow sx={{ "& th": { borderBottomColor: "divider" } }}>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 12, textTransform: "uppercase", color: "text.secondary" }}>Provider</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 12, textTransform: "uppercase", color: "text.secondary" }}>Model</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 12, textTransform: "uppercase", color: "text.secondary" }}>Pool</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 12, textTransform: "uppercase", color: "text.secondary" }}>Reason</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 12, textTransform: "uppercase", color: "text.secondary" }}>Until</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5 }} align="right" />
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {records.length ? (
                   records.map((r) => (
-                    <tr
+                    <TableRow
                       key={`${r.poolId}:${r.scope}`}
-                      className="border-b border-border-subtle hover:bg-surface-2/40 transition-colors"
+                      hover
+                      sx={{ "& td": { borderBottomColor: "divider" } }}
                     >
-                      <td className="px-5 py-3.5 font-medium">{r.provider}</td>
-                      <td className="px-5 py-3.5">
-                        <code className="px-1.5 py-0.5 rounded bg-surface-3 text-xs font-mono">
+                      <TableCell sx={{ px: 2.5, py: 1.75, fontWeight: 500, fontSize: 14 }}>{r.provider}</TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.75 }}>
+                        <Box component="code" sx={{ px: 0.75, py: 0.25, borderRadius: 0.5, bgcolor: "action.selected", fontSize: 12, fontFamily: "monospace" }}>
                           {r.model}
-                        </code>
-                      </td>
-                      <td className="px-5 py-3.5 text-text-muted">{r.poolName}</td>
-                      <td className="px-5 py-3.5">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500">
-                          <span className="size-1.5 rounded-full bg-red-500" />
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.75, color: "text.secondary", fontSize: 14 }}>{r.poolName}</TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.75 }}>
+                        <Box
+                          component="span"
+                          sx={(theme) => ({
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.75,
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 999,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            bgcolor: alpha(theme.palette.error.main, 0.1),
+                            color: "error.main",
+                          })}
+                        >
+                          <Box component="span" sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "error.main" }} />
                           {r.reason}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-text-muted">
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.75, color: "text.secondary", fontSize: 14 }}>
                         {new Date(r.until).toLocaleTimeString()}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
+                      </TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.75, fontSize: 14 }} align="right">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -148,26 +196,27 @@ export default function ProxyFitnessPage() {
                         >
                           Clear
                         </Button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-16 text-center text-text-muted">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="material-symbols-outlined text-[32px] text-text-muted/50">
+                  <TableRow>
+                    <TableCell colSpan={6} sx={{ px: 2.5, py: 8, textAlign: "center", color: "text.secondary", borderBottom: 0 }}>
+                      <Stack sx={{ alignItems: "center", justifyContent: "center" }} spacing={1}>
+                        <MsIcon sx={{ fontSize: 32, color: "text.secondary", opacity: 0.5 }}>
                           verified_user
-                        </span>
-                        <p className="font-medium text-sm text-text-main">No active blocks</p>
-                        <p className="text-xs text-text-muted">
+                        </MsIcon>
+                        <Typography sx={{ fontWeight: 500, fontSize: 14, color: "text.primary" }}>No active blocks</Typography>
+                        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
                           All proxy pools are healthy and fit for routing.
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
+            </TableContainer>
           </Card>
         </>
       )}
@@ -181,7 +230,7 @@ export default function ProxyFitnessPage() {
         cancelText="Cancel"
         variant="danger"
       />
-    </div>
+    </Box>
   );
 }
 

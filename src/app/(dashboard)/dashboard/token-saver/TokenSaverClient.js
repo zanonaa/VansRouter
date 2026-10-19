@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Card, Button, Input, Modal, Toggle, ConfirmModal } from "@/shared/components";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 20, ...sx }} {...props}>{children}</Icon>;
+}
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { getCurrentLocale, onLocaleChange } from "@/i18n/runtime";
 import { useHeadroom } from "./useHeadroom";
@@ -254,7 +261,7 @@ export default function TokenSaverClient() {
       : "bg-warning/15 text-warning";
 
   return (
-    <div className="space-y-6 p-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: 3 }}>
       <TokenSaverSettings
         rtkEnabled={rtkEnabled}
         handleRtkEnabled={handleRtkEnabled}
@@ -297,59 +304,48 @@ export default function TokenSaverClient() {
       />
 
       <Card id="guards">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">
-              shield
-            </span>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+          <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+            <MsIcon sx={{ color: "primary.main" }}>shield</MsIcon>
             Guards & Shields
-          </h2>
-        </div>
-        
+          </Typography>
+        </Box>
+
         {/* Loop Guard */}
-        <div className="flex items-center justify-between pt-2 pb-4 border-b border-border gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium">Loop Guard</p>
-            <p className="text-sm text-text-muted">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1, pb: 2, borderBottom: 1, borderColor: "divider", gap: 2 }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 500 }}>Loop Guard</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Detects repeating tool call sequences and text-only planning loops.
               Injects corrections to prevent infinite agent run-loops.
-            </p>
-          </div>
-          <Toggle
-            checked={guards.loopGuard}
-            onChange={() => updateGuard("loopGuard", !guards.loopGuard)}
-          />
-        </div>
+            </Typography>
+          </Box>
+          <Toggle checked={guards.loopGuard} onChange={() => updateGuard("loopGuard", !guards.loopGuard)} />
+        </Box>
 
         {/* Circuit Breaker */}
-        <div className="flex items-center justify-between py-4 border-b border-border gap-4 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium">Circuit Breaker</p>
-            <p className="text-sm text-text-muted">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, borderBottom: 1, borderColor: "divider", gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 500 }}>Circuit Breaker</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Temporarily halts upstream calls for offline or failing providers
               to prevent spamming and conserve connection resource.
-            </p>
-          </div>
-          <Toggle
-            checked={guards.circuitBreaker}
-            onChange={() => updateGuard("circuitBreaker", !guards.circuitBreaker)}
-          />
-        </div>
+            </Typography>
+          </Box>
+          <Toggle checked={guards.circuitBreaker} onChange={() => updateGuard("circuitBreaker", !guards.circuitBreaker)} />
+        </Box>
 
         {/* Semaphore Limiter */}
-        <div className="flex items-center justify-between py-4 gap-4 flex-wrap">
-          <div className="min-w-0 flex-1">
-            <p className="font-medium">Semaphore (Concurrency Limiter)</p>
-            <p className="text-sm text-text-muted">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 500 }}>Semaphore (Concurrency Limiter)</Typography>
+            <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
               Enforces simultaneous request limits per provider account. Prevents
               rate-limits (429) and account blockings.
-            </p>
-          </div>
-          <Toggle
-            checked={guards.semaphore}
-            onChange={() => updateGuard("semaphore", !guards.semaphore)}
-          />
-        </div>
+            </Typography>
+          </Box>
+          <Toggle checked={guards.semaphore} onChange={() => updateGuard("semaphore", !guards.semaphore)} />
+        </Box>
       </Card>
 
       <Modal
@@ -357,52 +353,43 @@ export default function TokenSaverClient() {
         title={headroomRunning ? "Headroom" : "Setup Headroom"}
         onClose={() => setShowHeadroomInstallModal(false)}
       >
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between text-sm">
-            <span>Status</span>
-            <span
-              className={headroomRunning ? "text-success" : "text-warning"}
-            >
-              {headroomStatusLabel}
-            </span>
-          </div>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 14 }}>
+            <Box component="span">Status</Box>
+            <Box component="span" sx={{ color: headroomRunning ? "success.main" : "warning.main" }}>{headroomStatusLabel}</Box>
+          </Box>
           {headroomRunning && (
-            <a
-              href="/api/headroom/proxy/dashboard"
-              target="_blank"
-              rel="noreferrer"
-              className="w-full rounded border border-border px-4 py-2 text-center text-sm hover:bg-surface-2"
-            >
+            <Box component="a" href="/api/headroom/proxy/dashboard" target="_blank" rel="noreferrer" sx={{ width: "100%", borderRadius: 1, border: 1, borderColor: "divider", px: 2, py: 1, textAlign: "center", fontSize: 14, color: "text.primary", "&:hover": { bgcolor: "action.hover" } }}>
               Open Headroom Dashboard
-            </a>
+            </Box>
           )}
-          <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium">Proxy URL</p>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Proxy URL</Typography>
             <Input
               value={headroomUrl}
               onChange={(e) => setHeadroomUrl(e.target.value)}
               onBlur={handleHeadroomUrlBlur}
               placeholder="http://localhost:8787"
-              className="font-mono text-sm"
+              inputClassName="font-mono text-sm"
             />
-            <p className="text-xs text-text-muted">
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               Use a local proxy for Start/Stop, or an external Docker sidecar
               like http://headroom:8787.
-            </p>
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium">Timeout (ms)</p>
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Timeout (ms)</Typography>
             <Input
               value={String(headroomTimeoutMs)}
               onChange={(e) => setHeadroomTimeoutMs(e.target.value)}
               onBlur={handleHeadroomTimeoutBlur}
               placeholder="3000"
-              className="font-mono text-sm"
+              inputClassName="font-mono text-sm"
             />
-            <p className="text-xs text-text-muted">
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               Request timeout in milliseconds. Defaults to 3000 ms.
-            </p>
-          </div>
+            </Typography>
+          </Box>
           {headroomManaged ? (
             <Button
               onClick={handleHeadroomStop}
@@ -413,9 +400,9 @@ export default function TokenSaverClient() {
               {headroomActionLoading ? "Stopping…" : "Stop Headroom"}
             </Button>
           ) : headroomRunning ? (
-            <p className="text-sm text-success">
+            <Typography sx={{ fontSize: 14, color: "success.main" }}>
               Headroom proxy is reachable. You can enable the token saver.
-            </p>
+            </Typography>
           ) : headroomCanStart ? (
             <Button
               onClick={handleHeadroomStart}
@@ -425,21 +412,21 @@ export default function TokenSaverClient() {
               {headroomActionLoading ? "Starting…" : "Start Headroom"}
             </Button>
           ) : !headroomLocalUrl ? (
-            <p className="text-sm text-warning">
+            <Typography sx={{ fontSize: 14, color: "warning.main" }}>
               Start Headroom separately at the configured URL, then recheck.
-            </p>
+            </Typography>
           ) : !headroomStatus.python ? (
-            <p className="text-sm text-warning">
+            <Typography sx={{ fontSize: 14, color: "warning.main" }}>
               Python ≥ 3.10 required for local managed mode. Install Python
               first, or use an external proxy URL.
-            </p>
+            </Typography>
           ) : (
-            <div className="flex flex-col gap-1">
-              <p className="text-sm font-medium">Install then click Start:</p>
-              <div className="flex items-center gap-2">
-                <pre className="flex-1 rounded bg-black/5 dark:bg-white/5 p-2 text-xs font-mono overflow-x-auto">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Install then click Start:</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box component="pre" sx={{ flex: 1, borderRadius: 1, bgcolor: "action.hover", p: 1, fontSize: 12, fontFamily: "monospace", overflowX: "auto" }}>
                   {`pip install "headroom-ai[proxy]"`}
-                </pre>
+                </Box>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -449,13 +436,13 @@ export default function TokenSaverClient() {
                 >
                   {copied ? "Copied" : "Copy"}
                 </Button>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
           {headroomActionError && (
-            <p className="text-sm text-warning">{headroomActionError}</p>
+            <Typography sx={{ fontSize: 14, color: "warning.main" }}>{headroomActionError}</Typography>
           )}
-          <div className="flex gap-2">
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               onClick={() => refreshHeadroomStatus()}
               variant="ghost"
@@ -469,8 +456,8 @@ export default function TokenSaverClient() {
             >
               Done
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       <Modal
@@ -478,39 +465,37 @@ export default function TokenSaverClient() {
         title={pxpipeStatus.installed ? "PXPIPE" : "Setup PXPIPE"}
         onClose={() => setShowPxpipeModal(false)}
       >
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-text-muted">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
             Compress prompts using multimodal encoding. Runs in-process — no
             extra server or environment variables required.
-          </p>
-          <div className="flex items-center justify-between text-sm">
-            <span>Status</span>
-            <span className={pxpipeHealthy || pxpipeStatus.running ? "text-success" : "text-warning"}>
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 14 }}>
+            <Box component="span">Status</Box>
+            <Box component="span" sx={{ color: pxpipeHealthy || pxpipeStatus.running ? "success.main" : "warning.main" }}>
               {pxpipeStatusLabel}
               {pxpipeStatus.version ? ` · v${pxpipeStatus.version}` : ""}
-            </span>
-          </div>
+            </Box>
+          </Box>
           {pxpipeHealth?.checks?.length > 0 && (
-            <div className="flex flex-col gap-1 rounded border border-border p-3">
-              <p className="text-sm font-medium mb-1">Health check</p>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, border: 1, borderColor: "divider", borderRadius: 1, p: 1.5 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 500, mb: 0.5 }}>Health check</Typography>
               {pxpipeHealth.checks.map((check) => (
-                <div key={check.id} className="flex items-center justify-between text-xs">
-                  <span className={check.ok ? "text-success" : "text-warning"}>
+                <Box key={check.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+                  <Box component="span" sx={{ color: check.ok ? "success.main" : "warning.main" }}>
                     {check.ok ? "●" : "○"} {check.label}
-                  </span>
+                  </Box>
                   {check.detail && (
-                    <span className="text-text-muted font-mono truncate max-w-[50%]">{check.detail}</span>
+                    <Box component="span" sx={{ color: "text.secondary", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "50%" }}>{check.detail}</Box>
                   )}
-                </div>
+                </Box>
               ))}
-              {pxpipeHealth.error && (
-                <p className="text-xs text-warning mt-1">{pxpipeHealth.error}</p>
-              )}
-            </div>
+              {pxpipeHealth.error && <Typography sx={{ fontSize: 12, color: "warning.main", mt: 0.5 }}>{pxpipeHealth.error}</Typography>}
+            </Box>
           )}
           {!pxpipeStatus.installed ? (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-warning">PXPIPE is not installed.</p>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Typography sx={{ fontSize: 14, color: "warning.main" }}>PXPIPE is not installed.</Typography>
               <Button
                 onClick={() => pxpipeAction("install")}
                 fullWidth
@@ -518,13 +503,13 @@ export default function TokenSaverClient() {
               >
                 {pxpipeActionLoading || pxpipeStatus.installing ? "Installing…" : "Install"}
               </Button>
-              <p className="text-xs text-text-muted">
-                Installs the npm package <code className="font-mono">pxpipe-proxy</code> into
+              <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+                Installs the npm package <Box component="code" sx={{ fontFamily: "monospace" }}>pxpipe-proxy</Box> into
                 the 9Router data directory. May take a few minutes.
-              </p>
-            </div>
+              </Typography>
+            </Box>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
               {pxpipeStatus.running ? (
                 <>
                   <Button onClick={() => pxpipeAction("restart")} variant="ghost" disabled={pxpipeActionLoading}>
@@ -542,31 +527,26 @@ export default function TokenSaverClient() {
               <Button onClick={() => pxpipeAction("install")} variant="ghost" disabled={pxpipeActionLoading}>
                 Repair
               </Button>
-              <a
-                href="/dashboard/pxpipe#logs"
-                className="col-span-2 rounded border border-border px-4 py-2 text-center text-sm hover:bg-surface-2"
-              >
+              <Box component="a" href="/dashboard/pxpipe#logs" sx={{ gridColumn: "span 2", borderRadius: 1, border: 1, borderColor: "divider", px: 2, py: 1, textAlign: "center", fontSize: 14, color: "text.primary", "&:hover": { bgcolor: "action.hover" } }}>
                 Open Logs
-              </a>
-            </div>
+              </Box>
+            </Box>
           )}
-          <div className="flex flex-col gap-1">
-            <p className="text-sm font-medium">Minimum prompt size (chars)</p>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>Minimum prompt size (chars)</Typography>
             <Input
               value={String(pxpipeMinChars)}
               onChange={(e) => setPxpipeMinChars(e.target.value)}
               onBlur={handlePxpipeMinCharsBlur}
               placeholder="25000"
-              className="font-mono text-sm"
+              inputClassName="font-mono text-sm"
             />
-            <p className="text-xs text-text-muted">
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
               Requests smaller than this bypass PXPIPE and are sent as-is.
-            </p>
-          </div>
-          {pxpipeActionError && (
-            <p className="text-sm text-warning">{pxpipeActionError}</p>
-          )}
-          <div className="flex gap-2">
+            </Typography>
+          </Box>
+          {pxpipeActionError && <Typography sx={{ fontSize: 14, color: "warning.main" }}>{pxpipeActionError}</Typography>}
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               onClick={() => refreshPxpipeStatus().then(runPxpipeHealth)}
               variant="ghost"
@@ -577,8 +557,8 @@ export default function TokenSaverClient() {
             <Button onClick={() => setShowPxpipeModal(false)} fullWidth>
               Done
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </Modal>
 
       <ConfirmModal
@@ -594,6 +574,6 @@ export default function TokenSaverClient() {
         confirmText={extrasConfirm?.confirmText}
         variant={extrasConfirm?.variant}
       />
-    </div>
+    </Box>
   );
 }

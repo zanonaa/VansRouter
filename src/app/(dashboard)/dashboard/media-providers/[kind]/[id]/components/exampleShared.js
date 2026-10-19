@@ -1,11 +1,13 @@
 "use client";
 
+import Box from "@mui/material/Box";
+
 export function Row({ label, children }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-      <span className="w-full text-xs font-medium text-text-muted sm:w-20 sm:shrink-0">{label}</span>
-      <div className="w-full min-w-0 flex-1">{children}</div>
-    </div>
+    <Box sx={{ display: "flex", minWidth: 0, flexDirection: { xs: "column", sm: "row" }, gap: { xs: 0.75, sm: 1.5 }, alignItems: { sm: "center" } }}>
+      <Box component="span" sx={{ width: { xs: "100%", sm: 80 }, fontSize: 12, fontWeight: 500, color: "text.secondary", flexShrink: { sm: 0 } }}>{label}</Box>
+      <Box sx={{ width: "100%", minWidth: 0, flex: 1 }}>{children}</Box>
+    </Box>
   );
 }
 

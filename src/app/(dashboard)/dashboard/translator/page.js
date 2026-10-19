@@ -5,8 +5,21 @@ import { Card, Button } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { useTheme } from "@/shared/hooks/useTheme";
 import dynamic from "next/dynamic";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import { alpha } from "@mui/material/styles";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
 
 function saveTranslatorFile(file, content) {
   return fetch("/api/translator/save", {
@@ -17,10 +30,10 @@ function saveTranslatorFile(file, content) {
 }
 
 const META_BADGE_COLORS = {
-  blue: "bg-blue-500/10 text-blue-500",
-  orange: "bg-orange-500/10 text-orange-500",
-  green: "bg-green-500/10 text-green-500",
-  purple: "bg-purple-500/10 text-purple-500",
+  blue: "#3b82f6",
+  orange: "#f97316",
+  green: "#22c55e",
+  purple: "#a855f7",
 };
 
 // 7 steps matching requestLogger files exactly
@@ -224,23 +237,27 @@ export default function TranslatorPage() {
   };
 
   return (
-    <div className="p-8 space-y-3">
+    <Stack spacing={1.5} sx={{ p: 4 }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-2xl font-bold text-text-main">Translator Debug</h1>
-          <p className="text-sm text-text-muted mt-1">Replay request flow — matches log files</p>
-        </div>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+        <Box>
+          <Typography component="h1" variant="h5" sx={{ fontWeight: 700, color: "text.primary" }}>
+            Translator Debug
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Replay request flow — matches log files
+          </Typography>
+        </Box>
         {meta && (
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", justifyContent: "flex-end" }}>
             <MetaBadge label="src" value={meta.sourceFormat} color="blue" />
-            <span className="material-symbols-outlined text-text-muted text-[14px]">arrow_forward</span>
+            <MsIcon sx={{ color: "text.secondary", fontSize: 14 }}>arrow_forward</MsIcon>
             <MetaBadge label="dst" value={meta.targetFormat} color="orange" />
             <MetaBadge label="provider" value={meta.provider} color="green" />
             <MetaBadge label="model" value={meta.model} color="purple" />
-          </div>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {STEPS.map((step) => {
         const action = getAction(step.id);
@@ -249,30 +266,53 @@ export default function TranslatorPage() {
 
         return (
           <Card key={step.id}>
-            <div className="p-4 space-y-3">
+            <Stack spacing={1.5} sx={{ p: 2 }}>
               {/* Step header */}
-              <div className="flex items-center justify-between">
-                <button type="button" onClick={() => toggle(step.id)} className="flex items-center gap-2 flex-1 text-left group">
-                  <span className="material-symbols-outlined text-[20px] text-text-muted group-hover:text-primary transition-colors">
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => toggle(step.id)}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    flex: 1,
+                    textAlign: "left",
+                    background: "none",
+                    border: 0,
+                    p: 0,
+                    cursor: "pointer",
+                    color: "inherit",
+                    "&:hover .step-chevron": { color: "primary.main" },
+                  }}
+                >
+                  <MsIcon className="material-symbols-outlined step-chevron" sx={{ fontSize: 20, color: "text.secondary", transition: "color 150ms ease" }}>
                     {isExpanded ? "expand_more" : "chevron_right"}
-                  </span>
-                  <span className="text-xs font-mono text-text-muted/60 w-4">{step.id}</span>
-                  <h3 className="text-sm font-semibold text-text-main">{step.label}</h3>
-                  <span className="text-xs text-text-muted/60 font-mono">{step.file}</span>
-                  {content && <span className="text-xs text-green-500">({content.length} chars)</span>}
-                </button>
+                  </MsIcon>
+                  <Box component="span" sx={{ fontSize: 12, fontFamily: "monospace", color: "text.secondary", opacity: 0.6, width: 16 }}>
+                    {step.id}
+                  </Box>
+                  <Typography component="h3" variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                    {step.label}
+                  </Typography>
+                  <Box component="span" sx={{ fontSize: 12, color: "text.secondary", opacity: 0.6, fontFamily: "monospace" }}>
+                    {step.file}
+                  </Box>
+                  {content && <Box component="span" sx={{ fontSize: 12, color: "success.main" }}>({content.length} chars)</Box>}
+                </Box>
                 {!isExpanded && (
-                  <div className="flex gap-1 shrink-0">
+                  <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
                     <Button size="sm" variant="ghost" icon="folder_open" loading={loading[`load-${step.id}`]} onClick={() => handleLoad(step.id)} />
                     {action}
-                  </div>
+                  </Box>
                 )}
-              </div>
+              </Box>
 
               {/* Expanded content */}
               {isExpanded && (
                 <>
-                  <div className="border border-border rounded-lg overflow-hidden">
+                  <Box sx={{ border: 1, borderColor: "divider", borderRadius: 2, overflow: "hidden" }}>
                     <Editor
                       height="400px"
                       defaultLanguage={step.lang === "text" ? "plaintext" : "json"}
@@ -284,28 +324,42 @@ export default function TranslatorPage() {
                       theme={isDark ? "vs-dark" : "light"}
                       options={EDITOR_OPTIONS}
                     />
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                     <Button size="sm" variant="outline" icon="folder_open" loading={loading[`load-${step.id}`]} onClick={() => handleLoad(step.id)}>Load</Button>
                     <Button size="sm" variant="outline" icon="data_object" onClick={() => handleFormat(step.id)}>Format</Button>
                     <Button size="sm" variant="outline" icon="content_copy" onClick={() => handleCopy(step.id)}>Copy</Button>
                     {action}
-                  </div>
+                  </Box>
                 </>
               )}
-            </div>
+            </Stack>
           </Card>
         );
       })}
-    </div>
+    </Stack>
   );
 }
 
 function MetaBadge({ label, value, color }) {
-  const colors = META_BADGE_COLORS;
+  const c = META_BADGE_COLORS[color];
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono ${colors[color]}`}>
-      <span className="text-text-muted/70 font-sans text-[10px]">{label}:</span>{value}
-    </span>
+    <Box
+      component="span"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 0.5,
+        px: 1,
+        py: 0.25,
+        borderRadius: 0.5,
+        fontSize: 12,
+        fontFamily: "monospace",
+        color: c,
+        bgcolor: alpha(c, 0.1),
+      }}
+    >
+      <Box component="span" sx={{ color: "text.secondary", opacity: 0.7, fontFamily: "inherit", fontSize: 10 }}>{label}:</Box>{value}
+    </Box>
   );
 }

@@ -5,6 +5,13 @@ import Image from "next/image";
 import { Badge, Button } from "@/shared/components";
 import { getModelsByProviderId } from "@/shared/constants/models";
 import { isAnthropicCompatibleProvider, isOpenAICompatibleProvider } from "@/shared/constants/providers";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>{children}</Icon>;
+}
 
 const STORAGE_KEYS = {
   sessions: "basic-chat.sessions",
@@ -402,11 +409,9 @@ export default function BasicChatPageClient() {
         ? modelIndex.get(session.modelId)
         : savedModel;
       initializedRef.current = true;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time bootstrap: rehydrates active session on first mount when persisted session exists.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time persisted-session bootstrap.
       setActiveSessionId(session.id);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time bootstrap.
       setActiveProviderId(sessionModel?.providerId || savedProvider.providerId);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time bootstrap.
       setActiveModelId(sessionModel?.id || savedModel.id);
       return;
     }
@@ -738,142 +743,146 @@ export default function BasicChatPageClient() {
   const modelLabel = activeModel ? `${activeModel.name}` : "Select model";
   const modelSubLabel = activeModel ? activeModel.requestModel : "Choose from connected providers";
 
+  const panelSx = {
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 4,
+    bgcolor: "rgba(255,255,255,0.05)",
+    color: "#fff",
+    transition: "background-color 150ms ease",
+    "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
+  };
+  const optionSx = (active) => ({
+    width: "100%",
+    border: "1px solid",
+    borderColor: active ? "rgba(96,165,250,0.4)" : "rgba(255,255,255,0.1)",
+    borderRadius: 3.5,
+    px: 1.5,
+    py: 1.5,
+    textAlign: "left",
+    color: "#fff",
+    bgcolor: active ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.05)",
+    cursor: "pointer",
+    transition: "background-color 150ms ease",
+    "&:hover": { bgcolor: active ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.08)" },
+  });
+
   return (
-    <div className="relative flex-1 flex flex-col h-full min-h-0 min-w-0 bg-[#212121] text-white overflow-hidden">
-      <div className="relative mx-auto flex flex-1 h-full min-h-0 w-full max-w-4xl flex-col">
-        <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-3 lg:px-6">
-          <div ref={modelMenuRef} className="relative">
-            <button
+    <Box sx={{ position: "relative", flex: 1, display: "flex", flexDirection: "column", height: "100%", minHeight: 0, minWidth: 0, bgcolor: "#212121", color: "#fff", overflow: "hidden" }}>
+      <Box sx={{ position: "relative", mx: "auto", display: "flex", flex: 1, height: "100%", minHeight: 0, width: "100%", maxWidth: 896, flexDirection: "column" }}>
+        <Box sx={{ display: "flex", flexShrink: 0, alignItems: "center", justifyContent: "space-between", gap: 1.5, px: { xs: 2, lg: 3 }, py: 1.5 }}>
+          <Box ref={modelMenuRef} sx={{ position: "relative" }}>
+            <Box
+              component="button"
               type="button"
               onClick={() => setModelMenuOpen((value) => !value)}
-              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/8"
+              sx={{ ...panelSx, display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5, textAlign: "left", cursor: "pointer" }}
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">{modelLabel}</span>
-                  <span className="material-symbols-outlined text-[18px] text-white/70">expand_more</span>
-                </div>
-                <p className="truncate text-xs text-white/55">{modelSubLabel}</p>
-              </div>
-            </button>
+              <Box sx={{ minWidth: 0 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{modelLabel}</Typography>
+                  <MsIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.7)" }}>expand_more</MsIcon>
+                </Box>
+                <Typography sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{modelSubLabel}</Typography>
+              </Box>
+            </Box>
 
             {modelMenuOpen ? (
-              <div className="absolute left-0 top-[calc(100%+10px)] z-30 w-[min(520px,calc(100vw-2rem))] overflow-hidden rounded-[20px] border border-white/10 bg-[#262626] shadow-2xl shadow-black/50">
-                <div className="border-b border-white/10 px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.22em] text-white/45">Models</p>
-                  <p className="text-sm text-white/75">Only from connected providers</p>
-                </div>
-                <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+              <Box sx={{ position: "absolute", left: 0, top: "calc(100% + 10px)", zIndex: 30, width: "min(520px, calc(100vw - 2rem)", overflow: "hidden", borderRadius: 5, border: "1px solid rgba(255,255,255,0.1)", bgcolor: "#262626", boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
+                <Box sx={{ borderBottom: "1px solid rgba(255,255,255,0.1)", px: 2, py: 1.5 }}>
+                  <Typography sx={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.22em", color: "rgba(255,255,255,0.45)" }}>Models</Typography>
+                  <Typography sx={{ fontSize: 14, color: "rgba(255,255,255,0.75)" }}>Only from connected providers</Typography>
+                </Box>
+                <Box sx={{ maxHeight: "60vh", overflowY: "auto", p: 1 }}>
                   {providerGroups.map((group) => (
-                    <div key={group.providerId} className="mb-2 rounded-[16px] border border-white/10 bg-black/20 p-2">
-                      <div className="flex items-center justify-between px-2 py-2">
-                        <p className="text-sm font-semibold text-white">{group.providerName}</p>
+                    <Box key={group.providerId} sx={{ mb: 1, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", bgcolor: "rgba(0,0,0,0.2)", p: 1 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1, py: 1 }}>
+                        <Typography sx={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{group.providerName}</Typography>
                         <Badge size="sm" variant="default">{group.models.length}</Badge>
-                      </div>
-                      <div className="grid gap-2 sm:grid-cols-2">
+                      </Box>
+                      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" }, gap: 1 }}>
                         {group.models.map((model) => {
                           const isActive = model.id === activeModelId;
                           return (
-                            <button
-                              key={model.id}
-                              type="button"
-                              onClick={() => handleSelectModel(model.id)}
-                              className={`rounded-[14px] border px-3 py-3 text-left transition ${isActive ? "border-blue-400/40 bg-blue-500/15" : "border-white/10 bg-white/5 hover:bg-white/8"}`}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm font-medium text-white">{model.name}</p>
-                                  <p className="truncate text-[11px] text-white/45">{model.requestModel}</p>
-                                </div>
-                                {isActive ? <span className="material-symbols-outlined text-[18px] text-blue-300">check_circle</span> : null}
-                              </div>
-                            </button>
+                            <Box key={model.id} component="button" type="button" onClick={() => handleSelectModel(model.id)} sx={optionSx(isActive)}>
+                              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1.5 }}>
+                                <Box sx={{ minWidth: 0 }}>
+                                  <Typography sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 500, color: "#fff" }}>{model.name}</Typography>
+                                  <Typography sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{model.requestModel}</Typography>
+                                </Box>
+                                {isActive ? <MsIcon sx={{ fontSize: 18, color: "#93c5fd" }}>check_circle</MsIcon> : null}
+                              </Box>
+                            </Box>
                           );
                         })}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   ))}
-                </div>
-              </div>
+                </Box>
+              </Box>
             ) : null}
-          </div>
+          </Box>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setHistoryOpen((value) => !value)}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80 transition hover:bg-white/8"
-            >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box component="button" type="button" onClick={() => setHistoryOpen((value) => !value)} sx={{ ...panelSx, px: 2, py: 1.5, fontSize: 14, color: "rgba(255,255,255,0.8)", cursor: "pointer" }}>
               History
-            </button>
-            <Button variant="ghost" size="sm" icon="delete" onClick={handleDeleteCurrentChat} disabled={!activeSessionId || sessions.length === 0}>
-              Clear
-            </Button>
-          </div>
-        </div>
+            </Box>
+            <Button variant="ghost" size="sm" icon="delete" onClick={handleDeleteCurrentChat} disabled={!activeSessionId || sessions.length === 0}>Clear</Button>
+          </Box>
+        </Box>
 
         {historyOpen ? (
-          <div ref={historyMenuRef} className="absolute right-4 top-[72px] z-20 w-[min(360px,calc(100vw-2rem))] rounded-[20px] border border-white/10 bg-[#262626] p-2 shadow-2xl shadow-black/50 lg:right-6">
-            <div className="px-3 py-2">
-              <p className="text-xs uppercase tracking-[0.22em] text-white/45">Recent chats</p>
-            </div>
-            <div className="max-h-[48vh] space-y-2 overflow-y-auto p-1 custom-scrollbar">
+          <Box ref={historyMenuRef} sx={{ position: "absolute", right: { xs: 2, lg: 3 }, top: 72, zIndex: 20, width: "min(360px, calc(100vw - 2rem))", borderRadius: 5, border: "1px solid rgba(255,255,255,0.1)", bgcolor: "#262626", p: 1, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" }}>
+            <Box sx={{ px: 1.5, py: 1 }}><Typography sx={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.22em", color: "rgba(255,255,255,0.45)" }}>Recent chats</Typography></Box>
+            <Box sx={{ maxHeight: "48vh", overflowY: "auto", p: 0.5, display: "flex", flexDirection: "column", gap: 1 }}>
               {sessionItems.length === 0 ? (
-                <div className="rounded-[16px] border border-dashed border-white/10 bg-white/5 p-4 text-sm text-white/55">
-                  No conversations yet.
-                </div>
+                <Box sx={{ borderRadius: 4, border: "1px dashed rgba(255,255,255,0.1)", bgcolor: "rgba(255,255,255,0.05)", p: 2, fontSize: 14, color: "rgba(255,255,255,0.55)" }}>No conversations yet.</Box>
               ) : sessionItems.map((session) => {
                 const isActive = session.id === activeSessionId;
                 const latestMessage = [...(session.messages || [])].reverse().find((message) => message.role === "user") || session.messages?.[0];
                 return (
-                  <button
-                    key={session.id}
-                    type="button"
-                    onClick={() => handleSelectSession(session.id)}
-                    className={`w-full rounded-[16px] border px-3 py-3 text-left transition ${isActive ? "border-blue-400/40 bg-blue-500/15" : "border-white/10 bg-white/5 hover:bg-white/8"}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-white">{session.title}</p>
-                        <p className="mt-1 truncate text-xs text-white/50">{textValue(latestMessage?.content) || "Empty chat"}</p>
-                      </div>
-                      <span className="text-[10px] text-white/40 shrink-0">{formatRelativeTime(session.updatedAt)}</span>
-                    </div>
-                  </button>
+                  <Box key={session.id} component="button" type="button" onClick={() => handleSelectSession(session.id)} sx={optionSx(isActive)}>
+                    <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1.5 }}>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 500, color: "#fff" }}>{session.title}</Typography>
+                        <Typography sx={{ mt: 0.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{textValue(latestMessage?.content) || "Empty chat"}</Typography>
+                      </Box>
+                      <Typography sx={{ flexShrink: 0, fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{formatRelativeTime(session.updatedAt)}</Typography>
+                    </Box>
+                  </Box>
                 );
               })}
-            </div>
-          </div>
+            </Box>
+          </Box>
         ) : null}
 
         {loadError ? (
-          <div className="mt-4 rounded-[18px] border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-rose-100">
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-[20px]">error</span>
-              <p className="text-sm leading-6">{loadError}</p>
-            </div>
-          </div>
+          <Box sx={{ mt: 2, borderRadius: 4, border: "1px solid rgba(244,63,94,0.2)", bgcolor: "rgba(244,63,94,0.1)", px: 2, py: 1.5, color: "#ffe4e6" }}>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+              <MsIcon sx={{ fontSize: 20 }}>error</MsIcon>
+              <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>{loadError}</Typography>
+            </Box>
+          </Box>
         ) : null}
 
-        <div className="flex flex-1 flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
+        <Box sx={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0 }}>
+          <Box sx={{ flex: 1, overflowY: "auto", py: 2 }}>
             {currentMessages.length === 0 ? (
-              <div className="flex min-h-[50vh] items-center justify-center px-4 text-center">
-                <div className="max-w-xl space-y-4">
-                  <div className="mx-auto flex size-16 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 text-white/80">
-                    <span className="material-symbols-outlined text-[30px]">chat</span>
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-white">Start a conversation</h2>
-                    <p className="text-sm leading-6 text-white/60">
+              <Box sx={{ display: "flex", minHeight: "50vh", alignItems: "center", justifyContent: "center", px: 2, textAlign: "center" }}>
+                <Box sx={{ maxWidth: 576, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Box sx={{ mx: "auto", display: "flex", width: 64, height: 64, alignItems: "center", justifyContent: "center", borderRadius: 5, border: "1px solid rgba(255,255,255,0.1)", bgcolor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.8)" }}>
+                    <MsIcon sx={{ fontSize: 30 }}>chat</MsIcon>
+                  </Box>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                    <Typography component="h2" sx={{ fontSize: 24, fontWeight: 600, color: "#fff" }}>Start a conversation</Typography>
+                    <Typography sx={{ fontSize: 14, lineHeight: 1.5, color: "rgba(255,255,255,0.6)" }}>
                       Simple chat interface to interact with any AI model from connected providers. Select a model and start chatting!
-                    </p>
-                  </div>
-                </div>
-              </div>
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             ) : null}
 
-            <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4">
+            <Box sx={{ mx: "auto", display: "flex", width: "100%", maxWidth: 768, flexDirection: "column", gap: 2, px: 2 }}>
               {currentMessages.map((message) => {
                 const isUser = message.role === "user";
                 const isAssistant = message.role === "assistant";
@@ -881,88 +890,89 @@ export default function BasicChatPageClient() {
                 const content = textValue(message.content) || (isAssistant ? streamingText : "");
 
                 return (
-                  <div key={message.id} className={`flex w-full ${isUser ? "justify-end" : "justify-start"} mb-6`}>
-                    <div className={`max-w-[min(88%,42rem)] ${isUser ? "rounded-3xl bg-[#2f2f2f] px-5 py-3.5 text-white" : "text-white/90"}`}>
-                      <div className="mb-1 flex items-center justify-between gap-3">
-                        <span className="text-xs font-semibold">{isUser ? "You" : activeModel?.name || "Assistant"}</span>
-                      </div>
+                  <Box key={message.id} sx={{ display: "flex", width: "100%", justifyContent: isUser ? "flex-end" : "flex-start", mb: 3 }}>
+                    <Box sx={{ maxWidth: "min(88%, 42rem)", ...(isUser ? { borderRadius: 6, bgcolor: "#2f2f2f", px: 2.5, py: 1.75, color: "#fff" } : { color: "rgba(255,255,255,0.9)" }) }}>
+                      <Box sx={{ mb: 0.5, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{isUser ? "You" : activeModel?.name || "Assistant"}</Typography>
+                      </Box>
 
                       {message.attachments?.length ? (
-                        <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 mt-2">
+                        <Box sx={{ mb: 1.5, mt: 1, display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)" }, gap: 1 }}>
                           {message.attachments.map((attachment) => (
-                            <a key={attachment.id} href={attachment.dataUrl} target="_blank" rel="noreferrer" className="overflow-hidden rounded-[18px] border border-white/10 bg-black/20">
-                              <Image src={attachment.dataUrl} alt={attachment.name} className="h-28 w-full object-cover" width={0} height={0} sizes="100vw" style={{ width: "100%", height: "112px" }} unoptimized />
-                            </a>
+                            <Box key={attachment.id} component="a" href={attachment.dataUrl} target="_blank" rel="noreferrer" sx={{ overflow: "hidden", borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", bgcolor: "rgba(0,0,0,0.2)" }}>
+                              <Image src={attachment.dataUrl} alt={attachment.name} width={0} height={0} sizes="100vw" style={{ width: "100%", height: "112px", objectFit: "cover" }} unoptimized />
+                            </Box>
                           ))}
-                        </div>
+                        </Box>
                       ) : null}
 
-                      <div className="whitespace-pre-wrap break-words text-[15px] leading-7">
+                      <Box sx={{ whiteSpace: "pre-wrap", overflowWrap: "break-word", fontSize: 15, lineHeight: 1.75 }}>
                         {content}
-                        {isAssistant && isStreaming && !streamingText ? <span className="inline-block animate-pulse">▋</span> : null}
-                      </div>
-                    </div>
-                  </div>
+                        {isAssistant && isStreaming && !streamingText ? <Box component="span" sx={{ display: "inline-block", animation: "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}>▋</Box> : null}
+                      </Box>
+                    </Box>
+                  </Box>
                 );
               })}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="shrink-0 pt-2">
+          <Box sx={{ flexShrink: 0, pt: 1 }}>
             {attachments.length > 0 ? (
-              <div className="mx-auto mb-3 flex w-full max-w-3xl flex-wrap gap-2 px-4">
+              <Box sx={{ mx: "auto", mb: 1.5, display: "flex", width: "100%", maxWidth: 768, flexWrap: "wrap", gap: 1, px: 2 }}>
                 {attachments.map((attachment) => (
-                  <div key={attachment.id} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
-                    <span className="text-xs text-white/80 max-w-[12rem] truncate">{attachment.name}</span>
-                    <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-white/55 hover:text-white" aria-label="Remove attachment">
-                      <span className="material-symbols-outlined text-[18px]">close</span>
-                    </button>
-                  </div>
+                  <Box key={attachment.id} sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 999, border: "1px solid rgba(255,255,255,0.1)", bgcolor: "rgba(255,255,255,0.05)", px: 1.5, py: 1 }}>
+                    <Typography sx={{ maxWidth: 192, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "rgba(255,255,255,0.8)" }}>{attachment.name}</Typography>
+                    <Box component="button" type="button" onClick={() => removeAttachment(attachment.id)} aria-label="Remove attachment" sx={{ color: "rgba(255,255,255,0.55)", border: 0, bgcolor: "transparent", cursor: "pointer", "&:hover": { color: "#fff" } }}>
+                      <MsIcon sx={{ fontSize: 18 }}>close</MsIcon>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             ) : null}
 
-            <div className="mx-auto w-full max-w-3xl px-4 pb-2">
-              <div className="rounded-[26px] bg-[#2f2f2f] px-3 pt-3 pb-2 shadow-[0_0_15px_rgba(0,0,0,0.10)] ring-1 ring-white/5">
-                <textarea
+            <Box sx={{ mx: "auto", width: "100%", maxWidth: 768, px: 2, pb: 1 }}>
+              <Box sx={{ borderRadius: 6, bgcolor: "#2f2f2f", px: 1.5, pt: 1.5, pb: 1, boxShadow: "0 0 15px rgba(0,0,0,0.10)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <Box
+                  component="textarea"
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Message AI"
                   aria-label="Message AI"
                   rows={1}
-                  className="w-full resize-none bg-transparent px-2 text-[15px] leading-6 text-white outline-none placeholder:text-white/40 custom-scrollbar max-h-[25vh] overflow-y-auto"
+                  sx={{ width: "100%", resize: "none", bgcolor: "transparent", px: 1, fontSize: 15, lineHeight: 1.5, color: "#fff", outline: "none", border: 0, maxHeight: "25vh", overflowY: "auto", "&::placeholder": { color: "rgba(255,255,255,0.4)" } }}
                 />
 
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={!activeModel || loadingData} className="p-2 text-white/50 hover:text-white transition rounded-full hover:bg-white/5">
-                      <span className="material-symbols-outlined text-[20px]">attach_file</span>
-                    </button>
-                    <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAttachFiles} aria-label="Attach images" />
-                    <span className="text-xs font-medium text-white/30 truncate max-w-[120px]">{activeModel ? activeModel.name : "No model"}</span>
-                  </div>
+                <Box sx={{ mt: 1, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box component="button" type="button" onClick={() => fileInputRef.current?.click()} disabled={!activeModel || loadingData} sx={{ p: 1, color: "rgba(255,255,255,0.5)", border: 0, bgcolor: "transparent", cursor: "pointer", borderRadius: 999, transition: "background-color 150ms ease, color 150ms ease", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.05)" }, "&:disabled": { cursor: "not-allowed", opacity: 0.5 } }}>
+                      <MsIcon sx={{ fontSize: 20 }}>attach_file</MsIcon>
+                    </Box>
+                    <Box component="input" ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleAttachFiles} aria-label="Attach images" sx={{ display: "none" }} />
+                    <Typography sx={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.3)" }}>{activeModel ? activeModel.name : "No model"}</Typography>
+                  </Box>
 
-                  <div className="flex items-center gap-2">
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {isSending ? (
-                      <button type="button" onClick={handleStop} className="p-2 text-white bg-white/10 hover:bg-white/20 transition rounded-full h-8 w-8 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[16px]">stop</span>
-                      </button>
+                      <Box component="button" type="button" onClick={handleStop} sx={{ p: 1, color: "#fff", bgcolor: "rgba(255,255,255,0.1)", border: 0, cursor: "pointer", borderRadius: 999, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 150ms ease", "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}>
+                        <MsIcon sx={{ fontSize: 16 }}>stop</MsIcon>
+                      </Box>
                     ) : null}
-                    <button type="button" onClick={sendMessage} disabled={!canSend} className={`h-8 w-8 rounded-full flex items-center justify-center transition ${canSend ? 'bg-white text-black hover:opacity-90' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}>
-                      <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                    <Box component="button" type="button" onClick={sendMessage} disabled={!canSend} sx={{ width: 32, height: 32, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", transition: "opacity 150ms ease", border: 0, cursor: canSend ? "pointer" : "not-allowed", bgcolor: canSend ? "#fff" : "rgba(255,255,255,0.1)", color: canSend ? "#000" : "rgba(255,255,255,0.3)", "&:hover": canSend ? { opacity: 0.9 } : {} }}>
+                      <MsIcon sx={{ fontSize: 16 }}>arrow_upward</MsIcon>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
 
-          <p className="mx-auto mt-2 max-w-3xl px-4 pb-4 text-center text-[11px] text-white/30">
-            Model list is filtered from connected providers.
-          </p>
-        </div>
-      </div>
-    </div>
+            <Typography sx={{ mx: "auto", mt: 1, maxWidth: 768, px: 2, pb: 2, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+              Model list is filtered from connected providers.
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

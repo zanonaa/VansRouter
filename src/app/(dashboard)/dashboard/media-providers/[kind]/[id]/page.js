@@ -14,6 +14,18 @@ import { TtsExampleCard } from "./components/TtsExampleCard";
 import { GenericExampleCard } from "./components/GenericExampleCard";
 import { ExaSearchExampleCard } from "./components/ExaSearchExampleCard";
 import { SttExampleCard } from "./components/SttExampleCard";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import { alpha } from "@mui/material/styles";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
 
 // MediaProviderDetailPage
 export default function MediaProviderDetailPage() {
@@ -63,97 +75,158 @@ export default function MediaProviderDetailPage() {
   if (!isCustom && !builtInProvider) return notFound();
   if (isCustom && !customLoading && !customNode) return notFound();
   if (isCustom && customLoading) {
-    return <div className="text-text-muted text-sm py-12 text-center">Loading...</div>;
+    return <Box sx={{ color: "text.secondary", fontSize: 14, py: 6, textAlign: "center" }}>Loading...</Box>;
   }
 
   const kinds = isCustom ? ["embedding"] : (provider.serviceKinds ?? ["llm"]);
   if (!isCustom && !kinds.includes(kind)) return notFound();
 
   return (
-    <div className="flex flex-col gap-8">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
       {/* Back */}
-      <div>
-        <Link
+      <Box>
+        <Box
+          component={Link}
           href={`/dashboard/media-providers/${kind}`}
-          className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-primary transition-colors mb-4"
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            fontSize: 14,
+            color: "text.secondary",
+            mb: 2,
+            transition: "color 150ms ease",
+            "&:hover": { color: "primary.main" },
+          }}
         >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          <MsIcon sx={{ fontSize: 20 }}>arrow_back</MsIcon>
           {kindConfig.label}
-        </Link>
+        </Box>
 
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <div className="size-12 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${provider.color}15` }}>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: { xs: 1.5, sm: 2 }, alignItems: { sm: "center" } }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              "& img": { objectFit: "contain", borderRadius: 2, maxWidth: 48, maxHeight: 48 },
+            }}
+            style={{ backgroundColor: `${provider.color}15` }}
+          >
             <ProviderIcon
               src={`/providers/${provider.id}.webp`}
               alt={provider.name}
               size={48}
-              className="object-contain rounded-lg max-w-[48px] max-h-[48px]"
               fallbackText={provider.textIcon || provider.id.slice(0, 2).toUpperCase()}
               fallbackColor={provider.color}
             />
-          </div>
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <h1 className="text-3xl font-semibold tracking-tight">{provider.name}</h1>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: { xs: 1, sm: 1.5 } }}>
+              <Typography component="h1" sx={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.01em" }}>{provider.name}</Typography>
               {!isCustom && provider.notice?.apiKeyUrl && (
-                <a
+                <Box
+                  component="a"
                   href={provider.notice.apiKeyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  sx={{ fontSize: 12, color: "primary.main", display: "inline-flex", alignItems: "center", gap: 0.5, "&:hover": { textDecoration: "underline" } }}
                 >
-                  <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  <MsIcon sx={{ fontSize: 14 }}>open_in_new</MsIcon>
                   Get API Key
-                </a>
+                </Box>
               )}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5, flexWrap: "wrap" }}>
               {isCustom && <Badge variant="default" size="sm">Custom · {customNode?.prefix}</Badge>}
               {kinds.map((k) => (
                 <Badge key={k} variant={k === kind ? "primary" : "default"} size="sm">
                   {k.toUpperCase()}
                 </Badge>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
           {isCustom && (
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
               <Button size="sm" variant="secondary" icon="edit" onClick={() => setShowEditModal(true)}>
                 Edit
               </Button>
               <Button size="sm" variant="secondary" icon="delete" onClick={handleDeleteCustom}>
                 Delete
               </Button>
-            </div>
+            </Box>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Kind-specific notice (e.g. codex/image requires Plus) */}
       {!isCustom && provider.kindNotice?.[kind] && (
-        <div className="flex items-start gap-3 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400">
-          <span className="material-symbols-outlined text-[20px] mt-0.5">warning</span>
-          <p className="text-sm">{provider.kindNotice[kind]}</p>
-        </div>
+        <Box
+          sx={(theme) => ({
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 1.5,
+            px: 2,
+            py: 1.5,
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.warning.main, 0.1),
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+            color: theme.palette.mode === "dark" ? "#fbbf24" : "#b45309",
+          })}
+        >
+          <MsIcon sx={{ fontSize: 20, mt: 0.25 }}>warning</MsIcon>
+          <Typography sx={{ fontSize: 14 }}>{provider.kindNotice[kind]}</Typography>
+        </Box>
       )}
 
       {/* Provider notice text (only when there's actual text content) */}
       {!isCustom && provider.notice?.text && !provider.deprecated && (
-        <div className="flex flex-col gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 sm:flex-row sm:items-center">
-          <span className="material-symbols-outlined text-[16px] text-blue-500 shrink-0">info</span>
-          <p className="min-w-0 flex-1 text-xs leading-relaxed text-blue-600 dark:text-blue-400">{provider.notice.text}</p>
+        <Box
+          sx={(theme) => ({
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+            bgcolor: alpha(theme.palette.info.main, 0.1),
+            px: 1.5,
+            py: 1,
+            alignItems: { sm: "center" },
+          })}
+        >
+          <MsIcon sx={{ fontSize: 16, color: "info.main", flexShrink: 0 }}>info</MsIcon>
+          <Typography sx={(theme) => ({ minWidth: 0, flex: 1, fontSize: 12, lineHeight: 1.625, color: theme.palette.mode === "dark" ? "#60a5fa" : "#2563eb" })}>{provider.notice.text}</Typography>
           {provider.notice.apiKeyUrl && (
-            <a
+            <Box
+              component="a"
               href={provider.notice.apiKeyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex justify-center rounded bg-blue-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-600 sm:py-0.5"
+              sx={{
+                display: "inline-flex",
+                justifyContent: "center",
+                borderRadius: 0.5,
+                bgcolor: "info.main",
+                px: 1,
+                py: 0.5,
+                fontSize: 12,
+                fontWeight: 500,
+                color: "#fff",
+                textDecoration: "none",
+                transition: "background-color 150ms ease",
+                "&:hover": { bgcolor: "info.dark" },
+                py: { xs: 0.5, sm: 0.25 },
+              }}
             >
               Get API Key →
-            </a>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
 
       {/* Connections */}
@@ -207,6 +280,6 @@ export default function MediaProviderDetailPage() {
           }}
         />
       )}
-    </div>
+    </Box>
   );
 }

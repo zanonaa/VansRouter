@@ -1,6 +1,44 @@
 "use client";
 
 import { Card, Toggle } from "@/shared/components";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx }) {
+  return <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 20, ...sx }}>{children}</Icon>;
+}
+
+function LevelButtons({ levels, selected, onSelect }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+      {levels.map((lvl) => (
+        <Box
+          key={lvl.id}
+          component="button"
+          onClick={() => onSelect(lvl.id)}
+          title={lvl.desc}
+          sx={{
+            px: 1.5,
+            py: 0.75,
+            borderRadius: 1,
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: "pointer",
+            border: 1,
+            transition: "background-color 150ms ease, color 150ms ease",
+            bgcolor: selected === lvl.id ? "primary.main" : "transparent",
+            borderColor: selected === lvl.id ? "primary.main" : "divider",
+            color: selected === lvl.id ? "#fff" : "text.secondary",
+            "&:hover": { bgcolor: selected === lvl.id ? "primary.main" : "action.hover" },
+          }}
+        >
+          {lvl.label}
+        </Box>
+      ))}
+    </Box>
+  );
+}
 
 export default function TokenSaverSettings({
   rtkEnabled,
@@ -42,311 +80,117 @@ export default function TokenSaverSettings({
   pxpipeEnabled,
   handlePxpipeEnabled,
 }) {
+  const statusChip = (active, label) => (
+    <Box component="span" sx={{ fontSize: 12, px: 1, py: 0.25, borderRadius: 1, bgcolor: active ? "success.light" : "warning.light", color: active ? "success.dark" : "warning.dark" }}>{label}</Box>
+  );
+
   return (
     <Card id="rtk">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">
-            bolt
-          </span>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+          <MsIcon sx={{ color: "primary.main" }}>bolt</MsIcon>
           Token Saver
-        </h2>
-      </div>
-      <div className="flex items-center justify-between pt-2 pb-4 border-b border-border gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="font-medium">
+        </Typography>
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 1, pb: 2, borderBottom: 1, borderColor: "divider", gap: 2 }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography sx={{ fontWeight: 500 }}>
             Compress tool output{" "}
-            <a
-              href="https://github.com/rtk-ai/rtk"
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-normal text-primary underline hover:opacity-80"
-            >
-              (RTK)
-            </a>
-          </p>
-          <p className="text-sm text-text-muted">
-            git/grep/ls/tree/logs → 60-90% fewer input tokens
-          </p>
-        </div>
-        <Toggle
-          checked={rtkEnabled}
-          onChange={() => handleRtkEnabled(!rtkEnabled)}
-        />
-      </div>
-      <div className="flex items-center justify-between py-4 gap-4 flex-wrap">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <p className="font-medium">
+            <Box component="a" href="https://github.com/rtk-ai/rtk" target="_blank" rel="noreferrer" sx={{ fontSize: 12, fontWeight: 400, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>(RTK)</Box>
+          </Typography>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>git/grep/ls/tree/logs → 60-90% fewer input tokens</Typography>
+        </Box>
+        <Toggle checked={rtkEnabled} onChange={() => handleRtkEnabled(!rtkEnabled)} />
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            <Typography sx={{ fontWeight: 500 }}>
               Compress context{" "}
-              <a
-                href="https://github.com/chopratejas/headroom"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-normal text-primary underline hover:opacity-80"
-              >
-                (Headroom)
-              </a>
-            </p>
-            <span
-              className={`text-xs px-2 py-0.5 rounded ${headroomRunning ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
-            >
-              {headroomStatusLabel}
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowHeadroomInstallModal(true)}
-              className="text-xs text-primary underline hover:opacity-80"
-            >
-              {headroomRunning ? "Manage" : "Setup"}
-            </button>
-          </div>
-          <p className="text-sm text-text-muted mt-1">
-            Compress prompts via /v1/compress before routing to the model
-          </p>
-        </div>
-        <Toggle
-          checked={headroomEnabled}
-          onChange={() => handleHeadroomEnabled(!headroomEnabled)}
-        />
-      </div>
+              <Box component="a" href="https://github.com/chopratejas/headroom" target="_blank" rel="noreferrer" sx={{ fontSize: 12, fontWeight: 400, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>(Headroom)</Box>
+            </Typography>
+            {statusChip(headroomRunning, headroomStatusLabel)}
+            <Box component="button" type="button" onClick={() => setShowHeadroomInstallModal(true)} sx={{ fontSize: 12, color: "primary.main", textDecoration: "underline", border: 0, bgcolor: "transparent", cursor: "pointer", "&:hover": { opacity: 0.8 } }}>{headroomRunning ? "Manage" : "Setup"}</Box>
+          </Box>
+          <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>Compress prompts via /v1/compress before routing to the model</Typography>
+        </Box>
+        <Toggle checked={headroomEnabled} onChange={() => handleHeadroomEnabled(!headroomEnabled)} />
+      </Box>
       {headroomStatus.installed && (
-        <div className="mb-3 ml-1 pl-3 pb-4 border-l-2 border-border">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-text-muted">
-              Compression extras
-              {headroomExtras.version ? ` · v${headroomExtras.version}` : ""}:
-            </span>
+        <Box sx={{ mb: 1.5, ml: 0.5, pl: 1.5, pb: 2, borderLeft: 2, borderColor: "divider" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>Compression extras{headroomExtras.version ? ` · v${headroomExtras.version}` : ""}:</Typography>
             {headroomExtras.available.map((extra) => {
               const installed = !!headroomExtras.extras[extra];
               const pending = pendingExtras.includes(extra);
-              const extraTitle =
-                extra === "code"
-                  ? "tree-sitter AST compression for code responses"
-                  : "Kompress-v2 HF model for prose/agentic traces (~+1GB)";
-
+              const extraTitle = extra === "code" ? "tree-sitter AST compression for code responses" : "Kompress-v2 HF model for prose/agentic traces (~+1GB)";
               if (installed) {
                 const active = extra === "code" ? codeAware : kompress;
                 return (
-                  <div
-                    key={extra}
-                    className="flex items-center gap-1.5 text-xs px-2 py-1 rounded border border-success/40 bg-success/5 text-text"
-                    title={extraTitle}
-                  >
-                    <Toggle
-                      size="sm"
-                      checked={active}
-                      disabled={restartingProxy}
-                      onChange={() => toggleExtraActive(extra, !active)}
-                    />
-                    <span className="font-medium">[{extra}]</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveExtra(extra)}
-                      disabled={removingExtra === extra}
-                      className="ml-1 text-error underline hover:opacity-80 disabled:opacity-50"
-                      title={`Uninstall [${extra}]`}
-                    >
-                      {removingExtra === extra ? "Uninstalling…" : "Uninstall"}
-                    </button>
-                  </div>
+                  <Box key={extra} sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 12, px: 1, py: 0.5, borderRadius: 1, border: 1, borderColor: "success.main", bgcolor: "action.hover" }} title={extraTitle}>
+                    <Toggle size="sm" checked={active} disabled={restartingProxy} onChange={() => toggleExtraActive(extra, !active)} />
+                    <Typography sx={{ fontSize: 12, fontWeight: 500 }}>[{extra}]</Typography>
+                    <Box component="button" type="button" onClick={() => handleRemoveExtra(extra)} disabled={removingExtra === extra} title={`Uninstall [${extra}]`} sx={{ ml: 0.5, color: "error.main", textDecoration: "underline", border: 0, bgcolor: "transparent", cursor: "pointer", "&:disabled": { opacity: 0.5 } }}>{removingExtra === extra ? "Uninstalling…" : "Uninstall"}</Box>
+                  </Box>
                 );
               }
-
               return (
-                <label
+                <Box
                   key={extra}
-                  className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded border cursor-pointer transition-colors ${
-                    pending
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-text-muted hover:bg-surface-2"
-                  }`}
+                  component="label"
                   title={extraTitle}
+                  sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 12, px: 1, py: 0.5, borderRadius: 1, border: 1, cursor: "pointer", transition: "background-color 150ms ease", borderColor: pending ? "primary.main" : "divider", bgcolor: pending ? "action.selected" : "transparent", color: pending ? "primary.main" : "text.secondary", "&:hover": { bgcolor: "action.hover" } }}
                 >
-                  <input
-                    type="checkbox"
-                    className="w-3 h-3"
-                    checked={pending}
-                    onChange={() => togglePendingExtra(extra)}
-                  />
-                  <span className="font-medium">[{extra}]</span>
-                  <span className="opacity-70">not installed</span>
-                </label>
+                  <Box component="input" type="checkbox" checked={pending} onChange={() => togglePendingExtra(extra)} sx={{ width: 12, height: 12 }} />
+                  <Typography sx={{ fontSize: 12, fontWeight: 500 }}>[{extra}]</Typography>
+                  <Box component="span" sx={{ opacity: 0.7 }}>not installed</Box>
+                </Box>
               );
             })}
-            {pendingExtras.length > 0 && (
-              <button
-                onClick={handleInstallExtras}
-                disabled={extrasActionLoading}
-                className="text-xs px-2.5 py-1 rounded bg-primary text-white hover:opacity-90 disabled:opacity-50"
-              >
-                {extrasActionLoading
-                  ? "Installing…"
-                  : `Install [proxy,${pendingExtras.join(",")}]`}
-              </button>
-            )}
-          </div>
-          {extrasActionError && (
-            <p className="text-xs text-error mt-1">{extrasActionError}</p>
-          )}
-          {restartingProxy && (
-            <p className="text-xs text-text-muted mt-1">Restarting proxy…</p>
-          )}
-          {(extrasActionLoading || removingExtra) && installLog && (
-            <pre className="mt-2 max-h-32 overflow-auto rounded bg-surface-2 p-2 text-[10px] leading-tight text-text-muted whitespace-pre-wrap">
-              {installLog}
-            </pre>
-          )}
-          <p className="text-xs text-text-muted mt-1">
+            {pendingExtras.length > 0 && <Box component="button" onClick={handleInstallExtras} disabled={extrasActionLoading} sx={{ fontSize: 12, px: 1.25, py: 0.5, borderRadius: 1, bgcolor: "primary.main", color: "#fff", border: 0, cursor: "pointer", "&:hover": { opacity: 0.9 }, "&:disabled": { opacity: 0.5 } }}>{extrasActionLoading ? "Installing…" : `Install [proxy,${pendingExtras.join(",")}]`}</Box>}
+          </Box>
+          {extrasActionError && <Typography sx={{ fontSize: 12, color: "error.main", mt: 0.5 }}>{extrasActionError}</Typography>}
+          {restartingProxy && <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>Restarting proxy…</Typography>}
+          {(extrasActionLoading || removingExtra) && installLog && <Box component="pre" sx={{ mt: 1, maxHeight: 128, overflow: "auto", borderRadius: 1, bgcolor: "action.hover", p: 1, fontSize: 10, lineHeight: 1.2, color: "text.secondary", whiteSpace: "pre-wrap" }}>{installLog}</Box>}
+          <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
             Installing adds the package; use <code>on</code>/<code>off</code>{" "}
-            to activate it (restarts the proxy). Default install is{" "}
-            <code>[proxy]</code> only (SmartCrusher for JSON). Adding{" "}
-            <code>[code]</code> enables AST compression
-            (Python/JS/TS/Go/Rust/Java/C/C++/Perl). Adding <code>[ml]</code>{" "}
-            enables the Kompress-v2 HF model for prose/agentic traces but
-            adds ~1 GB (torch + huggingface-hub).
-          </p>
-        </div>
+            to activate it (restarts the proxy). Default install is <code>[proxy]</code> only (SmartCrusher for JSON). Adding <code>[code]</code> enables AST compression (Python/JS/TS/Go/Rust/Java/C/C++/Perl). Adding <code>[ml]</code> enables the Kompress-v2 HF model for prose/agentic traces but adds ~1 GB (torch + huggingface-hub).
+          </Typography>
+        </Box>
       )}
-      <div className="flex items-center justify-between pt-4 border-t border-border gap-4 flex-wrap">
-        <div className="min-w-0 flex-1">
-          <p className="font-medium">
-            Compress LLM output{" "}
-            <a
-              href="https://github.com/JuliusBrussee/caveman"
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-normal text-primary underline hover:opacity-80"
-            >
-              (Caveman)
-            </a>
-          </p>
-          <p className="text-sm text-text-muted">
-            Terse-style system prompt → ~65% fewer output tokens (up to 87%)
-          </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {cavemanEnabled && (
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-1.5">
-                {visibleCavemanLevels.map((lvl) => (
-                  <button
-                    key={lvl.id}
-                    onClick={() => handleCavemanLevel(lvl.id)}
-                    className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
-                      cavemanLevel === lvl.id
-                        ? "bg-primary text-white border-primary"
-                        : "bg-transparent border-border text-text-muted hover:bg-surface-2"
-                    }`}
-                    title={lvl.desc}
-                  >
-                    {lvl.label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-primary">
-                {cavemanLevels.find((lvl) => lvl.id === cavemanLevel)?.desc}
-              </p>
-            </div>
-          )}
-          <Toggle
-            checked={cavemanEnabled}
-            onChange={() => handleCavemanEnabled(!cavemanEnabled)}
-          />
-        </div>
-      </div>
-      <div className="flex items-center justify-between pt-4 mt-4 border-t border-border gap-4 flex-wrap">
-        <div className="min-w-0 flex-1">
-          <p className="font-medium">
-            Lazy senior dev{" "}
-            <a
-              href="https://github.com/DietrichGebert/ponytail"
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-normal text-primary underline hover:opacity-80"
-            >
-              (Ponytail)
-            </a>
-          </p>
-          <p className="text-sm text-text-muted">
-            Bias the model toward minimal code: YAGNI, reuse stdlib,
-            deletion over addition
-          </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {ponytailEnabled && (
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-1.5">
-                {ponytailLevels.map((lvl) => (
-                  <button
-                    key={lvl.id}
-                    onClick={() => handlePonytailLevel(lvl.id)}
-                    className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
-                      ponytailLevel === lvl.id
-                        ? "bg-primary text-white border-primary"
-                        : "bg-transparent border-border text-text-muted hover:bg-surface-2"
-                    }`}
-                    title={lvl.desc}
-                  >
-                    {lvl.label}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-primary">
-                {ponytailLevels.find((lvl) => lvl.id === ponytailLevel)?.desc}
-              </p>
-            </div>
-          )}
-          <Toggle
-            checked={ponytailEnabled}
-            onChange={() => handlePonytailEnabled(!ponytailEnabled)}
-          />
-        </div>
-      </div>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 2, borderTop: 1, borderColor: "divider", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography sx={{ fontWeight: 500 }}>Compress LLM output{" "}<Box component="a" href="https://github.com/JuliusBrussee/caveman" target="_blank" rel="noreferrer" sx={{ fontSize: 12, fontWeight: 400, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>(Caveman)</Box></Typography>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>Terse-style system prompt → ~65% fewer output tokens (up to 87%)</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
+          {cavemanEnabled && <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5 }}><LevelButtons levels={visibleCavemanLevels} selected={cavemanLevel} onSelect={handleCavemanLevel} /><Typography sx={{ fontSize: 12, color: "primary.main" }}>{cavemanLevels.find((lvl) => lvl.id === cavemanLevel)?.desc}</Typography></Box>}
+          <Toggle checked={cavemanEnabled} onChange={() => handleCavemanEnabled(!cavemanEnabled)} />
+        </Box>
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 2, mt: 2, borderTop: 1, borderColor: "divider", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography sx={{ fontWeight: 500 }}>Lazy senior dev{" "}<Box component="a" href="https://github.com/DietrichGebert/ponytail" target="_blank" rel="noreferrer" sx={{ fontSize: 12, fontWeight: 400, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>(Ponytail)</Box></Typography>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>Bias the model toward minimal code: YAGNI, reuse stdlib, deletion over addition</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
+          {ponytailEnabled && <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5 }}><LevelButtons levels={ponytailLevels} selected={ponytailLevel} onSelect={handlePonytailLevel} /><Typography sx={{ fontSize: 12, color: "primary.main" }}>{ponytailLevels.find((lvl) => lvl.id === ponytailLevel)?.desc}</Typography></Box>}
+          <Toggle checked={ponytailEnabled} onChange={() => handlePonytailEnabled(!ponytailEnabled)} />
+        </Box>
+      </Box>
       {/* PXPIPE integration card */}
-      <div className="flex items-center justify-between pt-4 mt-4 border-t border-border gap-4 flex-wrap">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <p className="font-medium">
-              Compress prompts as images{" "}
-              <a
-                href="https://github.com/teamchong/pxpipe"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-normal text-primary underline hover:opacity-80"
-              >
-                (PXPIPE)
-              </a>
-            </p>
-            <span className={`text-xs px-2 py-0.5 rounded ${pxpipeChipClass}`}>
-              {pxpipeStatusLabel}
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowPxpipeModal(true)}
-              className="text-xs text-primary underline hover:opacity-80"
-            >
-              {pxpipeStatus.installed ? "Manage" : "Setup"}
-            </button>
-            <a
-              href="/dashboard/pxpipe"
-              className="text-xs text-primary underline hover:opacity-80"
-            >
-              Dashboard
-            </a>
-          </div>
-          <p className="text-sm text-text-muted mt-1">
-            Transforms large textual context into optimized images before
-            sending to the LLM. Ideal for huge prompts, tool outputs and long
-            conversations.
-          </p>
-        </div>
-        <Toggle
-          checked={pxpipeEnabled}
-          disabled={!pxpipeStatus.installed}
-          onChange={() => handlePxpipeEnabled(!pxpipeEnabled)}
-        />
-      </div>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pt: 2, mt: 2, borderTop: 1, borderColor: "divider", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            <Typography sx={{ fontWeight: 500 }}>Compress prompts as images{" "}<Box component="a" href="https://github.com/teamchong/pxpipe" target="_blank" rel="noreferrer" sx={{ fontSize: 12, fontWeight: 400, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>(PXPIPE)</Box></Typography>
+            <Box component="span" sx={{ fontSize: 12, px: 1, py: 0.25, borderRadius: 1, bgcolor: pxpipeChipClass.includes("success") ? "success.light" : "warning.light", color: pxpipeChipClass.includes("success") ? "success.dark" : "warning.dark" }}>{pxpipeStatusLabel}</Box>
+            <Box component="button" type="button" onClick={() => setShowPxpipeModal(true)} sx={{ fontSize: 12, color: "primary.main", textDecoration: "underline", border: 0, bgcolor: "transparent", cursor: "pointer", "&:hover": { opacity: 0.8 } }}>{pxpipeStatus.installed ? "Manage" : "Setup"}</Box>
+            <Box component="a" href="/dashboard/pxpipe" sx={{ fontSize: 12, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>Dashboard</Box>
+          </Box>
+          <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>Transforms large textual context into optimized images before sending to the LLM. Ideal for huge prompts, tool outputs and long conversations.</Typography>
+        </Box>
+        <Toggle checked={pxpipeEnabled} disabled={!pxpipeStatus.installed} onChange={() => handlePxpipeEnabled(!pxpipeEnabled)} />
+      </Box>
     </Card>
   );
 }

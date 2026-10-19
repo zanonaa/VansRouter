@@ -1,16 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, Button } from "@/shared/components";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import Table from "@mui/material/Table";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import { alpha } from "@mui/material/styles";
+
+function MsIcon({ children, sx, ...props }) {
+  return <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 20, ...sx }} {...props}>{children}</Icon>;
+}
 
 const fmtTokens = (n) => {
   if (n >= 1000000) return `${(n / 1000000).toFixed(2)}M`;
@@ -49,11 +55,12 @@ const REASON_LABELS = {
 };
 
 function SummaryCard({ label, value, sub, tone }) {
+  const color = tone === "text-success" ? "success.main" : tone === "text-warning" ? "warning.main" : "text.secondary";
   return (
-    <Card className="p-4">
-      <p className="text-xs text-text-muted uppercase tracking-wide">{label}</p>
-      <p className={`text-xl font-semibold mt-1 ${tone || ""}`}>{value}</p>
-      {sub && <p className="text-xs text-text-muted mt-0.5">{sub}</p>}
+    <Card padding="sm">
+      <Typography sx={{ fontSize: 12, color: "text.secondary", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</Typography>
+      <Typography sx={{ fontSize: 20, fontWeight: 600, mt: 0.5, color }}>{value}</Typography>
+      {sub && <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.25 }}>{sub}</Typography>}
     </Card>
   );
 }
@@ -104,83 +111,76 @@ export default function PxpipeClient() {
           : "Stopped";
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">image</span>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
+        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+          <MsIcon sx={{ color: "primary.main" }}>image</MsIcon>
           PXPIPE Dashboard
-        </h2>
-        <div className="flex items-center gap-2">
-          <a href="/dashboard/token-saver" className="text-xs text-primary underline hover:opacity-80">
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box component="a" href="/dashboard/token-saver" sx={{ fontSize: 12, color: "primary.main", textDecoration: "underline", "&:hover": { opacity: 0.8 } }}>
             Token Saver settings
-          </a>
+          </Box>
           <Button size="sm" variant="ghost" onClick={refresh} disabled={loading}>
             {loading ? "Refreshing…" : "Refresh"}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <SummaryCard
-          label="Status"
-          value={statusLabel}
-          tone={health?.healthy ? "text-success" : status?.installed ? "text-warning" : "text-text-muted"}
-          sub={status?.enabled ? "Enabled in pipeline" : "Disabled in pipeline"}
-        />
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(6, 1fr)" }, gap: 1.5 }}>
+        <SummaryCard label="Status" value={statusLabel} tone={health?.healthy ? "text-success" : status?.installed ? "text-warning" : "text-text-muted"} sub={status?.enabled ? "Enabled in pipeline" : "Disabled in pipeline"} />
         <SummaryCard label="Version" value={status?.version ? `v${status.version}` : "—"} sub="pxpipe-proxy" />
         <SummaryCard label="Uptime" value={fmtUptime(status?.uptimeMs)} sub="module loaded" />
         <SummaryCard label="Requests" value={w ? w.requests.toLocaleString() : "—"} />
         <SummaryCard label="Compressed" value={w ? w.compressed.toLocaleString() : "—"} tone="text-success" />
         <SummaryCard label="Bypassed" value={w ? w.bypassed.toLocaleString() : "—"} />
-      </div>
+      </Box>
 
-      <Card className="p-4">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <h3 className="font-medium">Token savings (estimated)</h3>
-          <div className="flex items-center gap-1 rounded-lg border border-border bg-bg-subtle p-1">
+      <Card padding="sm">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
+          <Typography sx={{ fontWeight: 500 }}>Token savings (estimated)</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, borderRadius: 2, border: 1, borderColor: "divider", bgcolor: "action.hover", p: 0.5 }}>
             {WINDOW_TABS.map((tab) => (
-              <button
+              <Box
                 key={tab.id}
+                component="button"
                 onClick={() => setWindowId(tab.id)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                  windowId === tab.id
-                    ? "bg-primary text-white shadow-sm"
-                    : "text-text-muted hover:text-text hover:bg-bg-hover"
-                }`}
-              >
-                {tab.label}
-              </button>
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  border: 0,
+                  borderRadius: 1.5,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  transition: "color 150ms ease, background-color 150ms ease",
+                  bgcolor: windowId === tab.id ? "primary.main" : "transparent",
+                  color: windowId === tab.id ? "#fff" : "text.secondary",
+                  boxShadow: windowId === tab.id ? 1 : "none",
+                  "&:hover": { color: windowId === tab.id ? "#fff" : "text.primary", bgcolor: windowId === tab.id ? "primary.main" : "action.selected" },
+                }}
+              >{tab.label}</Box>
             ))}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <p className="text-xs text-text-muted">Original tokens</p>
-            <p className="text-lg font-semibold">{w ? fmtTokens(w.tokensBeforeEst) : "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-text-muted">After PXPIPE</p>
-            <p className="text-lg font-semibold">{w ? fmtTokens(w.tokensAfterEst) : "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-text-muted">Saved</p>
-            <p className="text-lg font-semibold text-success">{w ? fmtTokens(w.tokensSavedEst) : "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-text-muted">Reduction</p>
-            <p className="text-lg font-semibold text-success">{w ? `${w.savedPct}%` : "—"}</p>
-          </div>
-        </div>
-        <p className="text-xs text-text-muted mt-3">
+          </Box>
+        </Box>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2,1fr)", md: "repeat(4,1fr)" }, gap: 2, textAlign: "center" }}>
+          {[["Original tokens", w && fmtTokens(w.tokensBeforeEst), false], ["After PXPIPE", w && fmtTokens(w.tokensAfterEst), false], ["Saved", w && fmtTokens(w.tokensSavedEst), true], ["Reduction", w && `${w.savedPct}%`, true]].map(([label, value, success]) => (
+            <Box key={label}>
+              <Typography sx={{ fontSize: 12, color: "text.secondary" }}>{label}</Typography>
+              <Typography sx={{ fontSize: 18, fontWeight: 600, color: success ? "success.main" : "text.primary" }}>{value || "—"}</Typography>
+            </Box>
+          ))}
+        </Box>
+        <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 1.5 }}>
           Estimates from body size before/after imaging; billed usage per request
           (recorded on the Usage page) remains the ground truth. Images generated:{" "}
           {w ? w.imagesGenerated.toLocaleString() : "—"} · avg compression time:{" "}
           {w ? `${w.avgCompressionMs}ms` : "—"} · errors: {w ? w.errors : "—"}
-        </p>
+        </Typography>
       </Card>
 
-      <Card className="p-4">
-        <h3 className="font-medium mb-3">Tokens saved — last 30 days</h3>
+      <Card padding="sm">
+        <Typography component="h3" sx={{ fontWeight: 500, mb: 1.5 }}>Tokens saved — last 30 days</Typography>
         {stats?.timeline?.some((d) => d.tokensSavedEst > 0) ? (
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={stats.timeline} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
@@ -198,88 +198,58 @@ export default function PxpipeClient() {
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-32 flex items-center justify-center text-text-muted text-sm">
+          <Box sx={{ height: 128, display: "flex", alignItems: "center", justifyContent: "center", color: "text.secondary", fontSize: 14, textAlign: "center" }}>
             No savings recorded yet — enable PXPIPE in the Token Saver and route a large Claude-format request.
-          </div>
+          </Box>
         )}
       </Card>
 
-      <Card className="p-4">
-        <h3 className="font-medium mb-3">History</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-sm">
-            <thead>
-              <tr className="text-left text-xs text-text-muted border-b border-border">
-                <th className="py-2 pr-3">Time</th>
-                <th className="py-2 pr-3">Model</th>
-                <th className="py-2 pr-3 text-right">Original</th>
-                <th className="py-2 pr-3 text-right">Compressed</th>
-                <th className="py-2 pr-3 text-right">Saved</th>
-                <th className="py-2 pr-3 text-right">%</th>
-                <th className="py-2 pr-3 text-right">Duration</th>
-                <th className="py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+      <Card padding="sm">
+        <Typography component="h3" sx={{ fontWeight: 500, mb: 1.5 }}>History</Typography>
+        <TableContainer>
+          <Table sx={{ minWidth: 700 }}>
+            <TableHead>
+              <TableRow>
+                {[["Time", "left"], ["Model", "left"], ["Original", "right"], ["Compressed", "right"], ["Saved", "right"], ["%", "right"], ["Duration", "right"], ["Status", "left"]].map(([label, align]) => (
+                  <TableCell key={label} align={align} sx={{ py: 1, pr: 1.5, fontSize: 12, color: "text.secondary", borderBottomColor: "divider" }}>{label}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {(stats?.recent || []).slice(0, 50).map((ev, i) => (
-                <tr key={`${ev.ts}-${i}`} className="border-b border-border/50">
-                  <td className="py-1.5 pr-3 whitespace-nowrap text-text-muted">
-                    {new Date(ev.ts).toLocaleString()}
-                  </td>
-                  <td className="py-1.5 pr-3 font-mono text-xs">{ev.provider ? `${ev.provider}/${ev.model}` : ev.model || "—"}</td>
-                  <td className="py-1.5 pr-3 text-right font-mono text-xs">
-                    {ev.applied ? fmtTokens(ev.tokensBeforeEst) : "—"}
-                  </td>
-                  <td className="py-1.5 pr-3 text-right font-mono text-xs">
-                    {ev.applied ? fmtTokens(ev.tokensAfterEst) : "—"}
-                  </td>
-                  <td className="py-1.5 pr-3 text-right font-mono text-xs text-success">
-                    {ev.applied ? fmtTokens(ev.tokensSavedEst) : "—"}
-                  </td>
-                  <td className="py-1.5 pr-3 text-right font-mono text-xs">
-                    {ev.applied ? `${ev.savedPct}%` : "—"}
-                  </td>
-                  <td className="py-1.5 pr-3 text-right font-mono text-xs">
-                    {ev.durationMs != null ? `${ev.durationMs}ms` : "—"}
-                  </td>
-                  <td className="py-1.5">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        ev.applied
-                          ? "bg-success/15 text-success"
-                          : ev.reason === "transform_error" || ev.reason === "timeout"
-                            ? "bg-danger/15 text-danger"
-                            : "bg-warning/15 text-warning"
-                      }`}
-                      title={ev.detail || ""}
-                    >
+                <TableRow key={`${ev.ts}-${i}`}>
+                  <TableCell sx={{ py: 0.75, pr: 1.5, whiteSpace: "nowrap", color: "text.secondary", borderBottomColor: "divider" }}>{new Date(ev.ts).toLocaleString()}</TableCell>
+                  <TableCell sx={{ py: 0.75, pr: 1.5, fontFamily: "monospace", fontSize: 12, borderBottomColor: "divider" }}>{ev.provider ? `${ev.provider}/${ev.model}` : ev.model || "—"}</TableCell>
+                  <TableCell align="right" sx={{ py: 0.75, pr: 1.5, fontFamily: "monospace", fontSize: 12, borderBottomColor: "divider" }}>{ev.applied ? fmtTokens(ev.tokensBeforeEst) : "—"}</TableCell>
+                  <TableCell align="right" sx={{ py: 0.75, pr: 1.5, fontFamily: "monospace", fontSize: 12, borderBottomColor: "divider" }}>{ev.applied ? fmtTokens(ev.tokensAfterEst) : "—"}</TableCell>
+                  <TableCell align="right" sx={{ py: 0.75, pr: 1.5, fontFamily: "monospace", fontSize: 12, color: "success.main", borderBottomColor: "divider" }}>{ev.applied ? fmtTokens(ev.tokensSavedEst) : "—"}</TableCell>
+                  <TableCell align="right" sx={{ py: 0.75, pr: 1.5, fontFamily: "monospace", fontSize: 12, borderBottomColor: "divider" }}>{ev.applied ? `${ev.savedPct}%` : "—"}</TableCell>
+                  <TableCell align="right" sx={{ py: 0.75, pr: 1.5, fontFamily: "monospace", fontSize: 12, borderBottomColor: "divider" }}>{ev.durationMs != null ? `${ev.durationMs}ms` : "—"}</TableCell>
+                  <TableCell sx={{ py: 0.75, borderBottomColor: "divider" }}>
+                    <Box component="span" title={ev.detail || ""} sx={(theme) => ({ fontSize: 12, px: 1, py: 0.25, borderRadius: 1, bgcolor: ev.applied ? alpha(theme.palette.success.main, 0.15) : ev.reason === "transform_error" || ev.reason === "timeout" ? alpha(theme.palette.error.main, 0.15) : alpha(theme.palette.warning.main, 0.15), color: ev.applied ? "success.main" : ev.reason === "transform_error" || ev.reason === "timeout" ? "error.main" : "warning.main" })}>
                       {ev.applied ? "Compressed" : REASON_LABELS[ev.reason] || ev.reason}
-                    </span>
-                  </td>
-                </tr>
+                    </Box>
+                  </TableCell>
+                </TableRow>
               ))}
               {(!stats?.recent || stats.recent.length === 0) && (
-                <tr>
-                  <td colSpan={8} className="py-6 text-center text-text-muted text-sm">
-                    No PXPIPE activity yet
-                  </td>
-                </tr>
+                <TableRow><TableCell colSpan={8} sx={{ py: 3, textAlign: "center", color: "text.secondary", fontSize: 14, border: 0 }}>No PXPIPE activity yet</TableCell></TableRow>
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Card>
 
-      <Card className="p-4" id="logs">
-        <h3 className="font-medium mb-3">PXPIPE Logs</h3>
+      <Card padding="sm" id="logs">
+        <Typography component="h3" sx={{ fontWeight: 500, mb: 1.5 }}>PXPIPE Logs</Typography>
         {logs?.installLog ? (
-          <pre className="rounded bg-black/5 dark:bg-white/5 p-3 text-xs font-mono overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap">
+          <Box component="pre" sx={{ borderRadius: 1, bgcolor: (theme) => alpha(theme.palette.text.primary, 0.05), p: 1.5, fontSize: 12, fontFamily: "monospace", overflowX: "auto", maxHeight: 256, overflowY: "auto", whiteSpace: "pre-wrap" }}>
             {logs.installLog}
-          </pre>
+          </Box>
         ) : (
-          <p className="text-sm text-text-muted">No install log yet.</p>
+          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>No install log yet.</Typography>
         )}
       </Card>
-    </div>
+    </Box>
   );
 }

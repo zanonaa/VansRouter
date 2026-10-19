@@ -6,6 +6,18 @@ import { useRouter } from "next/navigation";
 import { Card, Badge, Button } from "@/shared/components";
 import ProviderIcon from "@/shared/components/ProviderIcon";
 import { AI_PROVIDERS, getProvidersByKind } from "@/shared/constants/providers";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import { alpha } from "@mui/material/styles";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
 
 function getEffectiveStatus(conn) {
   const isCooldown = Object.entries(conn).some(
@@ -17,7 +29,7 @@ function getEffectiveStatus(conn) {
 function WebProviderCardStatus({ isNoAuth, allDisabled, total, connected, error }) {
   if (isNoAuth) return <Badge variant="success" size="sm">Ready</Badge>;
   if (allDisabled) return <Badge variant="default" size="sm">Disabled</Badge>;
-  if (total === 0) return <span className="text-xs text-text-muted">No connections</span>;
+  if (total === 0) return <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>No connections</Box>;
   return (
     <>
       {connected > 0 && <Badge variant="success" size="sm" dot>{connected} Connected</Badge>}
@@ -37,109 +49,145 @@ function ProviderCard({ provider, kind, connections }) {
   const allDisabled = total > 0 && providerConns.every((c) => c.isActive === false);
 
   return (
-    <Link href={`/dashboard/media-providers/${kind}/${provider.id}`} className="group">
-      <Card padding="xs" className={`h-full hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors cursor-pointer ${allDisabled ? "opacity-50" : ""}`}>
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className="size-8 rounded-lg flex items-center justify-center shrink-0"
+    <Box component={Link} href={`/dashboard/media-providers/${kind}/${provider.id}`} sx={{ display: "block", height: "100%" }}>
+      <Card
+        padding="xs"
+        sx={{
+          height: "100%",
+          transition: "background-color 150ms ease, border-color 150ms ease",
+          cursor: "pointer",
+          opacity: allDisabled ? 0.5 : 1,
+          "&:hover": { bgcolor: (theme) => alpha(theme.palette.text.primary, 0.01) },
+        }}
+      >
+        <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              "& img": { objectFit: "contain", borderRadius: 2, maxWidth: 30, maxHeight: 30 },
+            }}
             style={{ backgroundColor: `${provider.color?.length > 7 ? provider.color : (provider.color ?? "#888") + "15"}` }}
           >
             <ProviderIcon
               src={`/providers/${provider.id}.webp`}
               alt={provider.name}
               size={30}
-              className="object-contain rounded-lg max-w-[30px] max-h-[30px]"
               fallbackText={provider.textIcon || provider.id.slice(0, 2).toUpperCase()}
               fallbackColor={provider.color}
             />
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm">{provider.name}</h3>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap"><WebProviderCardStatus isNoAuth={isNoAuth} allDisabled={allDisabled} total={total} connected={connected} error={error} /></div>
-          </div>
-        </div>
+          </Box>
+          <Box>
+            <Typography component="h3" sx={{ fontWeight: 600, fontSize: 14 }}>{provider.name}</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.25, flexWrap: "wrap" }}><WebProviderCardStatus isNoAuth={isNoAuth} allDisabled={allDisabled} total={total} connected={connected} error={error} /></Box>
+          </Box>
+        </Box>
       </Card>
-    </Link>
+    </Box>
   );
 }
 
 function ComboList({ combos }) {
   if (combos.length === 0) {
-    return <p className="text-xs text-text-muted italic">No combos yet.</p>;
+    return <Typography sx={{ fontSize: 12, color: "text.secondary", fontStyle: "italic" }}>No combos yet.</Typography>;
   }
   return (
-    <div className="flex flex-col gap-2">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       {combos.map((combo) => (
-        <Link key={combo.id} href={`/dashboard/media-providers/combo/${combo.id}`}>
-          <Card padding="xs" className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="material-symbols-outlined text-primary text-[18px]">layers</span>
-              <code className="text-sm font-mono font-medium flex-1 truncate">{combo.name}</code>
+        <Box key={combo.id} component={Link} href={`/dashboard/media-providers/combo/${combo.id}`} sx={{ display: "block" }}>
+          <Card
+            padding="xs"
+            sx={{
+              transition: "background-color 150ms ease",
+              cursor: "pointer",
+              "&:hover": { bgcolor: (theme) => alpha(theme.palette.text.primary, 0.02) },
+            }}
+          >
+            <Box sx={{ display: "flex", minWidth: 0, alignItems: "center", gap: 1.5 }}>
+              <MsIcon sx={{ color: "primary.main", fontSize: 18 }}>layers</MsIcon>
+              <Box component="code" sx={{ fontSize: 14, fontFamily: "monospace", fontWeight: 500, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{combo.name}</Box>
               {/* Provider icons preview */}
-              <div className="flex flex-wrap items-center gap-1 sm:shrink-0">
+              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 0.5, flexShrink: { sm: 0 } }}>
                 {combo.models.slice(0, 6).map((entry, i) => {
                   const pid = typeof entry === "string" ? entry.split("/")[0] : "";
                   const p = AI_PROVIDERS[pid];
                   return (
-                    <div key={`${entry}-${i}`} title={p?.name || entry} className="size-5 rounded flex items-center justify-center" style={{ backgroundColor: `${(p?.color ?? "#888")}15` }}>
+                    <Box
+                      key={`${entry}-${i}`}
+                      title={p?.name || entry}
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 0.5,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        "& img": { objectFit: "contain", borderRadius: 0.5, maxWidth: 18, maxHeight: 18 },
+                      }}
+                      style={{ backgroundColor: `${(p?.color ?? "#888")}15` }}
+                    >
                       <ProviderIcon
                         src={`/providers/${pid}.webp`}
                         alt={p?.name || pid}
                         size={18}
-                        className="object-contain rounded max-w-[18px] max-h-[18px]"
                         fallbackText={p?.textIcon || pid.slice(0, 2).toUpperCase()}
                         fallbackColor={p?.color}
                       />
-                    </div>
+                    </Box>
                   );
                 })}
                 {combo.models.length > 6 && (
-                  <span className="text-[10px] text-text-muted ml-1">+{combo.models.length - 6}</span>
+                  <Box component="span" sx={{ fontSize: 10, color: "text.secondary", ml: 0.5 }}>+{combo.models.length - 6}</Box>
                 )}
-              </div>
-              <span className="text-[11px] text-text-muted shrink-0">{combo.models.length}</span>
-              <span className="material-symbols-outlined text-text-muted text-[16px]">chevron_right</span>
-            </div>
+              </Box>
+              <Box component="span" sx={{ fontSize: 11, color: "text.secondary", flexShrink: 0 }}>{combo.models.length}</Box>
+              <MsIcon sx={{ color: "text.secondary", fontSize: 16 }}>chevron_right</MsIcon>
+            </Box>
           </Card>
-        </Link>
+        </Box>
       ))}
-    </div>
+    </Box>
   );
 }
 
 function Section({ title, icon, kind, providers, connections, combos, onCreateCombo }) {
   return (
-    <div>
+    <Box>
       {/* Header — title left, Create Combo right */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="material-symbols-outlined text-primary">{icon}</span>
-          <h2 className="text-base font-semibold">{title}</h2>
-          <span className="text-xs text-text-muted">({providers.length} providers · {combos.length} combos)</span>
-        </div>
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 1.5 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}>
+          <MsIcon sx={{ color: "primary.main" }}>{icon}</MsIcon>
+          <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600 }}>{title}</Typography>
+          <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>({providers.length} providers · {combos.length} combos)</Box>
+        </Box>
         <Button size="sm" icon="add" onClick={onCreateCombo}>Create Combo</Button>
-      </div>
+      </Box>
 
       {/* Combos — top */}
       {combos.length > 0 && (
-        <div className="mb-4">
+        <Box sx={{ mb: 2 }}>
           <ComboList combos={combos} />
-        </div>
+        </Box>
       )}
 
       {/* Providers grid — bottom */}
       {providers.length === 0 ? (
-        <div className="text-center py-8 border border-dashed border-border rounded-xl text-text-muted text-sm">
+        <Box sx={{ textAlign: "center", py: 4, border: "1px dashed", borderColor: "divider", borderRadius: 3, color: "text.secondary", fontSize: 14 }}>
           No providers.
-        </div>
+        </Box>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)", xl: "repeat(4, 1fr)" }, gap: 2 }}>
           {providers.map((p) => (
             <ProviderCard key={p.id} provider={p} kind={kind} connections={connections} />
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -189,7 +237,7 @@ export default function WebProvidersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <Section
         title="Web Search" icon="search" kind="webSearch"
         providers={searchProviders} connections={connections} combos={searchCombos}
@@ -197,13 +245,13 @@ export default function WebProvidersPage() {
       />
 
       {/* Divider between sections */}
-      <div className="border-t border-border" />
+      <Box sx={{ borderTop: 1, borderColor: "divider" }} />
 
       <Section
         title="Web Fetch" icon="travel_explore" kind="webFetch"
         providers={fetchProviders} connections={connections} combos={fetchCombos}
         onCreateCombo={() => handleCreateCombo("webFetch")}
       />
-    </div>
+    </Box>
   );
 }

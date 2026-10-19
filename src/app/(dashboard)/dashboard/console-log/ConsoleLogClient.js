@@ -3,13 +3,24 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, Button, Badge, Input } from "@/shared/components";
 import { CONSOLE_LOG_CONFIG } from "@/shared/constants/config";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
 
 const LOG_LEVEL_COLORS = {
-  LOG: "text-emerald-400",
-  INFO: "text-blue-400",
-  WARN: "text-yellow-400",
-  ERROR: "text-red-400 font-medium",
-  DEBUG: "text-purple-400",
+  LOG: "#34d399",
+  INFO: "#60a5fa",
+  WARN: "#facc15",
+  ERROR: "#f87171",
+  DEBUG: "#c084fc",
 };
 
 function detectLogLevel(line) {
@@ -32,19 +43,30 @@ function detectLogLevel(line) {
 
 function renderFormattedLine(line, key) {
   const level = detectLogLevel(line);
-  const colorClass = LOG_LEVEL_COLORS[level] || "text-gray-300";
+  const color = LOG_LEVEL_COLORS[level] || "#d1d5db";
 
-  let bgClass = "";
+  let bgSx = {};
   if (level === "ERROR") {
-    bgClass = "bg-red-500/10 border-l-2 border-red-500 pl-2 py-0.5 my-0.5 rounded-r";
+    bgSx = { bgcolor: "rgba(239,68,68,0.1)", borderLeft: "2px solid #ef4444", pl: 1, py: 0.25, my: 0.25, borderTopRightRadius: 4, borderBottomRightRadius: 4 };
   } else if (level === "WARN") {
-    bgClass = "bg-yellow-500/10 border-l-2 border-yellow-500 pl-2 py-0.5 my-0.5 rounded-r";
+    bgSx = { bgcolor: "rgba(234,179,8,0.1)", borderLeft: "2px solid #eab308", pl: 1, py: 0.25, my: 0.25, borderTopRightRadius: 4, borderBottomRightRadius: 4 };
   }
 
   return (
-    <div key={key} className={`font-mono text-xs leading-relaxed break-all ${bgClass} ${colorClass}`}>
+    <Box
+      key={key}
+      sx={{
+        fontFamily: "monospace",
+        fontSize: 12,
+        lineHeight: 1.625,
+        wordBreak: "break-all",
+        color,
+        fontWeight: level === "ERROR" ? 500 : 400,
+        ...bgSx,
+      }}
+    >
       {line}
-    </div>
+    </Box>
   );
 }
 
@@ -173,83 +195,113 @@ export default function ConsoleLogClient() {
     navigator.clipboard.writeText(text);
   };
 
+  const tabButtonSx = (active) => ({
+    px: 1.5,
+    py: 0.75,
+    fontSize: 12,
+    fontWeight: 500,
+    borderRadius: 2,
+    transition: "background-color 150ms ease, color 150ms ease",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 0.75,
+    flexShrink: 0,
+    border: 0,
+    cursor: "pointer",
+    color: active ? "#ffffff" : "text.secondary",
+    bgcolor: active ? "primary.main" : "action.hover",
+    "&:hover": { color: active ? "#ffffff" : "text.primary" },
+  });
+
+  const chipSx = (bg) => ({
+    px: 0.75,
+    py: 0.25,
+    borderRadius: 999,
+    fontSize: 10,
+    bgcolor: bg || "rgba(0,0,0,0.2)",
+  });
+
+  const levelButtonSx = (active, tone) => {
+    const tones = {
+      all: { bg: "rgba(229,106,74,0.2)", color: "primary.main", border: "rgba(229,106,74,0.4)", hover: "text.primary" },
+      error: { bg: "rgba(239,68,68,0.2)", color: "#f87171", border: "rgba(239,68,68,0.5)", hover: "#f87171" },
+      warn: { bg: "rgba(234,179,8,0.2)", color: "#facc15", border: "rgba(234,179,8,0.5)", hover: "#facc15" },
+      info: { bg: "rgba(59,130,246,0.2)", color: "#60a5fa", border: "rgba(59,130,246,0.5)", hover: "#60a5fa" },
+    };
+    const t = tones[tone];
+    return {
+      px: 1.25,
+      py: 0.5,
+      fontSize: 12,
+      borderRadius: 1,
+      transition: "background-color 150ms ease, color 150ms ease",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 0.5,
+      border: active ? `1px solid ${t.border}` : "1px solid transparent",
+      cursor: "pointer",
+      color: active ? t.color : "text.secondary",
+      bgcolor: active ? t.bg : "action.hover",
+      fontWeight: active ? 700 : 400,
+      "&:hover": { color: active ? t.color : t.hover },
+    };
+  };
+
   return (
-    <div className="flex flex-col gap-4">
+    <Stack spacing={2}>
       {/* Header Controls */}
-      <Card className="p-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <Card padding="sm">
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2, alignItems: { md: "center" }, justifyContent: { md: "space-between" } }}>
           {/* Source Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 shrink-0 ${
-                activeTab === "all"
-                  ? "bg-primary text-white"
-                  : "bg-surface-hover text-text-muted hover:text-text-primary"
-              }`}
-            >
-              <span>All Logs</span>
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/20">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, overflowX: "auto", pb: { xs: 0.5, md: 0 } }}>
+            <Box component="button" onClick={() => setActiveTab("all")} sx={tabButtonSx(activeTab === "all")}>
+              <Box component="span">All Logs</Box>
+              <Box component="span" sx={chipSx()}>
                 {appLogs.length + pm2Logs.length + dockerLogs.length}
-              </span>
-            </button>
+              </Box>
+            </Box>
 
-            <button
-              onClick={() => setActiveTab("app")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 shrink-0 ${
-                activeTab === "app"
-                  ? "bg-primary text-white"
-                  : "bg-surface-hover text-text-muted hover:text-text-primary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">terminal</span>
-              <span>App Console</span>
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/20">{appLogs.length}</span>
-            </button>
+            <Box component="button" onClick={() => setActiveTab("app")} sx={tabButtonSx(activeTab === "app")}>
+              <MsIcon sx={{ fontSize: 14 }}>terminal</MsIcon>
+              <Box component="span">App Console</Box>
+              <Box component="span" sx={chipSx()}>{appLogs.length}</Box>
+            </Box>
 
-            <button
-              onClick={() => setActiveTab("pm2")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 shrink-0 ${
-                activeTab === "pm2"
-                  ? "bg-primary text-white"
-                  : "bg-surface-hover text-text-muted hover:text-text-primary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">dns</span>
-              <span>PM2 Server Logs</span>
+            <Box component="button" onClick={() => setActiveTab("pm2")} sx={tabButtonSx(activeTab === "pm2")}>
+              <MsIcon sx={{ fontSize: 14 }}>dns</MsIcon>
+              <Box component="span">PM2 Server Logs</Box>
               {pm2Info.errorCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-red-500 text-white font-bold">
+                <Box component="span" sx={{ px: 0.75, py: 0.25, borderRadius: 999, fontSize: 10, bgcolor: "error.main", color: "#fff", fontWeight: 700 }}>
                   {pm2Info.errorCount} Err
-                </span>
+                </Box>
               )}
-            </button>
+            </Box>
 
             {(dockerInfo.available || dockerLogs.length > 0) && (
-              <button
-                onClick={() => setActiveTab("docker")}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 shrink-0 ${
-                  activeTab === "docker"
-                    ? "bg-primary text-white"
-                    : "bg-surface-hover text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">dataset</span>
-                <span>Docker Logs</span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/20">{dockerLogs.length}</span>
-              </button>
+              <Box component="button" onClick={() => setActiveTab("docker")} sx={tabButtonSx(activeTab === "docker")}>
+                <MsIcon sx={{ fontSize: 14 }}>dataset</MsIcon>
+                <Box component="span">Docker Logs</Box>
+                <Box component="span" sx={chipSx()}>{dockerLogs.length}</Box>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <span
-                className={`inline-block size-2 rounded-full ${
-                  connected ? "bg-green-500 animate-pulse" : "bg-red-500"
-                }`}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-block",
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  bgcolor: connected ? "success.main" : "error.main",
+                  animation: connected ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none",
+                }}
               />
-              <span className="text-xs text-text-muted">{connected ? "Live Stream" : "Disconnected"}</span>
-            </div>
+              <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>{connected ? "Live Stream" : "Disconnected"}</Box>
+            </Box>
 
             <Button size="sm" variant="outline" icon="sync" onClick={fetchSystemLogs} loading={loading}>
               Refresh
@@ -260,120 +312,125 @@ export default function ConsoleLogClient() {
             <Button size="sm" variant="outline" icon="delete" onClick={handleClearAppLogs}>
               Clear App Logs
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Filter Bar */}
-        <div className="mt-4 pt-3 border-t border-border-primary flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Box sx={{ mt: 2, pt: 1.5, borderTop: 1, borderColor: "divider", display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" } }}>
           {/* Level Filter Buttons */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-medium text-text-muted mr-1">Filter Level:</span>
-            <button
-              onClick={() => setLevelFilter("ALL")}
-              className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                levelFilter === "ALL"
-                  ? "bg-primary/20 text-primary font-bold border border-primary/40"
-                  : "bg-surface-hover text-text-muted hover:text-text-primary"
-              }`}
-            >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
+            <Box component="span" sx={{ fontSize: 12, fontWeight: 500, color: "text.secondary", mr: 0.5 }}>Filter Level:</Box>
+            <Box component="button" onClick={() => setLevelFilter("ALL")} sx={levelButtonSx(levelFilter === "ALL", "all")}>
               ALL
-            </button>
-            <button
-              onClick={() => setLevelFilter("ERROR")}
-              className={`px-2.5 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
-                levelFilter === "ERROR"
-                  ? "bg-red-500/20 text-red-400 font-bold border border-red-500/50"
-                  : "bg-surface-hover text-text-muted hover:text-red-400"
-              }`}
-            >
-              <span>ERROR ONLY</span>
+            </Box>
+            <Box component="button" onClick={() => setLevelFilter("ERROR")} sx={levelButtonSx(levelFilter === "ERROR", "error")}>
+              <Box component="span">ERROR ONLY</Box>
               {totalErrorCount > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-500 text-white font-bold">
+                <Box component="span" sx={{ px: 0.75, py: "1px", borderRadius: 999, fontSize: 10, bgcolor: "error.main", color: "#fff", fontWeight: 700 }}>
                   {totalErrorCount}
-                </span>
+                </Box>
               )}
-            </button>
-            <button
-              onClick={() => setLevelFilter("WARN")}
-              className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                levelFilter === "WARN"
-                  ? "bg-yellow-500/20 text-yellow-400 font-bold border border-yellow-500/50"
-                  : "bg-surface-hover text-text-muted hover:text-yellow-400"
-              }`}
-            >
+            </Box>
+            <Box component="button" onClick={() => setLevelFilter("WARN")} sx={levelButtonSx(levelFilter === "WARN", "warn")}>
               WARN
-            </button>
-            <button
-              onClick={() => setLevelFilter("INFO")}
-              className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
-                levelFilter === "INFO"
-                  ? "bg-blue-500/20 text-blue-400 font-bold border border-blue-500/50"
-                  : "bg-surface-hover text-text-muted hover:text-blue-400"
-              }`}
-            >
+            </Box>
+            <Box component="button" onClick={() => setLevelFilter("INFO")} sx={levelButtonSx(levelFilter === "INFO", "info")}>
               INFO
-            </button>
-          </div>
+            </Box>
+          </Box>
 
           {/* Search Input & Auto-scroll */}
-          <div className="flex items-center gap-2">
-            <div className="relative w-48 sm:w-64">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ position: "relative", width: { xs: 192, sm: 256 } }}>
               <Input
                 size="sm"
                 placeholder="Search log text..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-xs"
               />
               {searchQuery && (
-                <button
+                <Box
+                  component="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary text-xs"
+                  sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "text.secondary",
+                    fontSize: 12,
+                    border: 0,
+                    background: "none",
+                    cursor: "pointer",
+                    "&:hover": { color: "text.primary" },
+                  }}
                 >
                   ✕
-                </button>
+                </Box>
               )}
-            </div>
+            </Box>
 
-            <button
+            <Box
+              component="button"
               onClick={() => setAutoScroll(!autoScroll)}
-              className={`px-2.5 py-1 text-xs rounded-md border transition-colors flex items-center gap-1 ${
-                autoScroll
-                  ? "bg-green-500/10 text-green-400 border-green-500/30"
-                  : "bg-surface-hover text-text-muted border-border-primary"
-              }`}
+              sx={{
+                px: 1.25,
+                py: 0.5,
+                fontSize: 12,
+                borderRadius: 1,
+                transition: "background-color 150ms ease, color 150ms ease",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.5,
+                cursor: "pointer",
+                color: autoScroll ? "#4ade80" : "text.secondary",
+                bgcolor: autoScroll ? "rgba(34,197,94,0.1)" : "action.hover",
+                border: autoScroll ? "1px solid rgba(34,197,94,0.3)" : "1px solid",
+                borderColor: autoScroll ? "rgba(34,197,94,0.3)" : "divider",
+              }}
             >
-              <span className="material-symbols-outlined text-sm">{autoScroll ? "vertical_align_bottom" : "pause"}</span>
-              <span>{autoScroll ? "Auto-scroll" : "Paused"}</span>
-            </button>
-          </div>
-        </div>
+              <MsIcon sx={{ fontSize: 14 }}>{autoScroll ? "vertical_align_bottom" : "pause"}</MsIcon>
+              <Box component="span">{autoScroll ? "Auto-scroll" : "Paused"}</Box>
+            </Box>
+          </Box>
+        </Box>
       </Card>
 
       {/* Main Console Output Terminal */}
-      <Card className="overflow-hidden">
-        <div
+      <Card sx={{ overflow: "hidden" }}>
+        <Box
           ref={logRef}
-          className="bg-black/95 p-4 font-mono text-xs h-[calc(100vh-280px)] overflow-y-auto space-y-1 scrollbar-thin"
+          sx={{
+            bgcolor: "rgba(0,0,0,0.95)",
+            p: 2,
+            fontFamily: "monospace",
+            fontSize: 12,
+            height: "calc(100vh - 280px)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: 0.5,
+          }}
         >
           {combinedLogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-text-muted py-12">
-              <span className="material-symbols-outlined text-4xl mb-2 text-text-muted/50">terminal</span>
-              <p>No console or system logs match your filter criteria.</p>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", color: "text.secondary", py: 6 }}>
+              <MsIcon sx={{ fontSize: 36, mb: 1, color: "text.secondary", opacity: 0.5 }}>terminal</MsIcon>
+              <Box component="p">No console or system logs match your filter criteria.</Box>
               {levelFilter !== "ALL" && (
-                <button
+                <Box
+                  component="button"
                   onClick={() => setLevelFilter("ALL")}
-                  className="text-xs text-primary hover:underline mt-2"
+                  sx={{ fontSize: 12, color: "primary.main", mt: 1, border: 0, background: "none", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
                 >
                   Reset level filter
-                </button>
+                </Box>
               )}
-            </div>
+            </Box>
           ) : (
             combinedLogs.map((line, i) => renderFormattedLine(line, i))
           )}
-        </div>
+        </Box>
       </Card>
-    </div>
+    </Stack>
   );
 }

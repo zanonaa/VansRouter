@@ -9,6 +9,76 @@ import { TTS_PROVIDER_CONFIG } from "@/shared/constants/ttsProviders";
 import { getTtsVoicesForModel } from "open-sse/config/ttsModels.js";
 import { GOOGLE_TTS_LANGUAGES } from "open-sse/config/googleTtsLanguages.js";
 import { Row } from "./exampleShared";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
+
+const inputSx = {
+  width: "100%",
+  px: 1.5,
+  py: 0.75,
+  fontSize: 14,
+  border: 1,
+  borderColor: "divider",
+  borderRadius: 2,
+  bgcolor: "background.default",
+  color: "text.primary",
+  outline: "none",
+  "&:focus": { borderColor: "primary.main" },
+};
+
+const readOnlySx = {
+  ...inputSx,
+  fontFamily: "monospace",
+  bgcolor: "action.hover",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  display: "block",
+};
+
+const copyButtonSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 0.5,
+  fontSize: 12,
+  color: "text.secondary",
+  border: 0,
+  background: "none",
+  cursor: "pointer",
+  transition: "color 150ms ease",
+  "&:hover": { color: "primary.main" },
+};
+
+const sectionLabelSx = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "text.secondary",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+};
+
+const codeBlockSx = {
+  bgcolor: "action.hover",
+  borderRadius: 2,
+  px: 1.5,
+  py: 1.25,
+  fontSize: 12,
+  fontFamily: "monospace",
+  color: "text.primary",
+  overflowX: "auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+  m: 0,
+};
 
 const DEFAULT_TTS_RESPONSE_EXAMPLE = `// Audio will appear here after running.
 // Example JSON response (response_format=json):
@@ -242,44 +312,60 @@ export function TtsExampleCard({ providerId }) {
   return (
     <>
       <Card>
-        <h2 className="text-lg font-semibold mb-4">Example</h2>
+        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>Example</Typography>
 
-        <div className="flex flex-col gap-2.5">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
           {/* Endpoint + API Key as read-only text */}
           <Row label="Endpoint">
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <span className="w-full min-w-0 flex-1 px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate">
+            <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+              <Box component="span" sx={{ ...readOnlySx, minWidth: 0, flex: 1 }}>
                 {endpoint}/v1/audio/speech
-              </span>
+              </Box>
               {tunnelEndpoint && (
-                <button
+                <Box
+                  component="button"
                   onClick={() => setUseTunnel((v) => !v)}
                   title={useTunnel ? "Using tunnel" : "Using local"}
-                  className={`flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg border shrink-0 transition-colors ${
-                    useTunnel ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"
-                  }`}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    fontSize: 12,
+                    px: 1,
+                    py: 0.75,
+                    borderRadius: 2,
+                    flexShrink: 0,
+                    transition: "color 150ms ease, border-color 150ms ease, background-color 150ms ease",
+                    border: 1,
+                    borderColor: useTunnel ? "primary.main" : "divider",
+                    bgcolor: useTunnel ? "action.selected" : "transparent",
+                    color: useTunnel ? "primary.main" : "text.secondary",
+                    cursor: "pointer",
+                    "&:hover": { color: "primary.main" },
+                  }}
                 >
-                  <span className="material-symbols-outlined text-[14px]">wifi_tethering</span>
+                  <MsIcon sx={{ fontSize: 14 }}>wifi_tethering</MsIcon>
                   Tunnel
-                </button>
+                </Box>
               )}
-            </div>
+            </Box>
           </Row>
           <Row label="API Key">
-            <span className="px-3 py-1.5 text-sm font-mono text-text-main bg-sidebar rounded-lg truncate block">
+            <Box component="span" sx={{ px: 1.5, py: 0.75, fontSize: 14, fontFamily: "monospace", color: "text.primary", bgcolor: "action.hover", borderRadius: 2, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {apiKey
                 ? `${apiKey.slice(0, 8)}${"•".repeat(Math.min(20, Math.max(0, apiKey.length - 8)))}`
-                : <span className="text-text-muted italic">No key configured</span>}
-            </span>
+                : <Box component="span" sx={{ color: "text.secondary", fontStyle: "italic" }}>No key configured</Box>}
+            </Box>
           </Row>
 
           {/* Model selector — prefer PROVIDER_MODELS[kind=tts], else providerModels via modelKey */}
           {config.hasModelSelector && (config.modelKey || getModelsByProviderId(providerId).some(m => getModelKind(m) === "tts")) && (
             <Row label="Model">
-              <select
+              <Box
+                component="select"
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+                sx={inputSx}
               >
                 {(() => {
                   const ttsModels = getModelsByProviderId(providerId).filter(m => getModelKind(m) === "tts");
@@ -287,302 +373,396 @@ export function TtsExampleCard({ providerId }) {
                     <option key={m.id} value={m.id}>{m.name || m.id}</option>
                   ));
                 })()}
-              </select>
+              </Box>
             </Row>
           )}
 
           {/* Language hint dropdown (Gemini) — sends body.language to guide pronunciation */}
           {config.hasLanguageHint && (
             <Row label="Language">
-              <select
+              <Box
+                component="select"
                 value={languageHint}
                 onChange={(e) => setLanguageHint(e.target.value)}
-                className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+                sx={inputSx}
               >
                 <option value="">Auto-detect</option>
                 {GOOGLE_TTS_LANGUAGES.map((l) => (
                   <option key={l.id} value={l.name}>{l.name}</option>
                 ))}
-              </select>
+              </Box>
             </Row>
           )}
 
           {/* Language row + Browse button (edge-tts, local-device, elevenlabs) */}
           {config.hasBrowseButton && (
             <Row label="Language">
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                <button
+              <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+                <Box
+                  component="button"
                   onClick={openModal}
-                  className="w-full min-w-0 flex-1 px-3 py-1.5 text-sm border border-border rounded-lg bg-background font-mono truncate text-left hover:border-primary/40 transition-colors"
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    minWidth: 0,
+                    flex: 1,
+                    px: 1.5,
+                    py: 0.75,
+                    fontSize: 14,
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    bgcolor: "background.default",
+                    fontFamily: "monospace",
+                    textAlign: "left",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    transition: "border-color 150ms ease",
+                    "&:hover": { borderColor: "primary.main" },
+                  }}
                 >
                   {selectedLang
-                    ? <span className="text-text-main">{languages.find((l) => l.code === selectedLang)?.name || selectedLang}</span>
-                    : <span className="text-text-muted">No language selected</span>}
-                </button>
-                <button
+                    ? <Box component="span" sx={{ color: "text.primary" }}>{languages.find((l) => l.code === selectedLang)?.name || selectedLang}</Box>
+                    : <Box component="span" sx={{ color: "text.secondary" }}>No language selected</Box>}
+                </Box>
+                <Box
+                  component="button"
                   onClick={openModal}
-                  className="flex w-full items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-border text-text-muted hover:text-primary hover:border-primary/40 transition-colors sm:w-auto sm:shrink-0"
+                  sx={{
+                    display: "flex",
+                    width: { xs: "100%", sm: "auto" },
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 0.5,
+                    fontSize: 12,
+                    px: 1.25,
+                    py: 0.75,
+                    borderRadius: 2,
+                    border: 1,
+                    borderColor: "divider",
+                    color: "text.secondary",
+                    bgcolor: "transparent",
+                    cursor: "pointer",
+                    flexShrink: { sm: 0 },
+                    transition: "color 150ms ease, border-color 150ms ease",
+                    "&:hover": { color: "primary.main", borderColor: "primary.main" },
+                  }}
                 >
-                  <span className="material-symbols-outlined text-[14px]">language</span>
+                  <MsIcon sx={{ fontSize: 14 }}>language</MsIcon>
                   Select language
-                </button>
-              </div>
+                </Box>
+              </Box>
             </Row>
           )}
 
           {/* Voice chips — shown after language picked (edge-tts, local-device) or always (OpenAI/ElevenLabs) */}
           {countryVoices.length > 0 && (
             <Row label="Voice">
-              <div className="flex flex-wrap gap-1.5">
-                {countryVoices.map((v) => (
-                  <button
-                    key={v.id}
-                    onClick={() => {
-                      setSelectedVoice(v.id);
-                      setSelectedVoiceName(v.name);
-                      if (config.hasVoiceIdInput) setVoiceId(v.id);
-                    }}
-                    className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-                      selectedVoice === v.id
-                        ? "bg-primary/15 border-primary/40 text-primary font-medium"
-                        : "border-border text-text-muted hover:text-primary hover:border-primary/40"
-                    }`}
-                  >
-                    {v.name}{v.gender ? ` · ${v.gender[0].toUpperCase()}` : ""}
-                    {v.free_users_allowed === true && (
-                      <span className="ml-1.5 px-1 py-0.5 text-[9px] font-semibold rounded bg-green-500/15 text-green-600 border border-green-500/20">Free</span>
-                    )}
-                    {v.free_users_allowed === false && (
-                      <span className="ml-1.5 px-1 py-0.5 text-[9px] font-semibold rounded bg-amber-500/15 text-amber-600 border border-amber-500/20">Paid</span>
-                    )}
-                  </button>
-                ))}
-              </div>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                {countryVoices.map((v) => {
+                  const active = selectedVoice === v.id;
+                  return (
+                    <Box
+                      key={v.id}
+                      component="button"
+                      onClick={() => {
+                        setSelectedVoice(v.id);
+                        setSelectedVoiceName(v.name);
+                        if (config.hasVoiceIdInput) setVoiceId(v.id);
+                      }}
+                      sx={{
+                        px: 1.25,
+                        py: 0.5,
+                        borderRadius: 999,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        transition: "color 150ms ease, border-color 150ms ease",
+                        bgcolor: active ? "action.selected" : "transparent",
+                        border: 1,
+                        borderColor: active ? "primary.main" : "divider",
+                        color: active ? "primary.main" : "text.secondary",
+                        fontWeight: active ? 500 : 400,
+                        "&:hover": { color: "primary.main", borderColor: "primary.main" },
+                      }}
+                    >
+                      {v.name}{v.gender ? ` · ${v.gender[0].toUpperCase()}` : ""}
+                      {v.free_users_allowed === true && (
+                        <Box component="span" sx={{ ml: 0.75, px: 0.5, py: 0.25, fontSize: 9, fontWeight: 600, borderRadius: 0.5, bgcolor: "rgba(34,197,94,0.15)", color: "#16a34a", border: "1px solid rgba(34,197,94,0.2)" }}>Free</Box>
+                      )}
+                      {v.free_users_allowed === false && (
+                        <Box component="span" sx={{ ml: 0.75, px: 0.5, py: 0.25, fontSize: 9, fontWeight: 600, borderRadius: 0.5, bgcolor: "rgba(245,158,11,0.15)", color: "#d97706", border: "1px solid rgba(245,158,11,0.2)" }}>Paid</Box>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
             </Row>
           )}
 
           {/* Voice ID input (ElevenLabs) — manual entry or auto-fill from chip */}
           {config.hasVoiceIdInput && (
             <Row label="Voice ID">
-              <div className="flex flex-col gap-1">
-                <div className="relative">
-                  <input
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                <Box sx={{ position: "relative" }}>
+                  <Box
+                    component="input"
                     value={voiceId}
                     onChange={(e) => {
                       setVoiceId(e.target.value);
                       setSelectedVoice(e.target.value);
                     }}
                     placeholder="e.g. CwhRBWXzGAHq8TQ4Fs17"
-                    className="w-full px-3 py-1.5 pr-7 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary font-mono"
+                    sx={{ ...inputSx, pr: 3, fontFamily: "monospace" }}
                   />
                   {voiceId && (
-                    <button
+                    <Box
+                      component="button"
                       type="button"
                       onClick={() => { setVoiceId(""); setSelectedVoice(""); }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
+                      sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: "text.secondary", border: 0, background: "none", cursor: "pointer", transition: "color 150ms ease", "&:hover": { color: "primary.main" } }}
                     >
-                      <span className="material-symbols-outlined text-[14px]">close</span>
-                    </button>
+                      <MsIcon sx={{ fontSize: 14 }}>close</MsIcon>
+                    </Box>
                   )}
-                </div>
-              </div>
+                </Box>
+              </Box>
             </Row>
           )}
 
           {/* Google TTS: Language dropdown */}
           {config.hasLanguageDropdown && (
             <Row label="Language">
-              <select
+              <Box
+                component="select"
                 value={selectedVoice}
                 onChange={(e) => {
                   const m = getModelsByProviderId(providerId).filter((m) => getModelKind(m) === "tts").find((m) => m.id === e.target.value);
                   setSelectedVoice(e.target.value);
                   setSelectedVoiceName(m?.name || e.target.value);
                 }}
-                className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+                sx={inputSx}
               >
                 {getModelsByProviderId(providerId).filter((m) => getModelKind(m) === "tts").map((m) => (
                   <option key={m.id} value={m.id}>{m.name || m.id}</option>
                 ))}
-              </select>
+              </Box>
             </Row>
           )}
 
           {/* Input */}
           <Row label="Input">
-            <div className="relative">
-              <input
+            <Box sx={{ position: "relative" }}>
+              <Box
+                component="input"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="w-full px-3 py-1.5 pr-7 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+                sx={{ ...inputSx, pr: 3 }}
               />
               {input && (
-                <button
+                <Box
+                  component="button"
                   type="button"
                   onClick={() => setInput("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
+                  sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: "text.secondary", border: 0, background: "none", cursor: "pointer", transition: "color 150ms ease", "&:hover": { color: "primary.main" } }}
                 >
-                  <span className="material-symbols-outlined text-[14px]">close</span>
-                </button>
+                  <MsIcon sx={{ fontSize: 14 }}>close</MsIcon>
+                </Box>
               )}
-            </div>
+            </Box>
           </Row>
 
           {config.hasStyleInput && (
             <Row label="Style">
-              <textarea
+              <Box
+                component="textarea"
                 value={style}
                 onChange={(e) => setStyle(e.target.value)}
                 maxLength={1000}
                 placeholder="e.g. a warm, gentle voice, speaking slowly"
                 rows={2}
-                className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary resize-none"
+                sx={{ ...inputSx, resize: "none" }}
               />
             </Row>
           )}
 
           {/* Output Format */}
           <Row label="Output Format">
-            <select
+            <Box
+              component="select"
               value={responseFormat}
               onChange={(e) => setResponseFormat(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             >
               <option value="mp3">MP3 (Binary)</option>
               <option value="json">JSON (Base64)</option>
-            </select>
+            </Box>
           </Row>
 
           {/* Curl + Run */}
-          <div className="mt-1">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-              <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Request</span>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                <button
-                  onClick={() => copyCurl(curlSnippet)}
-                  className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[14px]">{copiedCurl ? "check" : "content_copy"}</span>
+          <Box sx={{ mt: 0.5 }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+              <Box component="span" sx={sectionLabelSx}>Request</Box>
+              <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+                <Box component="button" onClick={() => copyCurl(curlSnippet)} sx={copyButtonSx}>
+                  <MsIcon sx={{ fontSize: 14 }}>{copiedCurl ? "check" : "content_copy"}</MsIcon>
                   {copiedCurl ? "Copied" : "Copy"}
-                </button>
-                <button
+                </Box>
+                <Box
+                  component="button"
                   onClick={handleRun}
                   disabled={running || !input.trim() || !modelFull}
-                  className="flex w-full sm:w-auto items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  sx={{
+                    display: "flex",
+                    width: { xs: "100%", sm: "auto" },
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 0.75,
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 2,
+                    bgcolor: "primary.main",
+                    color: "#fff",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    border: 0,
+                    cursor: "pointer",
+                    transition: "background-color 150ms ease",
+                    "&:hover": { bgcolor: "primary.dark" },
+                    "&:disabled": { opacity: 0.5, cursor: "not-allowed" },
+                  }}
                 >
-                  <span className="material-symbols-outlined text-[14px]" style={running ? { animation: "spin 1s linear infinite" } : undefined}>
+                  <MsIcon sx={{ fontSize: 14, ...(running ? { animation: "spin 1s linear infinite" } : {}) }}>
                     play_arrow
-                  </span>
+                  </MsIcon>
                   {running ? "Generating..." : "Run"}
-                </button>
-              </div>
-            </div>
-            <pre className="bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all">{curlSnippet}</pre>
-          </div>
+                </Box>
+              </Box>
+            </Box>
+            <Box component="pre" sx={codeBlockSx}>{curlSnippet}</Box>
+          </Box>
 
-          {error && <p className="text-xs text-red-500 break-words">{error}</p>}
+          {error && <Typography sx={{ fontSize: 12, color: "error.main", wordBreak: "break-word" }}>{error}</Typography>}
 
           {/* Audio player */}
           {audioUrl ? (
-            <div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-                <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  Response {latency && <span className="font-normal normal-case">&#9889; {latency}ms</span>}
-                </span>
-                <a href={audioUrl} download={`speech.${jsonResponse?.format || responseFormat}`} className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[14px]">download</span>
+            <Box>
+              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+                <Box component="span" sx={sectionLabelSx}>
+                  Response {latency && <Box component="span" sx={{ fontWeight: 400, textTransform: "none" }}>&#9889; {latency}ms</Box>}
+                </Box>
+                <Box component="a" href={audioUrl} download={`speech.${jsonResponse?.format || responseFormat}`} sx={copyButtonSx}>
+                  <MsIcon sx={{ fontSize: 14 }}>download</MsIcon>
                   Download
-                </a>
-              </div>
-              <audio controls src={audioUrl} className="w-full" />
+                </Box>
+              </Box>
+              <Box component="audio" controls src={audioUrl} sx={{ width: "100%" }} />
               
               {/* JSON Response (if format is json) */}
               {jsonResponse && (
-                <div className="mt-3">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">JSON Response</span>
-                  </div>
-                  <pre className="bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all">
+                <Box sx={{ mt: 1.5 }}>
+                  <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+                    <Box component="span" sx={sectionLabelSx}>JSON Response</Box>
+                  </Box>
+                  <Box component="pre" sx={codeBlockSx}>
                     {JSON.stringify({
                       format: jsonResponse.format,
                       audio: jsonResponse.audio ? `${jsonResponse.audio.substring(0, 100)}...` : ""
                     }, null, 2)}
-                  </pre>
-                </div>
+                  </Box>
+                </Box>
               )}
-            </div>
+            </Box>
           ) : (
-            <div>
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Response</span>
-            <pre className="mt-1.5 bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all opacity-50">{DEFAULT_TTS_RESPONSE_EXAMPLE}</pre>
-          </div>
+            <Box>
+            <Box component="span" sx={sectionLabelSx}>Response</Box>
+            <Box component="pre" sx={{ ...codeBlockSx, mt: 0.75, opacity: 0.5 }}>{DEFAULT_TTS_RESPONSE_EXAMPLE}</Box>
+          </Box>
           )}
-        </div>
+        </Box>
       </Card>
 
       {/* Country Picker Modal */}
       {modalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+        <Box
+          sx={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: { xs: "flex-end", sm: "center" }, justifyContent: "center" }}
           style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)" }}
           onClick={() => setModalOpen(false)}
         >
-          <div
-            className="border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[80vh]"
+          <Box
+            sx={{ border: 1, borderColor: "divider", borderRadius: 3, boxShadow: 24, width: "100%", maxWidth: 448, mx: 2, display: "flex", flexDirection: "column", maxHeight: "80vh", overflow: "hidden" }}
             style={{ backgroundColor: "var(--color-bg)", isolation: "isolate" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0 rounded-t-xl">
-              <h3 className="text-sm font-semibold">Select Language</h3>
-              <button onClick={() => setModalOpen(false)} className="text-text-muted hover:text-primary transition-colors">
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5, borderBottom: 1, borderColor: "divider", flexShrink: 0 }}>
+              <Box component="h3" sx={{ fontSize: 14, fontWeight: 600, m: 0 }}>Select Language</Box>
+              <Box component="button" onClick={() => setModalOpen(false)} sx={{ color: "text.secondary", border: 0, background: "none", cursor: "pointer", transition: "color 150ms ease", "&:hover": { color: "primary.main" } }}>
+                <MsIcon sx={{ fontSize: 20 }}>close</MsIcon>
+              </Box>
+            </Box>
 
             {/* Search */}
-            <div className="px-4 py-2.5 border-b border-border shrink-0">
-              <input
+            <Box sx={{ px: 2, py: 1.25, borderBottom: 1, borderColor: "divider", flexShrink: 0 }}>
+              <Box
+                component="input"
                 autoFocus
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
                 placeholder="Search language..."
-                className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+                sx={inputSx}
               />
-            </div>
+            </Box>
 
             {/* Language list */}
-            <div className="overflow-y-auto flex-1 p-2">
-              {modalError && <p className="text-xs text-red-500 px-2 py-1">{modalError}</p>}
+            <Box sx={{ overflowY: "auto", flex: 1, p: 1 }}>
+              {modalError && <Box component="p" sx={{ fontSize: 12, color: "error.main", px: 1, py: 0.5, m: 0 }}>{modalError}</Box>}
               {modalLoading ? (
-                <p className="text-xs text-text-muted px-2 py-3">Loading...</p>
+                <Box component="p" sx={{ fontSize: 12, color: "text.secondary", px: 1, py: 1.5, m: 0 }}>Loading...</Box>
               ) : (
-                <div className="flex flex-col gap-0.5">
-                  {filteredLanguages.map((c) => (
-                    <button
-                      key={c.code}
-                      onClick={() => handlePickLanguage(c)}
-                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-left hover:bg-sidebar transition-colors ${
-                        selectedLang === c.code ? "bg-primary/10 text-primary" : ""
-                      }`}
-                    >
-                      <span className="text-sm">{c.name}</span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs text-text-muted">{c.voices.length} voices</span>
-                        {selectedLang === c.code && (
-                          <span className="material-symbols-outlined text-[16px] text-primary">check</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+                  {filteredLanguages.map((c) => {
+                    const active = selectedLang === c.code;
+                    return (
+                      <Box
+                        key={c.code}
+                        component="button"
+                        onClick={() => handlePickLanguage(c)}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: 2,
+                          textAlign: "left",
+                          cursor: "pointer",
+                          border: 0,
+                          bgcolor: active ? "action.selected" : "transparent",
+                          color: active ? "primary.main" : "text.primary",
+                          transition: "background-color 150ms ease",
+                          "&:hover": { bgcolor: "action.hover" },
+                        }}
+                      >
+                        <Box component="span" sx={{ fontSize: 14 }}>{c.name}</Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+                          <Box component="span" sx={{ fontSize: 12, color: "text.secondary" }}>{c.voices.length} voices</Box>
+                          {active && (
+                            <MsIcon sx={{ fontSize: 16, color: "primary.main" }}>check</MsIcon>
+                          )}
+                        </Box>
+                      </Box>
+                    );
+                  })}
                   {filteredLanguages.length === 0 && (
-                    <p className="text-xs text-text-muted px-2 py-3">No languages found.</p>
+                    <Box component="p" sx={{ fontSize: 12, color: "text.secondary", px: 1, py: 1.5, m: 0 }}>No languages found.</Box>
                   )}
-                </div>
+                </Box>
               )}
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
       )}
     </>
   );

@@ -6,6 +6,66 @@ import { getProviderAlias, isCustomEmbeddingProvider } from "@/shared/constants/
 import { getModelsByProviderId, getModelKind } from "@/shared/constants/models";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { Row } from "./exampleShared";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
+
+const inputSx = {
+  width: "100%",
+  px: 1.5,
+  py: 0.75,
+  fontSize: 14,
+  border: 1,
+  borderColor: "divider",
+  borderRadius: 2,
+  bgcolor: "background.default",
+  color: "text.primary",
+  outline: "none",
+  "&:focus": { borderColor: "primary.main" },
+};
+
+const copyButtonSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 0.5,
+  fontSize: 12,
+  color: "text.secondary",
+  border: 0,
+  background: "none",
+  cursor: "pointer",
+  transition: "color 150ms ease",
+  "&:hover": { color: "primary.main" },
+};
+
+const sectionLabelSx = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "text.secondary",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+};
+
+const codeBlockSx = {
+  bgcolor: "action.hover",
+  borderRadius: 2,
+  px: 1.5,
+  py: 1.25,
+  fontSize: 12,
+  fontFamily: "monospace",
+  color: "text.primary",
+  overflowX: "auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+  m: 0,
+};
 
 const DEFAULT_RESPONSE_EXAMPLE = `{
   "object": "list",
@@ -107,150 +167,185 @@ export function EmbeddingExampleCard({ providerId, customAlias }) {
 
   return (
     <Card>
-      <h2 className="text-lg font-semibold mb-4">Example</h2>
+      <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, mb: 2 }}>Example</Typography>
 
-      <div className="flex flex-col gap-2.5">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
         {/* Model — text input for custom node, dropdown otherwise */}
         <Row label="Model">
           {isCustom ? (
-            <input
+            <Box
+              component="input"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
               placeholder="e.g. voyage-3, embed-english-v3.0, text-embedding-3-small"
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary font-mono"
+              sx={{ ...inputSx, fontFamily: "monospace" }}
             />
           ) : (
-            <select
+            <Box
+              component="select"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={inputSx}
             >
               {embeddingModels.map((m) => (
                 <option key={m.id} value={m.id}>{m.name || m.id}</option>
               ))}
-            </select>
+            </Box>
           )}
         </Row>
 
         {/* Endpoint */}
         <Row label="Endpoint">
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <input
+          <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+            <Box
+              component="input"
               value={endpoint}
               onChange={(e) => useTunnel ? setTunnelEndpoint(e.target.value) : setLocalEndpoint(e.target.value)}
-              className="w-full min-w-0 flex-1 px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary font-mono"
+              sx={{ ...inputSx, minWidth: 0, flex: 1, fontFamily: "monospace" }}
               placeholder="http://localhost:3000"
             />
             {/* Tunnel toggle — only show if tunnel URL is available */}
             {tunnelEndpoint && (
-              <button
+              <Box
+                component="button"
                 onClick={() => setUseTunnel((v) => !v)}
                 title={useTunnel ? "Using tunnel" : "Using local"}
-                className={`flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg border shrink-0 transition-colors ${
-                  useTunnel ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"
-                }`}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  fontSize: 12,
+                  px: 1,
+                  py: 0.75,
+                  borderRadius: 2,
+                  flexShrink: 0,
+                  transition: "color 150ms ease, border-color 150ms ease, background-color 150ms ease",
+                  border: 1,
+                  borderColor: useTunnel ? "primary.main" : "divider",
+                  bgcolor: useTunnel ? "action.selected" : "transparent",
+                  color: useTunnel ? "primary.main" : "text.secondary",
+                  cursor: "pointer",
+                  "&:hover": { color: "primary.main" },
+                }}
               >
-                <span className="material-symbols-outlined text-[14px]">wifi_tethering</span>
+                <MsIcon sx={{ fontSize: 14 }}>wifi_tethering</MsIcon>
                 Tunnel
-              </button>
+              </Box>
             )}
-          </div>
+          </Box>
         </Row>
 
         {/* API Key */}
         <Row label="API Key">
-          <input
+          <Box
+            component="input"
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="sk-..."
-            className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary font-mono"
+            sx={{ ...inputSx, fontFamily: "monospace" }}
           />
         </Row>
 
         {/* Input */}
         <Row label="Input">
-          <div className="relative">
-            <input
+          <Box sx={{ position: "relative" }}>
+            <Box
+              component="input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="w-full px-3 py-1.5 pr-7 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+              sx={{ ...inputSx, pr: 3 }}
             />
             {input && (
-              <button
+              <Box
+                component="button"
                 type="button"
                 onClick={() => setInput("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
+                sx={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: "text.secondary", border: 0, background: "none", cursor: "pointer", transition: "color 150ms ease", "&:hover": { color: "primary.main" } }}
               >
-                <span className="material-symbols-outlined text-[14px]">close</span>
-              </button>
+                <MsIcon sx={{ fontSize: 14 }}>close</MsIcon>
+              </Box>
             )}
-          </div>
+          </Box>
         </Row>
 
         {/* Dimensions (optional) — truncate embedding vector length */}
         <Row label="Dimensions">
-          <input
+          <Box
+            component="input"
             type="number"
             min="1"
             value={dimensions}
             onChange={(e) => setDimensions(e.target.value)}
             placeholder="optional, e.g. 512, 1024 (leave empty for default)"
-            className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-primary"
+            sx={inputSx}
           />
         </Row>
 
         {/* Curl + Run */}
-        <div className="mt-1">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Request</span>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <button
-                onClick={() => copyCurl(curlSnippet)}
-                className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined text-[14px]">{copiedCurl ? "check" : "content_copy"}</span>
+        <Box sx={{ mt: 0.5 }}>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+            <Box component="span" sx={sectionLabelSx}>Request</Box>
+            <Box sx={{ display: "flex", width: { xs: "100%", sm: "auto" }, flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" } }}>
+              <Box component="button" onClick={() => copyCurl(curlSnippet)} sx={copyButtonSx}>
+                <MsIcon sx={{ fontSize: 14 }}>{copiedCurl ? "check" : "content_copy"}</MsIcon>
                 {copiedCurl ? "Copied" : "Copy"}
-              </button>
-              <button
+              </Box>
+              <Box
+                component="button"
                 onClick={handleRun}
                 disabled={running || !input.trim() || !modelFull}
-                className="flex w-full sm:w-auto items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                sx={{
+                  display: "flex",
+                  width: { xs: "100%", sm: "auto" },
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.75,
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 2,
+                  bgcolor: "primary.main",
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: 0,
+                  cursor: "pointer",
+                  transition: "background-color 150ms ease",
+                  "&:hover": { bgcolor: "primary.dark" },
+                  "&:disabled": { opacity: 0.5, cursor: "not-allowed" },
+                }}
               >
-                <span className="material-symbols-outlined text-[14px]" style={running ? { animation: "spin 1s linear infinite" } : undefined}>
+                <MsIcon sx={{ fontSize: 14, ...(running ? { animation: "spin 1s linear infinite" } : {}) }}>
                   play_arrow
-                </span>
+                </MsIcon>
                 {running ? "Running..." : "Run"}
-              </button>
-            </div>
-          </div>
-          <pre className="bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all">{curlSnippet}</pre>
-        </div>
+              </Box>
+            </Box>
+          </Box>
+          <Box component="pre" sx={codeBlockSx}>{curlSnippet}</Box>
+        </Box>
 
         {/* Error */}
-        {error && <p className="text-xs text-red-500 break-words">{error}</p>}
+        {error && <Typography sx={{ fontSize: 12, color: "error.main", wordBreak: "break-word" }}>{error}</Typography>}
 
         {/* Response — default example or real result */}
-        <div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1.5">
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Response {result && <span className="font-normal normal-case">&#9889; {result.latencyMs}ms</span>}
-            </span>
+        <Box>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, alignItems: { sm: "center" }, justifyContent: { sm: "space-between" }, mb: 0.75 }}>
+            <Box component="span" sx={sectionLabelSx}>
+              Response {result && <Box component="span" sx={{ fontWeight: 400, textTransform: "none" }}>&#9889; {result.latencyMs}ms</Box>}
+            </Box>
             {result && (
-              <button
-                onClick={() => copyRes(resultJson)}
-                className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined text-[14px]">{copiedRes ? "check" : "content_copy"}</span>
+              <Box component="button" onClick={() => copyRes(resultJson)} sx={copyButtonSx}>
+                <MsIcon sx={{ fontSize: 14 }}>{copiedRes ? "check" : "content_copy"}</MsIcon>
                 {copiedRes ? "Copied" : "Copy"}
-              </button>
+              </Box>
             )}
-          </div>
-          <pre className="bg-sidebar rounded-lg px-3 py-2.5 text-xs font-mono text-text-main overflow-x-auto whitespace-pre-wrap break-all opacity-70">
+          </Box>
+          <Box component="pre" sx={{ ...codeBlockSx, opacity: 0.7 }}>
             {formatResultJson(result?.data)}
-          </pre>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </Card>
   );
 }

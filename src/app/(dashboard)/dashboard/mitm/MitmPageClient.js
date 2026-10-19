@@ -1,10 +1,23 @@
 "use client";
 
 import { useState, useEffect, useReducer } from "react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import Icon from "@mui/material/Icon";
+import { alpha } from "@mui/material/styles";
 import { MITM_TOOLS } from "@/shared/constants/cliTools";
 import { getModelsByProviderId } from "@/shared/constants/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
 import { MitmServerCard, MitmToolCard } from "@/app/(dashboard)/dashboard/cli-tools/components";
+
+function MsIcon({ children, sx, ...props }) {
+  return (
+    <Icon className="material-symbols-outlined" baseClassName="" sx={{ fontSize: 18, ...sx }} {...props}>
+      {children}
+    </Icon>
+  );
+}
 
 function dataReducer(state, action) {
   switch (action.type) {
@@ -92,13 +105,30 @@ export default function MitmPageClient() {
   const mitmTools = Object.entries(MITM_TOOLS);
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-        <span className="material-symbols-outlined text-[16px] text-yellow-500 mt-0.5 shrink-0">warning</span>
-        <p className="text-xs text-red-600 dark:text-yellow-400 leading-relaxed">
+    <Stack spacing={3} sx={{ width: "100%" }}>
+      <Box
+        sx={(theme) => ({
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 1,
+          px: 1.5,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: alpha(theme.palette.warning.main, 0.1),
+          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+        })}
+      >
+        <MsIcon sx={{ fontSize: 16, color: "warning.main", mt: 0.25, flexShrink: 0 }}>warning</MsIcon>
+        <Typography
+          sx={(theme) => ({
+            fontSize: 12,
+            lineHeight: 1.625,
+            color: theme.palette.mode === "dark" ? "warning.main" : "error.main",
+          })}
+        >
           ⚠️ MITM intercepts HTTPS traffic of IDE tools (Antigravity, GitHub Copilot, Kiro) via local CA to redirect requests to your providers. May violate ToS → account ban. Use at your own risk.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
       {/* MITM Server Card */}
       <MitmServerCard
@@ -108,7 +138,7 @@ export default function MitmPageClient() {
       />
 
       {/* Tool Cards */}
-      <div className="grid gap-3 sm:gap-4">
+      <Box sx={{ display: "grid", gap: { xs: 1.5, sm: 2 } }}>
         {mitmTools.map(([toolId, tool]) => (
           <MitmToolCard
             key={toolId}
@@ -125,7 +155,7 @@ export default function MitmPageClient() {
             onDnsChange={(d) => dispatch({ type: "SET_MITM_STATUS", value: { ...mitmStatus, dnsStatus: d.dnsStatus ?? mitmStatus.dnsStatus } })}
           />
         ))}
-      </div>
-    </div>
+      </Box>
+    </Stack>
   );
 }
