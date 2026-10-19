@@ -2,6 +2,17 @@
 
 ## 1. Escopo, base e limites da análise
 
+### Atualização de escopo aprovada pelo usuário
+
+O usuário autorizou explicitamente **remover integralmente Next.js e SSR**, adotando **React com Vite como SPA e backend em Go**. Essa decisão substitui a exigência original de frontend absolutamente intacto apenas no que for necessário à remoção do framework: preservar visual, estilos, componentes reutilizáveis e funcionalidades, mas permitir adaptações de roteamento, carregamento de dados, sessão, inicialização e recursos específicos do Next.js.
+
+- Estado final: nenhum processo, dependência ou configuração ativa de Next.js; nenhuma lógica de servidor executada por páginas React.
+- SSR identificado neste documento passa a ser um inventário de trabalho obrigatório, não um impedimento à edição das páginas.
+- Dados iniciais devem ser obtidos por APIs Go; segredos, credenciais e identidade privilegiada permanecem no servidor.
+- Não substituir Next.js por adaptadores Node permanentes para manter SSR. Dependências auxiliares como PXPIPE continuam exigindo decisão própria; não são justificativa para manter Next.js.
+- Esta autorização **não autoriza o merge do PR da Fase 1**. Continuar aguardando comando explícito para integrar e iniciar a fase seguinte.
+- As seções abaixo que descrevem a preservação absoluta ou a coexistência com SSR registram o plano original e ficam subordinadas a esta atualização e à seção 14.
+
 - Fase 1 — persona: Analista de Sistemas.
 - Base: `main`, commit `c310b17f` (a versão declarada em `package.json` é `1.2.0`).
 - Integração: `migration/go-backend`; trabalho: `feat/phase-1-mapping`, no worktree `../wt-phase1`.
@@ -580,4 +591,46 @@ Referências particularmente relevantes em `tests/unit/`: dashboard-guard, passw
 6. Fixar porta interna Go e topologia de proxy/volume; não mudar URLs nem frontend para resolver colisão.
 7. Fechar schemas de payloads dinâmicos na implementação de cada adaptador por leitura aprofundada e testes diferenciais; esta análise estática não garante comportamento atual de serviços externos.
 
-**Estado da entrega:** plano para revisão, não implementação nem autorização de merge. A Fase 2 permanece bloqueada até comando explícito após a revisão da Fase 1.
+## 14. Plano revisado: React SPA sem Next.js nem SSR
+
+Esta seção substitui as propostas anteriores de manter SSR ou frontend sem qualquer alteração. O inventário dos contratos e do banco permanece válido.
+
+### Distribuição de responsabilidades
+
+- **Go:** APIs, sessão/cookies, OIDC, autorização, identidade local, SQLite, catálogo, tarefas de inicialização, observabilidade e regras de negócio.
+- **React/Vite:** renderização no navegador, navegação SPA e consumo das APIs. Nenhuma importação de banco, filesystem, segredo JWT ou módulos exclusivos de servidor no bundle.
+- **Proxy reverso/servidor estático:** mesma origem pública, encaminhamento de APIs e aliases, entrega dos assets e fallback para index.html apenas em rotas da SPA. Caminhos de API inexistentes devem retornar erro da API, nunca HTML do frontend.
+
+### Fases e worktrees revisados
+
+1. **Fase 1 atual:** atualizar este plano e o PR existente; aguardar merge autorizado.
+2. **Fase 2:** servidor Go e infraestrutura de persistência/configuração, como previsto.
+3. **Fase 3:** grupos backend já descritos, incluindo migração das funções anteriormente usadas por SSR e das tarefas disparadas por layout/instrumentation.
+4. **Fase 4A — Especialista React:** branch `feat/phase-4-react-spa`, worktree `../wt-phase4-react-spa`; configurar Vite e roteamento SPA, migrar consumidores SSR e recursos específicos do framework.
+5. **Fase 4B — DevOps:** branch `feat/phase-4-integration`, worktree `../wt-phase4-integration`; integrar SPA/Go por mesma origem, configurar proxy, assets, fallback, CORS e limites de streaming. Concluir remoção de dependências e entradas de execução Next.js, depois de verificar que não há consumidores restantes.
+6. **Fase 5:** acrescentar regressão visual e navegação direta/reload de rotas às verificações de contratos, testes Go e lint frontend. Não exigir compatibilidade de execução dos testes que dependem diretamente de APIs internas do Next.js; portar os testes necessários e documentar substituições.
+7. **Fase 6:** build Go e **build Vite**, não build Next.js; composição com backend e frontend estático/proxy, preservando serviços auxiliares necessários. Tag RC somente no estado integrado e aprovado.
+
+Cada fase/subfase usa branch temporária e worktree próprio, com PR para `migration/go-backend`. A branch de integração continua sem implementação direta.
+
+### Trabalho obrigatório no frontend
+
+- Substituir o App Router e recursos `next/link`, `next/navigation`, `next/image`, `next/font` e equivalentes conforme inventário de usos; escolher e justificar o roteador SPA na fase de implementação.
+- Preservar URLs de navegação e comportamento dos parâmetros dinâmicos. Manter redirects de login, callback e dashboard sem depender de middleware Next.js; autenticação real continua obrigatoriamente nas APIs Go.
+- Trocar a leitura SSR de `/masuk` por consulta à API de status de autenticação, com estado inicial de carregamento e tratamento de falha.
+- Trocar o cálculo SSR de machineId e as leituras diretas de conexões/nodes/combos por endpoints Go com autorização e payload mínimo. Reutilizar APIs existentes quando suficientes; novos contratos exigem documentação e testes.
+- Remover do layout os efeitos colaterais de servidor e transferir inicialização/schedulers para Go com proprietário único.
+- Auditar variáveis `NEXT_PUBLIC_*`: Vite não as expõe automaticamente. Definir mapeamento explícito ou reduzir configuração a URLs relativas, sem tornar variáveis secretas públicas.
+- Preservar Tailwind, fontes, ícones, assets, tema, internacionalização, callbacks OAuth, SSE e uploads; substituir recursos do framework sem redesenhar a interface.
+- Atualizar scripts, dependências, lockfile, configuração ESLint, entradas HTML/JS e Docker/CI afetados. Investigar arquivos existentes antes de remover qualquer configuração.
+
+### Critérios de aceite revisados
+
+- Não há SSR, runtime Next.js, comandos next nem dependência next na aplicação final; nenhum recurso necessário depende de `/_next`.
+- O build do frontend é estático e reproduzível com Vite; deep links e reload funcionam no proxy configurado.
+- Nenhum código de banco/credenciais/segredos aparece no bundle do navegador.
+- Visual e funcionalidades existentes preservados, com diferenças inevitáveis de carregamento documentadas e verificadas.
+- APIs mantêm os contratos mapeados; alterações intencionais ficam explícitas em testes e documentação.
+- Alterações de frontend são permitidas apenas no escopo necessário à remoção de Next.js/SSR; não realizar reformulação visual ou refatoração não relacionada.
+
+**Estado da entrega:** plano revisado para revisão, não implementação nem autorização de merge. A Fase 2 permanece bloqueada até comando explícito após a revisão da Fase 1.
