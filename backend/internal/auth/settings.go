@@ -54,6 +54,19 @@ const (
 
 const notMigratedMessage = "Only the password change is migrated; other settings updates are pending"
 
+// sideEffectKeys disparam efeitos colaterais no original (applyOutboundProxyEnv,
+// resetComboRotation, configureQuotaAutoPing) cujos consumidores ainda não migraram.
+var sideEffectKeys = map[string]bool{
+	"outboundProxyEnabled":       true,
+	"outboundProxyUrl":           true,
+	"outboundNoProxy":            true,
+	"comboStrategy":              true,
+	"comboStickyRoundRobinLimit": true,
+	"comboStrategies":            true,
+	"claudeAutoPing":             true,
+	"codexAutoPing":              true,
+}
+
 // jsTruthy replica a semântica booleana do JavaScript para os valores JSON usados.
 func jsTruthy(value any) bool {
 	switch v := value.(type) {
@@ -141,13 +154,13 @@ func (h *HTTP) SettingsPatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Mutações além da troca de senha não migram neste lote: recusa explícita.
+	// Escopo: mutações que disparam efeitos colaterais ainda não migrados
+	// continuam recusadas com 501; as demais são gravadas como no original.
 	for key := range body {
-		if key == "password" || key == "newPassword" || key == "currentPassword" {
-			continue
+		if sideEffectKeys[key] {
+			reply(w, 501, map[string]string{"error": notMigratedMessage})
+			return
 		}
-		reply(w, 501, map[string]string{"error": notMigratedMessage})
-		return
 	}
 
 	delete(body, "password")
@@ -161,49 +174,63 @@ func (h *HTTP) SettingsPatch(w http.ResponseWriter, r *http.Request) {
 		}
 		newPassword = value
 	}
+	updates := map[string]any{}
+	for key, value := range body {
+		if key == "newPassword" || key == "currentPassword" {
+			continue
+		}
+		updates[key] = value
+	}
 	if newPassword == "" {
-		// Corpo sem nova senha; o original grava currentPassword como setting —
-		// recusado/grant barrado aqui porque escritas gerais não migram neste lote.
+		// Sem nova senha: o grant é barrado (divergência de segurança documentada
+		// contra o bug original de persistir currentPassword como setting); a
+		// sessão prossegue como no original (updateSettings de corpo vazio).
 		if grant {
 			reply(w, 403, map[string]string{"error": mustChangeOnly})
 			return
 		}
-		// Sessão: devolve a leitura atual sem incrementar revision (divergência menor documentada).
-		reply(w, 200, safeSettings(settings))
-		return
-	}
-	if !StrongPassword(newPassword) {
+	} else if !StrongPassword(newPassword) {
 		reply(w, 400, map[string]string{"error": weakPasswordMessage})
 		return
-	}
-	currentHash := text(settings, "password")
-	present, isString, currentPassword := currentPasswordOf(body)
-	if currentHash != "" {
-		if !present {
-			reply(w, 400, map[string]string{"error": "Current password required"})
-			return
-		}
-		// O original chama bcrypt.compare; valor não string daria 500 — aqui é mismatch documentado.
-		if !isString || !VerifyPassword(currentPassword, currentHash, "") {
+	} else {
+		currentHash := text(settings, "password")
+		present, isString, currentPassword := currentPasswordOf(body)
+		if currentHash != "" {
+			if !present {
+				reply(w, 400, map[string]string{"error": "Current password required"})
+				return
+			}
+			// O original chama bcrypt.compare; valor não string daria 500 — aqui é mismatch documentado.
+			if !isString || !VerifyPassword(currentPassword, currentHash, "") {
+				reply(w, 401, map[string]string{"error": invalidCurrentMessage})
+				return
+			}
+		} else if present && (!isString || currentPassword != "123456") {
+			// Primeira definição: valor legado qualquer é recusado (!== "123456" no original).
 			reply(w, 401, map[string]string{"error": invalidCurrentMessage})
 			return
 		}
-	} else if present && (!isString || currentPassword != "123456") {
-		// Primeira definição: valor legado qualquer é recusado (!== "123456" no original).
-		reply(w, 401, map[string]string{"error": invalidCurrentMessage})
-		return
+		hash, err := HashPassword(newPassword)
+		if err != nil {
+			reply(w, 500, map[string]string{"error": "Failed to hash password"})
+			return
+		}
+		updates["password"] = hash
 	}
-	hash, err := HashPassword(newPassword)
-	if err != nil {
-		reply(w, 500, map[string]string{"error": "Failed to hash password"})
-		return
+	// oidcClientSecret vazio/falsy é removido em vez de gravado (original).
+	if v, ok := updates["oidcClientSecret"]; ok && !jsTruthy(v) {
+		updates["oidcClientSecret"] = nil
 	}
-	if _, err := h.ChangeP(r.Context(), hash); err != nil {
+	if h.WriteSettings == nil {
 		reply(w, 500, map[string]string{"error": "Failed to update settings"})
 		return
 	}
-	settings["password"] = hash
-	reply(w, 200, safeSettings(settings))
+	merged, err := h.WriteSettings(r.Context(), updates)
+	if err != nil {
+		reply(w, 500, map[string]string{"error": "Failed to update settings"})
+		return
+	}
+	reply(w, 200, safeSettings(merged))
 }
 
 // ResetPassword reproduz POST /api/auth/reset-password; a barreira local-only é do guard.

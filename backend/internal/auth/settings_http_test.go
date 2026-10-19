@@ -32,6 +32,20 @@ func settingsHTTP(t *testing.T, settings map[string]any) (*HTTP, *writerStub) {
 	h := testHTTP(t)
 	stub := &writerStub{}
 	h.ChangeP = stub.write
+	h.WriteSettings = func(_ context.Context, updates map[string]any) (map[string]any, error) {
+		if stub.failure != nil {
+			return nil, stub.failure
+		}
+		stub.calls++
+		for k, v := range updates {
+			if v == nil {
+				delete(settings, k)
+				continue
+			}
+			settings[k] = v
+		}
+		return settings, nil
+	}
 	h.Settings = func(context.Context) (map[string]any, error) { return settings, nil }
 	return h, stub
 }
@@ -55,7 +69,8 @@ func sessionCookie(t *testing.T, h *HTTP) *http.Cookie {
 }
 
 func TestSettingsPatchGrantFlow(t *testing.T) {
-	h, stub := settingsHTTP(t, map[string]any{})
+	store := map[string]any{}
+	h, stub := settingsHTTP(t, store)
 	cookie := grantCookie(t, h)
 	r := request("PATCH", "/api/settings", `{"newPassword":"senha-longa-para-grant","currentPassword":"123456"}`, "192.0.2.10:1234")
 	r.AddCookie(cookie)
@@ -64,7 +79,8 @@ func TestSettingsPatchGrantFlow(t *testing.T) {
 	if w.Code != 200 || stub.calls != 1 {
 		t.Fatalf("grant troca: %d %s", w.Code, w.Body.String())
 	}
-	if !VerifyPassword("senha-longa-para-grant", stub.last, "") {
+	hash, _ := store["password"].(string)
+	if !VerifyPassword("senha-longa-para-grant", hash, "") {
 		t.Fatal("hash divergente")
 	}
 	var body map[string]any
@@ -119,7 +135,8 @@ func TestSettingsPatchGrantRejections(t *testing.T) {
 }
 
 func TestSettingsPatchSessionFlow(t *testing.T) {
-	h, stub := settingsHTTP(t, map[string]any{})
+	store := map[string]any{}
+	h, stub := settingsHTTP(t, store)
 	cookie := sessionCookie(t, h)
 	// Primeira definição: currentPassword legado "123456" é aceito (paridade original).
 	r := request("PATCH", "/api/settings", `{"newPassword":"senha-longa-primeira","currentPassword":"123456"}`, "127.0.0.1:1234")
@@ -129,7 +146,7 @@ func TestSettingsPatchSessionFlow(t *testing.T) {
 	if w.Code != 200 || stub.calls != 1 {
 		t.Fatalf("primeira definição: %d %s", w.Code, w.Body.String())
 	}
-	hash := stub.last
+	hash := stringOf(store["password"])
 	// Hash existente: currentPassword ausente → 400.
 	r = request("PATCH", "/api/settings", `{"newPassword":"senha-longa-segunda"}`, "127.0.0.1:1234")
 	r.AddCookie(cookie)
@@ -155,22 +172,43 @@ func TestSettingsPatchSessionFlow(t *testing.T) {
 	if w.Code != 200 || stub.calls != 2 || strings.Contains(w.Body.String(), `"password"`) {
 		t.Fatalf("troca com hash: %d %s", w.Code, w.Body.String())
 	}
-	// Chave de settings ainda não migrada → 501 sem gravação.
-	r = request("PATCH", "/api/settings", `{"theme":"dark"}`, "127.0.0.1:1234")
+	// Chave comum é gravada (não mais 501 neste lote).
+	r = request("PATCH", "/api/settings", `{"theme":"dark","requireLogin":false}`, "127.0.0.1:1234")
 	r.AddCookie(cookie)
 	w = httptest.NewRecorder()
 	h.SettingsPatch(w, r)
-	if w.Code != 501 || stub.calls != 2 {
-		t.Fatalf("mutação fora do lote: %d %s", w.Code, w.Body.String())
+	if w.Code != 200 || store["theme"] != "dark" || store["requireLogin"] != false {
+		t.Fatalf("escrita geral: %d %s %v", w.Code, w.Body.String(), store)
 	}
-	// Corpo apenas com chave protegida: o original não escrever nada de útil.
+	if strings.Contains(w.Body.String(), "password") {
+		t.Fatal("segredo na resposta")
+	}
+	// Chave com efeito colateral não migrado continua 501 sem gravar.
+	before := stub.calls
+	r = request("PATCH", "/api/settings", `{"outboundProxyUrl":"http://proxy"}`, "127.0.0.1:1234")
+	r.AddCookie(cookie)
+	w = httptest.NewRecorder()
+	h.SettingsPatch(w, r)
+	if w.Code != 501 || stub.calls != before || store["outboundProxyUrl"] != nil {
+		t.Fatalf("efeito colateral: %d %d %v", w.Code, stub.calls, store["outboundProxyUrl"])
+	}
+	// Corpo apenas com chave protegida: gravação vazia como no original.
 	h.Settings = func(context.Context) (map[string]any, error) { return map[string]any{}, nil }
 	r = request("PATCH", "/api/settings", `{"password":"tentativa"}`, "127.0.0.1:1234")
 	r.AddCookie(cookie)
 	w = httptest.NewRecorder()
 	h.SettingsPatch(w, r)
-	if w.Code != 200 || stub.calls != 2 || strings.Contains(w.Body.String(), `"password":"tentativa"`) {
+	if w.Code != 200 || stub.calls != before+1 || strings.Contains(w.Body.String(), `"password":"tentativa"`) {
 		t.Fatalf("mass assignment: %d %s", w.Code, w.Body.String())
+	}
+	// oidcClientSecret vazio é removido, não gravado.
+	h.Settings = func(context.Context) (map[string]any, error) { return map[string]any{}, nil }
+	r = request("PATCH", "/api/settings", `{"oidcClientSecret":""}`, "127.0.0.1:1234")
+	r.AddCookie(cookie)
+	w = httptest.NewRecorder()
+	h.SettingsPatch(w, r)
+	if w.Code != 200 {
+		t.Fatalf("oidcClientSecret vazio: %d %s", w.Code, w.Body.String())
 	}
 	// Corpo inválido.
 	for _, payload := range []string{"null", "{", ""} {
@@ -290,6 +328,15 @@ func TestLocalOnlyGuardAndReset(t *testing.T) {
 	h.ResetPassword(w, r)
 	if w.Code != 200 || stub.calls == 0 || !VerifyPassword("senha-longa-reset", stub.last, "") {
 		t.Fatalf("reset: %d %s", w.Code, w.Body.String())
+	}
+	store2 := map[string]any{}
+	h2, _ := settingsHTTP(t, store2)
+	w = httptest.NewRecorder()
+	r = request("PATCH", "/api/settings", `{"newPassword":"senha-longa-reset","currentPassword":"123456"}`, "127.0.0.1:1234")
+	r.AddCookie(sessionCookie(t, h2))
+	h2.SettingsPatch(w, r)
+	if w.Code != 200 || !VerifyPassword("senha-longa-reset", stringOf(store2["password"]), "") {
+		t.Fatalf("reset via patch: %d %s", w.Code, w.Body.String())
 	}
 	// Corpo fraco/inválido.
 	for _, tt := range []struct {

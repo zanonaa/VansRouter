@@ -14,13 +14,15 @@ import (
 
 type SettingsReader func(context.Context) (map[string]any, error)
 type PasswordWriter func(context.Context, string) (map[string]any, error)
+type SettingsWriter func(context.Context, map[string]any) (map[string]any, error)
 
 type HTTP struct {
-	Sessions *Sessions
-	Settings SettingsReader
-	ChangeP  PasswordWriter
-	Limiter  *Limiter
-	Machine  *MachineID
+	Sessions      *Sessions
+	Settings      SettingsReader
+	ChangeP       PasswordWriter
+	WriteSettings SettingsWriter
+	Limiter       *Limiter
+	Machine       *MachineID
 	// API keys
 	ListAPIKeys    func(context.Context) ([]map[string]any, error)
 	GetAPIKey      func(context.Context, string) (map[string]any, error)
