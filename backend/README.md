@@ -1,6 +1,19 @@
 # Backend Go — Fase 2
 
-Estrutura inicial do backend. Esta fase **não implementa os contratos existentes**, autenticação, migrations ou frontend SPA. O Next.js existente não foi alterado: sua remoção será feita nas fases aprovadas no plano da raiz.
+Estrutura inicial do backend e primeiro lote da Fase 3: saúde, prontidão, inicialização e idioma. **Não implementa ainda autenticação, migrations, demais endpoints ou frontend SPA.** O Next.js existente não foi alterado: sua remoção será feita nas fases aprovadas no plano da raiz.
+
+## Rotas migradas — Fase 3, lote de inicialização
+
+| Rota | Contrato |
+|---|---|
+| GET /api/health | 200 `{ok:true}`, CORS público; OPTIONS explícito 204 |
+| GET /api/ready | Consulta real `SELECT 1 AS ok`; 200 `{ok:true,database:"ready"}` ou 503 `{ok:false,database:"unavailable"}`, no-store |
+| GET /api/init | 200 texto `Initialized`, sem quebra de linha |
+| POST /api/locale | `{locale}` suportado retorna 200 `{success:true,locale}` e cookie locale por um ano; inválido 400; JSON malformado/null 500, preservando a diferença do original |
+
+GETs acima também aceitam HEAD sem corpo. OPTIONS implícito de ready/init/locale retorna 204 com Allow. Não foi acrescentado CORS global. As quatro rotas são públicas no guard original; nenhum endpoint protegido foi liberado neste lote. Readiness confirma conectividade SQLite, não a conclusão das migrations ou da migração completa.
+
+Os testes cobrem cada handler, métodos, CORS, cookies, JSON inválido, falha de banco simulada e registro no roteador. As mensagens de erro da API permanecem idênticas às originais, mesmo quando não estão em português. Paridade diferencial contra um servidor Next.js em execução e normalização de detalhes de headers ainda pertencem à validação de integração.
 
 ## Decisões
 
