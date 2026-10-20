@@ -80,6 +80,9 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Get("/api/providers", providerHandlers.List)
 			r.Head("/api/providers", withoutBody(providerHandlers.List))
 		}
+		validator := handlers.NodeValidation{Local: auth.IsLocalRequest}
+		r.Post("/api/provider-nodes/validate", validator.Validate)
+		r.Options("/api/provider-nodes/validate", options("OPTIONS, POST"))
 		r.Get("/api/provider-nodes", nodes.List)
 		r.Head("/api/provider-nodes", withoutBody(nodes.List))
 		r.Post("/api/provider-nodes", nodes.Create)
@@ -96,6 +99,8 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Head("/api/proxy-pools", withoutBody(pools.List))
 			r.Post("/api/proxy-pools", pools.Create)
 			r.Options("/api/proxy-pools", options("GET, HEAD, OPTIONS, POST"))
+			r.Post("/api/proxy-pools/{id}/test", pools.Test(handlers.ProxyProbe{}))
+			r.Options("/api/proxy-pools/{id}/test", options("OPTIONS, POST"))
 			r.Get("/api/proxy-pools/{id}", pools.Get)
 			r.Head("/api/proxy-pools/{id}", withoutBody(pools.Get))
 			r.Put("/api/proxy-pools/{id}", pools.Update)

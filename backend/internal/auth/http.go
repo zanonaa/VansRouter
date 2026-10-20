@@ -80,6 +80,9 @@ func peer(r *http.Request) string {
 	}
 	return host
 }
+
+// IsLocalRequest deriva localidade do peer TCP e rejeita hops de proxy.
+func IsLocalRequest(r *http.Request) bool { return local(r) }
 func local(r *http.Request) bool {
 	ip := net.ParseIP(peer(r))
 	if ip == nil || !ip.IsLoopback() {
