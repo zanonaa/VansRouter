@@ -22,7 +22,7 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 	return NewWithNodes(ready, authentication, nil)
 }
 
-func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *handlers.Nodes) http.Handler {
+func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *handlers.Nodes, providerAPI ...*handlers.Providers) http.Handler {
 	h := handlers.Bootstrap{}
 	h.Ready = ready
 	r := chi.NewRouter()
@@ -89,6 +89,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Delete("/api/provider-nodes/{id}", nodes.Delete)
 			r.Options("/api/provider-nodes/{id}", options("DELETE, OPTIONS, PUT"))
 		}
+	}
+	if authentication != nil && len(providerAPI) > 0 && providerAPI[0] != nil {
+		r.Post("/api/providers", providerAPI[0].Create)
+		r.Options("/api/providers", options("GET, HEAD, OPTIONS, POST"))
 	}
 	return r
 }

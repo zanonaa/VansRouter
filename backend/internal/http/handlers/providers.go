@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -8,8 +9,11 @@ import (
 )
 
 type Providers struct {
-	Connections NodeConnections
-	Nodes       NodeStore
+	Connections      NodeConnections
+	Nodes            NodeStore
+	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
+	GetNode          func(context.Context, string) (map[string]any, error)
+	GetPool          func(context.Context, string) (map[string]any, error)
 }
 
 func (h Providers) List(w http.ResponseWriter, r *http.Request) {
