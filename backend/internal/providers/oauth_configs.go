@@ -9,6 +9,7 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	TokenExchangeURL    string            `json:"tokenExchangeUrl"`
 	ProviderID          string            `json:"providerId"`
 	CLIInitURL          string            `json:"cliInitUrl"`
 	CLIPollURL          string            `json:"cliPollUrl"`
