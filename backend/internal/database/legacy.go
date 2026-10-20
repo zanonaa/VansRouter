@@ -73,7 +73,11 @@ func importLegacy(ctx context.Context, db *sql.DB, dir string, files legacyFiles
 	if done > 0 {
 		return os.WriteFile(filepath.Join(dir, "db", ".migrated-from-json"), []byte("committed\n"), 0600)
 	}
-	backupDir, err := os.MkdirTemp(filepath.Join(dir, "db", "backups"), "legacy-json-*")
+	backupRoot := filepath.Join(dir, "db", "backups")
+	if err := os.MkdirAll(backupRoot, 0700); err != nil {
+		return err
+	}
+	backupDir, err := os.MkdirTemp(backupRoot, "legacy-json-*")
 	if err != nil {
 		return err
 	}
