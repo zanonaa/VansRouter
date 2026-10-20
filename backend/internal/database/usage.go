@@ -91,17 +91,17 @@ func (u Usage) hourlyChart(ctx context.Context, start time.Time, clampToNow bool
 	now := time.Now()
 	buckets := make([]map[string]any, 24)
 	for i := range buckets {
-		buckets[i] = map[string]any{"label": hourlyLabel(start.Add(time.Duration(i) * time.Hour)), "tokens": 0, "cost": 0, "requests": 0}
+		buckets[i] = map[string]any{"label": hourlyLabel(start.Add(time.Duration(i) * time.Hour)), "tokens": int64(0), "cost": float64(0), "requests": int64(0)}
 	}
-	rows, err := u.DB.QueryContext(ctx, "SELECT timestamp,promptTokens,completionTokens,cost FROM usageHistory WHERE timestamp >= ?", start.Format("2006-01-02T15:04:05.000Z"))
+	rows, err := u.DB.QueryContext(ctx, "SELECT timestamp,promptTokens,completionTokens,cost FROM usageHistory WHERE timestamp >= ?", start.UTC().Format("2006-01-02T15:04:05.000Z"))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	type rec struct {
 		ts                 string
-		prompt, completion int64
-		cost               float64
+		prompt, completion sql.NullInt64
+		cost               sql.NullFloat64
 	}
 	for rows.Next() {
 		var r rec
@@ -133,8 +133,8 @@ func (u Usage) hourlyChart(ctx context.Context, start time.Time, clampToNow bool
 				continue
 			}
 		}
-		buckets[idx]["tokens"] = buckets[idx]["tokens"].(int64) + r.prompt + r.completion
-		buckets[idx]["cost"] = buckets[idx]["cost"].(float64) + r.cost
+		buckets[idx]["tokens"] = buckets[idx]["tokens"].(int64) + r.prompt.Int64 + r.completion.Int64
+		buckets[idx]["cost"] = buckets[idx]["cost"].(float64) + r.cost.Float64
 		buckets[idx]["requests"] = buckets[idx]["requests"].(int64) + 1
 	}
 	return buckets, rows.Err()
@@ -150,8 +150,10 @@ func (u Usage) dailyMap(ctx context.Context, limit int) (map[string]daySummary, 
 	query := "SELECT dateKey,data FROM usageDaily"
 	args := []any{}
 	if limit > 0 {
-		query += " ORDER BY dateKey DESC LIMIT ?"
-		args = append(args, limit)
+		query += " WHERE dateKey >= ?"
+		now := time.Now()
+		cutoff := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, -limit+1)
+		args = append(args, cutoff.Format("2006-01-02"))
 	} else {
 		query += " ORDER BY dateKey ASC"
 	}
@@ -237,7 +239,7 @@ func (u Usage) Chart(ctx context.Context, period string) ([]map[string]any, erro
 		s, ok := dayMap[key]
 		entry := map[string]any{"label": day.Format("Jan 2"), "tokens": s.Prompt + s.Completion, "cost": s.Cost, "requests": s.Requests}
 		if !ok {
-			entry = map[string]any{"label": day.Format("Jan 2"), "tokens": 0, "cost": 0, "requests": 0}
+			entry = map[string]any{"label": day.Format("Jan 2"), "tokens": int64(0), "cost": float64(0), "requests": int64(0)}
 		}
 		list = append(list, entry)
 	}
