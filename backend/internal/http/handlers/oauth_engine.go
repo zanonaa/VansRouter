@@ -199,6 +199,14 @@ func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
 		h.clineAuthorize(w, r, provider, uri)
 		return
 	}
+	if provider == "kimchi" {
+		uri := r.URL.Query().Get("redirect_uri")
+		if uri == "" {
+			uri = "http://localhost:8080/callback"
+		}
+		h.kimchiAuthorize(w, r, uri)
+		return
+	}
 	if provider != "claude" && provider != "codex" {
 		if provider == "gemini-cli" || provider == "iflow" {
 			uri := r.URL.Query().Get("redirect_uri")
@@ -247,6 +255,10 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 	redirectURI, _ := body["redirectUri"].(string)
 	codeVerifier, _ := body["codeVerifier"].(string)
 
+	if provider == "kimchi" {
+		h.kimchiExchange(w, r, body)
+		return
+	}
 	if strings.HasPrefix(code, "eyJ") && strings.Contains(code, ".") {
 		claims := decodeJWTClaims(code)
 		data := map[string]any{"authMethod": "access_token"}
@@ -288,6 +300,10 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 	}
 	if provider == "cline" || provider == "clinepass" {
 		h.clineExchange(w, r, provider, body)
+		return
+	}
+	if provider == "kimchi" {
+		h.kimchiExchange(w, r, body)
 		return
 	}
 	if provider == "gemini-cli" {
