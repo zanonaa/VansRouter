@@ -4,31 +4,48 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 )
 
 type Usage struct{ DB *sql.DB }
 
-const usageColumns = "timestamp,provider,model,connectionId,apiKey,endpoint,promptTokens,completionTokens,cost,status"
+const usageColumns = "timestamp,provider,model,connectionId,apiKey,endpoint,cost,status,tokens"
 
 func scanUsageRows(rows *sql.Rows) ([]map[string]any, error) {
 	list := []map[string]any{}
 	defer rows.Close()
 	for rows.Next() {
-		var timestamp, provider, model, connectionID, apiKey, endpoint string
-		var prompt, completion int64
-		var cost float64
-		var status string
-		if err := rows.Scan(&timestamp, &provider, &model, &connectionID, &apiKey, &endpoint, &prompt, &completion, &cost, &status); err != nil {
+		var timestamp string
+		var provider, model, connectionID, apiKey, endpoint, status, raw sql.NullString
+		var cost sql.NullFloat64
+		if err := rows.Scan(&timestamp, &provider, &model, &connectionID, &apiKey, &endpoint, &cost, &status, &raw); err != nil {
 			return nil, err
 		}
-		list = append(list, map[string]any{"timestamp": timestamp, "provider": provider, "model": model, "connectionId": connectionID, "apiKey": apiKey, "endpoint": endpoint, "promptTokens": prompt, "completionTokens": completion, "cost": cost, "status": status})
+		var tokens any = map[string]any{}
+		if json.Unmarshal([]byte(raw.String), &tokens) != nil {
+			tokens = map[string]any{}
+		}
+		var masked any
+		if apiKey.Valid && apiKey.String != "" {
+			key := []rune(apiKey.String)
+			if len(key) <= 12 {
+				masked = string(key[:1]) + "***"
+			} else {
+				masked = string(key[:8]) + "***" + string(key[len(key)-4:])
+			}
+		}
+		var costValue any
+		if cost.Valid {
+			costValue = cost.Float64
+		}
+		list = append(list, map[string]any{"timestamp": timestamp, "provider": nullString(provider), "model": nullString(model), "connectionId": nullString(connectionID), "apiKeyMasked": masked, "endpoint": nullString(endpoint), "cost": costValue, "status": nullString(status), "tokens": tokens})
 	}
 	return list, rows.Err()
 }
 
-// History retorna a lista em ordem DESC por timestamp, como a origem.
+// History retorna ordem de inserção ASC, tokens JSON e chave mascarada como a origem.
 func (u Usage) History(ctx context.Context, provider, model, start, end string) ([]map[string]any, error) {
 	query := "SELECT " + usageColumns + " FROM usageHistory"
 	where := []string{}
@@ -43,16 +60,24 @@ func (u Usage) History(ctx context.Context, provider, model, start, end string) 
 	}
 	if start != "" {
 		where = append(where, "timestamp >= ?")
-		args = append(args, start)
+		value := detailDate(start)
+		if value == "" {
+			return nil, fmt.Errorf("Invalid time value")
+		}
+		args = append(args, value)
 	}
 	if end != "" {
-		where = append(where, "timestamp < ?")
-		args = append(args, end)
+		where = append(where, "timestamp <= ?")
+		value := detailDate(end)
+		if value == "" {
+			return nil, fmt.Errorf("Invalid time value")
+		}
+		args = append(args, value)
 	}
 	if len(where) > 0 {
 		query += " WHERE " + strings.Join(where, " AND ")
 	}
-	query += " ORDER BY timestamp DESC LIMIT 500"
+	query += " ORDER BY id ASC"
 	rows, err := u.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err

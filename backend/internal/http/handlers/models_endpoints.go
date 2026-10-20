@@ -79,7 +79,7 @@ func (h ModelsEndpoints) DisabledPost(w http.ResponseWriter, r *http.Request) {
 			values = append(values, s)
 		}
 	}
-	if err = h.Disabled.Set(r.Context(), provider, values); err != nil {
+	if err = h.Disabled.mergeDisabled(r.Context(), provider, values, false); err != nil {
 		nodeReply(w, 500, map[string]string{"error": "Failed to disable models"})
 		return
 	}
@@ -92,11 +92,7 @@ func (h ModelsEndpoints) DisabledDelete(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	id := r.URL.Query().Get("id")
-	all, err := h.Disabled.All(r.Context())
-	if err != nil {
-		nodeReply(w, 500, map[string]string{"error": "Failed to enable models"})
-		return
-	}
+	var err error
 	if id == "" {
 		if err = h.Disabled.Remove(r.Context(), provider); err != nil {
 			nodeReply(w, 500, map[string]string{"error": "Failed to enable models"})
@@ -105,13 +101,7 @@ func (h ModelsEndpoints) DisabledDelete(w http.ResponseWriter, r *http.Request) 
 		nodeReply(w, 200, map[string]bool{"success": true})
 		return
 	}
-	remaining := []string{}
-	for _, existing := range all[provider] {
-		if existing != id {
-			remaining = append(remaining, existing)
-		}
-	}
-	if err = h.Disabled.Set(r.Context(), provider, remaining); err != nil {
+	if err = h.Disabled.mergeDisabled(r.Context(), provider, []string{id}, true); err != nil {
 		nodeReply(w, 500, map[string]string{"error": "Failed to enable models"})
 		return
 	}
