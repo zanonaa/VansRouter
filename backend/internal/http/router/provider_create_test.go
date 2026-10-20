@@ -13,15 +13,13 @@ import (
 
 func TestProviderCreateHTTP(t *testing.T) {
 	ctx := context.Background()
-	db, err := database.Open(ctx, t.TempDir(), "NORMAL")
+	dir := t.TempDir()
+	db, err := database.Open(ctx, dir, "NORMAL")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	_, err = db.Exec(`CREATE TABLE providerConnections(id TEXT PRIMARY KEY,provider TEXT NOT NULL,authType TEXT NOT NULL,name TEXT,email TEXT,priority INTEGER,isActive INTEGER,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
- CREATE TABLE providerNodes(id TEXT PRIMARY KEY,type TEXT,name TEXT,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
- CREATE TABLE proxyPools(id TEXT PRIMARY KEY,isActive INTEGER,testStatus TEXT,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
- CREATE TABLE proxyPoolFitness(poolId TEXT, marker TEXT);`)
+	err = database.Migrate(ctx, db, dir)
 	if err != nil {
 		t.Fatal(err)
 	}

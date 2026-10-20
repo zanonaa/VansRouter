@@ -37,6 +37,9 @@ func run() error {
 		return err
 	}
 	defer db.Close()
+	if err := database.Migrate(context.Background(), db, cfg.DataDir); err != nil {
+		return err
+	}
 	database.SetDataDir(cfg.DataDir)
 	sessions, err := auth.LoadSessions(cfg.DataDir, os.Getenv("JWT_SECRET"))
 	if err != nil {

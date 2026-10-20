@@ -105,12 +105,7 @@ func (h Providers) Bulk(w http.ResponseWriter, r *http.Request) {
 			reject(404, label+" node not found")
 			return
 		}
-		specific := map[string]any{}
-		if original, ok := item["providerSpecificData"].(map[string]any); ok {
-			for key, value := range original {
-				specific[key] = value
-			}
-		}
+		specific := jsSpread(item["providerSpecificData"])
 		for _, key := range []string{"prefix", "baseUrl"} {
 			if value, ok := node[key]; ok {
 				specific[key] = value

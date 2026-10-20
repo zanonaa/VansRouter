@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -141,10 +140,8 @@ func (h Providers) Update(w http.ResponseWriter, r *http.Request) {
 	if hadSpecific || hasSpecific || hasProxy || hasPool {
 		merged := map[string]any{}
 		for _, source := range []any{existing["providerSpecificData"], body["providerSpecificData"]} {
-			if values, ok := source.(map[string]any); ok {
-				for key, value := range values {
-					merged[key] = value
-				}
+			for key, value := range jsSpread(source) {
+				merged[key] = value
 			}
 		}
 		if hasProxy {
@@ -180,5 +177,5 @@ func jsPoolString(value any) string {
 	if value == nil {
 		return "null"
 	}
-	return strings.TrimSpace(fmt.Sprint(value))
+	return strings.TrimSpace(jsString(value))
 }

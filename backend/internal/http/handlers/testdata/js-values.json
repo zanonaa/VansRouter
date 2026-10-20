@@ -1,0 +1,66 @@
+[
+  {
+    "value": null,
+    "string": "null",
+    "spread": {}
+  },
+  {
+    "value": true,
+    "string": "true",
+    "spread": {}
+  },
+  {
+    "value": false,
+    "string": "false",
+    "spread": {}
+  },
+  {
+    "value": 12,
+    "string": "12",
+    "spread": {}
+  },
+  {
+    "value": 0,
+    "string": "0",
+    "spread": {}
+  },
+  {
+    "value": " pool ",
+    "string": " pool ",
+    "spread": {
+      "0": " ",
+      "1": "p",
+      "2": "o",
+      "3": "o",
+      "4": "l",
+      "5": " "
+    }
+  },
+  {
+    "value": [
+      "a",
+      null,
+      "b"
+    ],
+    "string": "a,,b",
+    "spread": {
+      "0": "a",
+      "1": null,
+      "2": "b"
+    }
+  },
+  {
+    "value": {},
+    "string": "[object Object]",
+    "spread": {}
+  },
+  {
+    "value": {
+      "a": 1
+    },
+    "string": "[object Object]",
+    "spread": {
+      "a": 1
+    }
+  }
+]

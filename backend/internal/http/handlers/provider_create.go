@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -36,7 +35,7 @@ func (h Providers) Create(w http.ResponseWriter, r *http.Request) {
 	var poolID any
 	if value := body["proxyPoolId"]; value != nil && value != "" && value != "__none__" {
 		// String(value).trim() para os valores escalares usados pelo frontend.
-		valueString := strings.TrimSpace(fmt.Sprint(value))
+		valueString := strings.TrimSpace(jsString(value))
 		if valueString != "" {
 			pool, err := h.GetPool(r.Context(), valueString)
 			if err != nil {
@@ -90,10 +89,9 @@ func (h Providers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	specific := map[string]any{}
-	if original, ok := body["providerSpecificData"].(map[string]any); ok {
-		for key, value := range original {
-			specific[key] = value
-		}
+	switch body["providerSpecificData"].(type) {
+	case map[string]any, []any:
+		specific = jsSpread(body["providerSpecificData"])
 	}
 	if id == "ollama-local" {
 		var base any
