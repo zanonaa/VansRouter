@@ -11,6 +11,7 @@ import (
 type Providers struct {
 	Overrides        *Overrides
 	Database         *DatabaseExport
+	Media            *MediaVoices
 	Shutdown         *Shutdown
 	Pricing          *Pricing
 	Logs             *LogEndpoints
