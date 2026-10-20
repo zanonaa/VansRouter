@@ -6,6 +6,12 @@ for (const entry of registry) {
   if (!entry.oauth) continue;
   const o = entry.oauth;
   out[entry.id] = {
+    deviceCodeUrl: o.deviceCodeUrl || null,
+    copilotTokenUrl: o.copilotTokenUrl || null,
+    userInfoUrl: o.userInfoUrl || null,
+    apiVersion: o.apiVersion || null,
+    userAgent: o.userAgent || null,
+    deviceScope: typeof o.scopes === 'string' ? o.scopes : null,
     scope: o.scope || null,
     extraParams: o.extraParams || {},
     fixedPort: o.fixedPort || null,

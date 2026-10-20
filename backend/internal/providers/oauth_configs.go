@@ -9,6 +9,12 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	DeviceCodeURL       string            `json:"deviceCodeUrl"`
+	CopilotTokenURL     string            `json:"copilotTokenUrl"`
+	UserInfoURL         string            `json:"userInfoUrl"`
+	APIVersion          string            `json:"apiVersion"`
+	UserAgent           string            `json:"userAgent"`
+	DeviceScope         string            `json:"deviceScope"`
 	ClientID            string            `json:"clientId"`
 	ClientSecret        string            `json:"clientSecret"`
 	TokenURL            string            `json:"tokenUrl"`

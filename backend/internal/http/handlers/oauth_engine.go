@@ -298,6 +298,16 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 
 func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 	action := chi.URLParam(r, "action")
+	if chi.URLParam(r, "provider") == "github" {
+		if r.Method == "GET" && action == "device-code" {
+			h.githubDevice(w, r)
+			return
+		}
+		if r.Method == "POST" && action == "poll" {
+			h.githubPoll(w, r)
+			return
+		}
+	}
 	switch action {
 	case "authorize":
 		h.Authorize(w, r)

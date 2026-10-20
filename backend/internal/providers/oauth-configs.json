@@ -1,5 +1,11 @@
 {
   "antigravity": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": "https://www.googleapis.com/oauth2/v1/userinfo",
+    "apiVersion": "v1internal",
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -19,6 +25,12 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -36,6 +48,12 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -49,6 +67,12 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": "CLI/2.63.2 CodeBuddy/2.63.2",
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -62,6 +86,12 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": "openid profile email offline_access",
     "extraParams": {
       "id_token_add_organizations": "true",
@@ -79,6 +109,12 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -92,6 +128,12 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": "https://www.googleapis.com/oauth2/v1/userinfo",
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -109,6 +151,12 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "deviceCodeUrl": "https://github.com/login/device/code",
+    "copilotTokenUrl": "https://api.github.com/copilot_internal/v2/token",
+    "userInfoUrl": "https://api.github.com/user",
+    "apiVersion": "2022-11-28",
+    "userAgent": "GitHubCopilotChat/0.26.7",
+    "deviceScope": "read:user",
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -122,6 +170,12 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": "api read_user",
     "extraParams": {},
     "fixedPort": null,
@@ -135,6 +189,12 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -148,6 +208,12 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "deviceCodeUrl": "https://auth.x.ai/oauth2/device/code",
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": "openid profile email offline_access grok-cli:access api:access conversations:read conversations:write",
     "extraParams": {},
     "fixedPort": null,
@@ -161,6 +227,12 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": "https://iflow.cn/api/oauth/getUserInfo",
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {
       "loginMethod": "phone",
@@ -177,6 +249,12 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -190,6 +268,12 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": "https://app.kimchi.dev/api/v1/me",
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -203,6 +287,12 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "deviceCodeUrl": "https://auth.kimi.com/api/oauth/device_authorization",
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -216,6 +306,12 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -233,6 +329,12 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": "https://openapi.qoder.sh/api/v1/userinfo",
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -246,6 +348,12 @@
     "codeChallengeMethod": null
   },
   "qwen": {
+    "deviceCodeUrl": "https://chat.qwen.ai/api/v1/oauth2/device/code",
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": "openid profile email model.completion",
     "extraParams": {},
     "fixedPort": null,
@@ -259,6 +367,12 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -272,6 +386,12 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": "IDE/2.63.2 CodeBuddy/2.63.2",
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -285,6 +405,12 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -298,6 +424,12 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -311,6 +443,12 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "deviceCodeUrl": null,
+    "copilotTokenUrl": null,
+    "userInfoUrl": "https://openapi.qoder.com.cn/api/v1/userinfo",
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
@@ -324,6 +462,12 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "deviceCodeUrl": "https://auth.meta.com/oidc/device/authorization/",
+    "copilotTokenUrl": null,
+    "userInfoUrl": null,
+    "apiVersion": null,
+    "userAgent": null,
+    "deviceScope": null,
     "scope": null,
     "extraParams": {},
     "fixedPort": null,
