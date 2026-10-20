@@ -191,6 +191,14 @@ func (h *OAuthEngine) exchangeTokens(ctx context.Context, provider, code, redire
 
 func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
+	if provider == "cline" || provider == "clinepass" {
+		uri := r.URL.Query().Get("redirect_uri")
+		if uri == "" {
+			uri = "http://localhost:8080/callback"
+		}
+		h.clineAuthorize(w, r, provider, uri)
+		return
+	}
 	if provider != "claude" && provider != "codex" {
 		if provider == "gemini-cli" || provider == "iflow" {
 			uri := r.URL.Query().Get("redirect_uri")
@@ -276,6 +284,10 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 
 	if code == "" || redirectURI == "" || (codeVerifier == "" && !noPkceExchangeProviders[provider]) {
 		nodeReply(w, 400, map[string]string{"error": "Missing required fields"})
+		return
+	}
+	if provider == "cline" || provider == "clinepass" {
+		h.clineExchange(w, r, provider, body)
 		return
 	}
 	if provider == "gemini-cli" {
