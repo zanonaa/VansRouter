@@ -69,6 +69,18 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Put("/{id}", authentication.APIKeyPut)
 			r.Delete("/{id}", authentication.APIKeyDelete)
 		})
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Models != nil {
+			models := providerAPI[0].Models
+			r.Get("/api/models", models.List)
+			r.Head("/api/models", withoutBody(models.List))
+			r.Put("/api/models", models.SetAlias)
+			r.Options("/api/models", options("GET, HEAD, OPTIONS, PUT"))
+			r.Get("/api/models/disabled", models.DisabledGet)
+			r.Head("/api/models/disabled", withoutBody(models.DisabledGet))
+			r.Post("/api/models/disabled", models.DisabledPost)
+			r.Delete("/api/models/disabled", models.DisabledDelete)
+			r.Options("/api/models/disabled", options("DELETE, GET, HEAD, OPTIONS, POST"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Aliases != nil {
 			aliases := providerAPI[0].Aliases
 			r.Get("/api/models/alias", aliases.List)
