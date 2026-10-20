@@ -7,19 +7,28 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 // OAuthEngine porta o roteador dinâmico [provider]/[action].
-// Providers específicos e proxies locais codex/xai seguem em lotes próprios.
 type OAuthEngine struct {
 	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
 	Client           *http.Client
+	Config           func(string) *providers.OAuthConfig
+}
+
+func (h *OAuthEngine) config(provider string) *providers.OAuthConfig {
+	if h.Config != nil {
+		return h.Config(provider)
+	}
+	return providers.GetOAuthConfig(provider)
 }
 
 func randomURLSafe(n int) (string, error) {
@@ -40,11 +49,6 @@ func pkcePair() (verifier, challenge string, err error) {
 	return
 }
 
-var noPkceDeviceProviders = map[string]bool{
-	"github": true, "kiro": true, "kimi": true, "kimi-coding": true, "kilocode": true,
-	"codebuddy-cn": true, "codebuddy-intl": true, "qoder": true, "grok-cli": true, "muse": true, "glm": true,
-}
-
 var noPkceExchangeProviders = map[string]bool{"cline": true, "kimchi": true}
 
 func (h *OAuthEngine) client() *http.Client {
@@ -54,7 +58,6 @@ func (h *OAuthEngine) client() *http.Client {
 	return &http.Client{Timeout: 15 * time.Second}
 }
 
-// decodeJWTClaims extrai claims sem verificar assinatura (mesma política do original).
 func decodeJWTClaims(token string) map[string]any {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
@@ -71,37 +74,134 @@ func decodeJWTClaims(token string) map[string]any {
 	return claims
 }
 
-func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
-	provider := chi.URLParam(r, "provider")
-	query := r.URL.Query()
-	redirectURI := query.Get("redirect_uri")
-	if redirectURI == "" {
-		redirectURI = "http://localhost:8080/callback"
+func (h *OAuthEngine) buildAuthURL(provider, redirectURI string) (string, string, string, error) {
+	config := h.config(provider)
+	if config == nil {
+		return "", "", "", fmt.Errorf("Unknown OAuth provider: %s", provider)
 	}
 	verifier, challenge, err := pkcePair()
 	if err != nil {
-		nodeReply(w, 500, map[string]string{"error": "Failed to generate PKCE"})
-		return
+		return "", "", "", err
 	}
-	state, _ := randomURLSafe(24)
-	if state == "" {
-		nodeReply(w, 500, map[string]string{"error": "Failed to generate state"})
-		return
+	state, err := randomURLSafe(32)
+	if err != nil {
+		return "", "", "", err
 	}
-	meta := map[string]string{}
-	for key := range query {
-		if key != "redirect_uri" {
-			meta[key] = query.Get(key)
+	if config.AuthorizeURL == "" {
+		return "", "", "", fmt.Errorf("Provider %s has no authorize URL", provider)
+	}
+	params := url.Values{}
+	params.Set("client_id", config.ClientID)
+	params.Set("response_type", "code")
+	params.Set("redirect_uri", redirectURI)
+	if provider == "claude" {
+		params.Set("code", "true")
+	}
+	if config.Scope != "" {
+		params.Set("scope", config.Scope)
+	}
+	for key, value := range config.ExtraParams {
+		params.Set(key, value)
+	}
+	if len(config.Scopes) > 0 {
+		params.Set("scope", strings.Join(config.Scopes, " "))
+	}
+	if config.CodeChallengeMethod == "S256" {
+		params.Set("code_challenge", challenge)
+		params.Set("code_challenge_method", "S256")
+	}
+	params.Set("state", state)
+	return config.AuthorizeURL + "?" + params.Encode(), state, verifier, nil
+}
+
+func (h *OAuthEngine) exchangeTokens(ctx context.Context, provider, code, redirectURI, codeVerifier, state string) (map[string]any, error) {
+	config := h.config(provider)
+	if config == nil {
+		return nil, fmt.Errorf("Unknown OAuth provider: %s", provider)
+	}
+	if config.TokenURL == "" {
+		return nil, fmt.Errorf("Provider %s has no token URL", provider)
+	}
+	form := url.Values{}
+	form.Set("grant_type", "authorization_code")
+	form.Set("client_id", config.ClientID)
+	if config.ClientSecret != "" {
+		form.Set("client_secret", config.ClientSecret)
+	}
+	form.Set("code", code)
+	form.Set("redirect_uri", redirectURI)
+	if codeVerifier != "" {
+		form.Set("code_verifier", codeVerifier)
+	}
+	contentType := "application/x-www-form-urlencoded"
+	payload := form.Encode()
+	if provider == "claude" {
+		parts := strings.Split(code, "#")
+		authCode := parts[0]
+		if len(parts) > 1 && parts[1] != "" {
+			state = parts[1]
 		}
+		data := map[string]string{"code": authCode, "state": state, "grant_type": "authorization_code", "client_id": config.ClientID, "redirect_uri": redirectURI, "code_verifier": codeVerifier}
+		encoded, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+		payload = string(encoded)
+		contentType = "application/json"
 	}
-	_ = meta
-	nodeReply(w, 200, map[string]any{
-		"authorizationUrl":    fmt.Sprintf("oauth://%s/authorize?provider=%s", provider, url.QueryEscape(provider)),
-		"state":               state,
-		"codeVerifier":        verifier,
-		"codeChallenge":       challenge,
-		"codeChallengeMethod": "S256",
-	})
+	req, err := http.NewRequestWithContext(ctx, "POST", config.TokenURL, strings.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Accept", "application/json")
+	res, err := h.client().Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("Token exchange failed: %w", err)
+	}
+	defer res.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(res.Body, 1<<20))
+	var data map[string]any
+	if json.Unmarshal(body, &data) != nil {
+		data = map[string]any{}
+	}
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		message := fmt.Sprintf("Token exchange failed (%d)", res.StatusCode)
+		if d, _ := data["error_description"].(string); d != "" {
+			message = d
+		} else if e, _ := data["error"].(string); e != "" {
+			message = e
+		}
+		return nil, fmt.Errorf("%s", message)
+	}
+	return data, nil
+}
+
+func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
+	provider := chi.URLParam(r, "provider")
+	if provider != "claude" && provider != "codex" {
+		nodeReply(w, 501, map[string]string{"error": "OAuth authorization not yet migrated for: " + provider})
+		return
+	}
+	redirectURI := r.URL.Query().Get("redirect_uri")
+	if redirectURI == "" {
+		redirectURI = "http://localhost:8080/callback"
+	}
+	authURL, state, verifier, err := h.buildAuthURL(provider, redirectURI)
+	if err != nil {
+		nodeReply(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+	sum := sha256.Sum256([]byte(verifier))
+	config := h.config(provider)
+	result := map[string]any{"authUrl": authURL, "state": state, "codeVerifier": verifier, "codeChallenge": base64.RawURLEncoding.EncodeToString(sum[:]), "redirectUri": redirectURI, "flowType": "authorization_code_pkce", "callbackPath": "/callback"}
+	if config.FixedPort != 0 {
+		result["fixedPort"] = config.FixedPort
+	}
+	if config.CallbackPath != "" {
+		result["callbackPath"] = config.CallbackPath
+	}
+	nodeReply(w, 200, result)
 }
 
 func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +215,6 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 	redirectURI, _ := body["redirectUri"].(string)
 	codeVerifier, _ := body["codeVerifier"].(string)
 
-	// Token JWT cru (acesso Codex): salva como access_token como o original.
 	if strings.HasPrefix(code, "eyJ") && strings.Contains(code, ".") {
 		claims := decodeJWTClaims(code)
 		data := map[string]any{"authMethod": "access_token"}
@@ -155,8 +254,46 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 400, map[string]string{"error": "Missing required fields"})
 		return
 	}
-	// exchangeTokens real por provider: próximo sub-lote; sem stub de sucesso.
-	nodeReply(w, 501, map[string]string{"error": "Provider token exchange not yet migrated for: " + provider})
+	if provider != "claude" && provider != "codex" {
+		nodeReply(w, 501, map[string]string{"error": "Provider token exchange not yet migrated for: " + provider})
+		return
+	}
+	state, _ := body["state"].(string)
+	tokenData, err := h.exchangeTokens(r.Context(), provider, code, redirectURI, codeVerifier, state)
+	if err != nil {
+		nodeReply(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	var expiresAt any
+	if expiresIn, ok := tokenData["expires_in"].(float64); ok && expiresIn > 0 {
+		expiresAt = time.Now().Add(time.Duration(expiresIn) * time.Second).UTC().Format("2006-01-02T15:04:05.000Z")
+	}
+	connectionData := map[string]any{
+		"provider": provider, "authType": "oauth", "testStatus": "active",
+	}
+	for source, target := range map[string]string{"access_token": "accessToken", "refresh_token": "refreshToken", "id_token": "idToken", "token_type": "tokenType", "scope": "scope", "email": "email"} {
+		if v, ok := tokenData[source]; ok {
+			connectionData[target] = v
+		}
+	}
+	if provider == "codex" {
+		connectionData["lastRefreshAt"] = time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
+		applyCodexClaims(connectionData, decodeJWTClaims(stringField(tokenData, "id_token")), decodeJWTClaims(stringField(tokenData, "access_token")))
+	}
+	if expiresAt != nil {
+		connectionData["expiresAt"] = expiresAt
+	}
+	if expiresIn, ok := tokenData["expires_in"].(float64); ok {
+		connectionData["expiresIn"] = expiresIn
+	}
+	connection, err := h.CreateConnection(r.Context(), connectionData)
+	if err != nil {
+		nodeReply(w, 500, map[string]string{"error": "Failed to save connection"})
+		return
+	}
+	nodeReply(w, 200, map[string]any{"success": true, "connection": map[string]any{
+		"id": connection["id"], "provider": connection["provider"], "email": connection["email"], "displayName": connection["displayName"],
+	}})
 }
 
 func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {

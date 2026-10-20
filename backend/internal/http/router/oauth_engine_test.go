@@ -40,7 +40,7 @@ func TestOAuthEngineContract(t *testing.T) {
 		{"POST", "/api/oauth/claude/exchange", `{}`, 400, "Missing required fields"},
 		{"POST", "/api/oauth/claude/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb"}`, 400, "Missing required fields"},
 		{"POST", "/api/oauth/cline/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb"}`, 501, "not yet migrated"},
-		{"POST", "/api/oauth/claude/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb","codeVerifier":"v"}`, 501, "not yet migrated"},
+		{"POST", "/api/oauth/unsupported/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb","codeVerifier":"v"}`, 501, "not yet migrated"},
 	} {
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, httptest.NewRequest(tt.method, tt.path, strings.NewReader(tt.body)))
