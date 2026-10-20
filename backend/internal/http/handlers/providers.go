@@ -11,6 +11,7 @@ import (
 type Providers struct {
 	Aliases          *ModelAliases
 	Models           *ModelsEndpoints
+	Usage            *UsageEndpoints
 	Combos           *Combos
 	CreateBulk       func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools            *ProxyPools
