@@ -163,6 +163,13 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Head("/api/media-providers/tts/voices", withoutBody(media.Get))
 			r.Options("/api/media-providers/tts/voices", options("GET, HEAD, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].OAuth != nil {
+			oauthAPI := providerAPI[0].OAuth
+			r.Get("/api/oauth/{provider}/{action}", oauthAPI.Route)
+			r.Post("/api/oauth/{provider}/{action}", oauthAPI.Route)
+			r.Options("/api/oauth/{provider}/{action}", options("GET, HEAD, OPTIONS, POST"))
+			r.Head("/api/oauth/{provider}/{action}", withoutBody(oauthAPI.Route))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
