@@ -1,0 +1,1157 @@
+{
+  "warning": "Static registration is not proof of full migration. Dynamic/public aliases need manual review.",
+  "contracts": [
+    {
+      "method": "GET",
+      "path": "/api/auth/check",
+      "source": "src/app/api/auth/check/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "source": "src/app/api/auth/login/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "source": "src/app/api/auth/logout/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/oidc/callback",
+      "source": "src/app/api/auth/oidc/callback/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/oidc/start",
+      "source": "src/app/api/auth/oidc/start/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/oidc/test",
+      "source": "src/app/api/auth/oidc/test/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "source": "src/app/api/auth/reset-password/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/status",
+      "source": "src/app/api/auth/status/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/combos/{id}",
+      "source": "src/app/api/combos/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/combos/{id}",
+      "source": "src/app/api/combos/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/combos/{id}",
+      "source": "src/app/api/combos/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/combos",
+      "source": "src/app/api/combos/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/combos",
+      "source": "src/app/api/combos/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/headroom/extras",
+      "source": "src/app/api/headroom/extras/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/headroom/extras",
+      "source": "src/app/api/headroom/extras/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/headroom/extras",
+      "source": "src/app/api/headroom/extras/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/headroom/restart",
+      "source": "src/app/api/headroom/restart/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/headroom/start",
+      "source": "src/app/api/headroom/start/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/headroom/status",
+      "source": "src/app/api/headroom/status/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/headroom/stop",
+      "source": "src/app/api/headroom/stop/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "source": "src/app/api/health/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/health",
+      "source": "src/app/api/health/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/init",
+      "source": "src/app/api/init/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/keys/{id}",
+      "source": "src/app/api/keys/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/keys/{id}",
+      "source": "src/app/api/keys/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/keys/{id}",
+      "source": "src/app/api/keys/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/keys",
+      "source": "src/app/api/keys/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/keys",
+      "source": "src/app/api/keys/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/locale",
+      "source": "src/app/api/locale/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/media-providers/tts/deepgram/voices",
+      "source": "src/app/api/media-providers/tts/deepgram/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/media-providers/tts/elevenlabs/voices",
+      "source": "src/app/api/media-providers/tts/elevenlabs/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/media-providers/tts/inworld/voices",
+      "source": "src/app/api/media-providers/tts/inworld/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/media-providers/tts/minimax/voices",
+      "source": "src/app/api/media-providers/tts/minimax/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/media-providers/tts/voices",
+      "source": "src/app/api/media-providers/tts/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models/alias",
+      "source": "src/app/api/models/alias/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/models/alias",
+      "source": "src/app/api/models/alias/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/models/alias",
+      "source": "src/app/api/models/alias/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models/availability",
+      "source": "src/app/api/models/availability/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/models/availability",
+      "source": "src/app/api/models/availability/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models/catalog-sync",
+      "source": "src/app/api/models/catalog-sync/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/models/catalog-sync",
+      "source": "src/app/api/models/catalog-sync/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models/custom",
+      "source": "src/app/api/models/custom/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/models/custom",
+      "source": "src/app/api/models/custom/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/models/custom",
+      "source": "src/app/api/models/custom/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models/disabled",
+      "source": "src/app/api/models/disabled/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/models/disabled",
+      "source": "src/app/api/models/disabled/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/models/disabled",
+      "source": "src/app/api/models/disabled/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models",
+      "source": "src/app/api/models/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/models",
+      "source": "src/app/api/models/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/models/test",
+      "source": "src/app/api/models/test/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/oauth/{provider}/{action}",
+      "source": "src/app/api/oauth/[provider]/[action]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/{provider}/{action}",
+      "source": "src/app/api/oauth/[provider]/[action]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/codex/bulk-import",
+      "source": "src/app/api/oauth/codex/bulk-import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/codex/import-token",
+      "source": "src/app/api/oauth/codex/import-token/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/oauth/cursor/auto-import",
+      "source": "src/app/api/oauth/cursor/auto-import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/cursor/import",
+      "source": "src/app/api/oauth/cursor/import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/oauth/cursor/import",
+      "source": "src/app/api/oauth/cursor/import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/gitlab/pat",
+      "source": "src/app/api/oauth/gitlab/pat/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/grok-cli/bulk-import",
+      "source": "src/app/api/oauth/grok-cli/bulk-import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/iflow/cookie",
+      "source": "src/app/api/oauth/iflow/cookie/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/kiro/api-key",
+      "source": "src/app/api/oauth/kiro/api-key/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/oauth/kiro/auto-import",
+      "source": "src/app/api/oauth/kiro/auto-import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/kiro/import",
+      "source": "src/app/api/oauth/kiro/import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/kiro/import-cli-proxy",
+      "source": "src/app/api/oauth/kiro/import-cli-proxy/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/oauth/kiro/social-authorize",
+      "source": "src/app/api/oauth/kiro/social-authorize/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/kiro/social-exchange",
+      "source": "src/app/api/oauth/kiro/social-exchange/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/oauth/zed/auto-import",
+      "source": "src/app/api/oauth/zed/auto-import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/oauth/zed/import",
+      "source": "src/app/api/oauth/zed/import/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/pricing",
+      "source": "src/app/api/pricing/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/pricing",
+      "source": "src/app/api/pricing/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/pricing",
+      "source": "src/app/api/pricing/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/provider-nodes/{id}",
+      "source": "src/app/api/provider-nodes/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/provider-nodes/{id}",
+      "source": "src/app/api/provider-nodes/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/provider-nodes",
+      "source": "src/app/api/provider-nodes/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/provider-nodes",
+      "source": "src/app/api/provider-nodes/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/provider-nodes/validate",
+      "source": "src/app/api/provider-nodes/validate/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/{id}/gcp-projects",
+      "source": "src/app/api/providers/[id]/gcp-projects/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/{id}/models",
+      "source": "src/app/api/providers/[id]/models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/{id}/overrides",
+      "source": "src/app/api/providers/[id]/overrides/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/providers/{id}/overrides",
+      "source": "src/app/api/providers/[id]/overrides/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/{id}",
+      "source": "src/app/api/providers/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/providers/{id}",
+      "source": "src/app/api/providers/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/providers/{id}",
+      "source": "src/app/api/providers/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/{id}/test",
+      "source": "src/app/api/providers/[id]/test/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/{id}/test-models",
+      "source": "src/app/api/providers/[id]/test-models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/bulk",
+      "source": "src/app/api/providers/bulk/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/circuit-breakers/{name}/reset",
+      "source": "src/app/api/providers/circuit-breakers/[name]/reset/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/circuit-breakers",
+      "source": "src/app/api/providers/circuit-breakers/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/client",
+      "source": "src/app/api/providers/client/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/kilo/free-models",
+      "source": "src/app/api/providers/kilo/free-models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers",
+      "source": "src/app/api/providers/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers",
+      "source": "src/app/api/providers/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/providers/suggested-models",
+      "source": "src/app/api/providers/suggested-models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/test-batch",
+      "source": "src/app/api/providers/test-batch/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/providers/validate",
+      "source": "src/app/api/providers/validate/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/{id}/fitness/clear",
+      "source": "src/app/api/proxy-pools/[id]/fitness/clear/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/proxy-pools/{id}",
+      "source": "src/app/api/proxy-pools/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/proxy-pools/{id}",
+      "source": "src/app/api/proxy-pools/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/proxy-pools/{id}",
+      "source": "src/app/api/proxy-pools/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/{id}/test",
+      "source": "src/app/api/proxy-pools/[id]/test/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/cloudflare-deploy",
+      "source": "src/app/api/proxy-pools/cloudflare-deploy/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/deno-deploy",
+      "source": "src/app/api/proxy-pools/deno-deploy/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/fitness/clear-all",
+      "source": "src/app/api/proxy-pools/fitness/clear-all/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/proxy-pools/fitness",
+      "source": "src/app/api/proxy-pools/fitness/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/import-public",
+      "source": "src/app/api/proxy-pools/import-public/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/proxy-pools",
+      "source": "src/app/api/proxy-pools/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools",
+      "source": "src/app/api/proxy-pools/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/proxy-pools/vercel-deploy",
+      "source": "src/app/api/proxy-pools/vercel-deploy/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/pxpipe/health",
+      "source": "src/app/api/pxpipe/health/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/pxpipe/install",
+      "source": "src/app/api/pxpipe/install/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/pxpipe/logs",
+      "source": "src/app/api/pxpipe/logs/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/pxpipe/restart",
+      "source": "src/app/api/pxpipe/restart/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/pxpipe/start",
+      "source": "src/app/api/pxpipe/start/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/pxpipe/stats",
+      "source": "src/app/api/pxpipe/stats/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/pxpipe/status",
+      "source": "src/app/api/pxpipe/status/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/pxpipe/stop",
+      "source": "src/app/api/pxpipe/stop/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ready",
+      "source": "src/app/api/ready/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/settings/database",
+      "source": "src/app/api/settings/database/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/settings/database",
+      "source": "src/app/api/settings/database/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/settings/proxy-test",
+      "source": "src/app/api/settings/proxy-test/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/settings",
+      "source": "src/app/api/settings/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/settings",
+      "source": "src/app/api/settings/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/shutdown",
+      "source": "src/app/api/shutdown/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/tags",
+      "source": "src/app/api/tags/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tags",
+      "source": "src/app/api/tags/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/translator/console-logs",
+      "source": "src/app/api/translator/console-logs/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/translator/console-logs",
+      "source": "src/app/api/translator/console-logs/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/translator/console-logs/stream",
+      "source": "src/app/api/translator/console-logs/stream/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/translator/load",
+      "source": "src/app/api/translator/load/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/translator/save",
+      "source": "src/app/api/translator/save/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/translator/send",
+      "source": "src/app/api/translator/send/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/translator/translate",
+      "source": "src/app/api/translator/translate/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/usage/{connectionId}/claude-reset",
+      "source": "src/app/api/usage/[connectionId]/claude-reset/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/{connectionId}/codex-reset-credits",
+      "source": "src/app/api/usage/[connectionId]/codex-reset-credits/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/usage/{connectionId}/codex-reset-credits",
+      "source": "src/app/api/usage/[connectionId]/codex-reset-credits/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/{connectionId}",
+      "source": "src/app/api/usage/[connectionId]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/chart",
+      "source": "src/app/api/usage/chart/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/history",
+      "source": "src/app/api/usage/history/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/logs",
+      "source": "src/app/api/usage/logs/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/providers",
+      "source": "src/app/api/usage/providers/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/request-details/{id}",
+      "source": "src/app/api/usage/request-details/[id]/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/request-details",
+      "source": "src/app/api/usage/request-details/route.js",
+      "status": "registered-needs-contract-review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/request-logs",
+      "source": "src/app/api/usage/request-logs/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/stats",
+      "source": "src/app/api/usage/stats/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/stream",
+      "source": "src/app/api/usage/stream/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/api/chat",
+      "source": "src/app/api/v1/api/chat/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/api/chat",
+      "source": "src/app/api/v1/api/chat/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/audio/speech",
+      "source": "src/app/api/v1/audio/speech/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audio/speech",
+      "source": "src/app/api/v1/audio/speech/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/audio/transcriptions",
+      "source": "src/app/api/v1/audio/transcriptions/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audio/transcriptions",
+      "source": "src/app/api/v1/audio/transcriptions/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/audio/voices",
+      "source": "src/app/api/v1/audio/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audio/voices",
+      "source": "src/app/api/v1/audio/voices/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/chat/completions",
+      "source": "src/app/api/v1/chat/completions/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "source": "src/app/api/v1/chat/completions/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/embeddings",
+      "source": "src/app/api/v1/embeddings/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/embeddings",
+      "source": "src/app/api/v1/embeddings/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/images/generations",
+      "source": "src/app/api/v1/images/generations/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/images/generations",
+      "source": "src/app/api/v1/images/generations/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/messages/count_tokens",
+      "source": "src/app/api/v1/messages/count_tokens/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/messages/count_tokens",
+      "source": "src/app/api/v1/messages/count_tokens/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/messages",
+      "source": "src/app/api/v1/messages/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/messages",
+      "source": "src/app/api/v1/messages/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/models/{kind}",
+      "source": "src/app/api/v1/models/[kind]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/models/{kind}",
+      "source": "src/app/api/v1/models/[kind]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/models/info",
+      "source": "src/app/api/v1/models/info/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/models/info",
+      "source": "src/app/api/v1/models/info/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/models",
+      "source": "src/app/api/v1/models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/models",
+      "source": "src/app/api/v1/models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/responses/compact",
+      "source": "src/app/api/v1/responses/compact/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/responses/compact",
+      "source": "src/app/api/v1/responses/compact/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/responses",
+      "source": "src/app/api/v1/responses/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/responses",
+      "source": "src/app/api/v1/responses/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/search",
+      "source": "src/app/api/v1/search/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/search",
+      "source": "src/app/api/v1/search/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/videos/{id}",
+      "source": "src/app/api/v1/videos/[id]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/videos/{id}",
+      "source": "src/app/api/v1/videos/[id]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/videos/edits",
+      "source": "src/app/api/v1/videos/edits/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/videos/edits",
+      "source": "src/app/api/v1/videos/edits/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/videos/extensions",
+      "source": "src/app/api/v1/videos/extensions/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/videos/extensions",
+      "source": "src/app/api/v1/videos/extensions/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/videos/generations",
+      "source": "src/app/api/v1/videos/generations/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/videos/generations",
+      "source": "src/app/api/v1/videos/generations/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1/web/fetch",
+      "source": "src/app/api/v1/web/fetch/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/web/fetch",
+      "source": "src/app/api/v1/web/fetch/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1beta/models/{...path}",
+      "source": "src/app/api/v1beta/models/[...path]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1beta/models/{...path}",
+      "source": "src/app/api/v1beta/models/[...path]/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/v1beta/models",
+      "source": "src/app/api/v1beta/models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1beta/models",
+      "source": "src/app/api/v1beta/models/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "GET",
+      "path": "/api/version",
+      "source": "src/app/api/version/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/version/shutdown",
+      "source": "src/app/api/version/shutdown/route.js",
+      "status": "not-proven"
+    },
+    {
+      "method": "POST",
+      "path": "/api/version/update",
+      "source": "src/app/api/version/update/route.js",
+      "status": "not-proven"
+    }
+  ]
+}

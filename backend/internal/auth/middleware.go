@@ -111,8 +111,7 @@ func (h *HTTP) Middleware(next http.Handler) http.Handler {
 		}
 		if isAlwaysProtected(path) {
 			if !h.hasValidCLIToken(r) {
-				ok, _ := h.authenticated(r)
-				if !ok {
+				if h.session(r) == nil {
 					w.Header().Set("Cache-Control", "no-store")
 					reply(w, http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 					return
