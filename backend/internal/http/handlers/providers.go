@@ -9,6 +9,7 @@ import (
 )
 
 type Providers struct {
+	Logs             *LogEndpoints
 	Aliases          *ModelAliases
 	Models           *ModelsEndpoints
 	Usage            *UsageEndpoints

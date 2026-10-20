@@ -106,6 +106,20 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Head("/api/usage/providers", withoutBody(usage.Providers))
 			r.Options("/api/usage/providers", options("GET, HEAD, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Logs != nil {
+			logs := providerAPI[0].Logs
+			for _, path := range []string{"/api/usage/logs", "/api/usage/request-logs"} {
+				r.Get(path, logs.RecentLogs)
+				r.Head(path, withoutBody(logs.RecentLogs))
+				r.Options(path, options("GET, HEAD, OPTIONS"))
+			}
+			r.Get("/api/usage/request-details", logs.RequestDetails)
+			r.Head("/api/usage/request-details", withoutBody(logs.RequestDetails))
+			r.Options("/api/usage/request-details", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/usage/request-details/{id}", logs.RequestDetailByID)
+			r.Head("/api/usage/request-details/{id}", withoutBody(logs.RequestDetailByID))
+			r.Options("/api/usage/request-details/{id}", options("GET, HEAD, OPTIONS"))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
