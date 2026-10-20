@@ -318,13 +318,32 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 
 func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 	action := chi.URLParam(r, "action")
-	if chi.URLParam(r, "provider") == "github" {
+	provider := chi.URLParam(r, "provider")
+	if provider == "github" {
 		if r.Method == "GET" && action == "device-code" {
 			h.githubDevice(w, r)
 			return
 		}
 		if r.Method == "POST" && action == "poll" {
 			h.githubPoll(w, r)
+			return
+		}
+	}
+	// Device-code flows genéricos: qwen (PKCE), kimi/kilocode/glm (sem PKCE).
+	if r.Method == "GET" && action == "device-code" {
+		switch provider {
+		case "qwen", "kimi", "kimi-coding", "kilocode", "glm":
+			h.genericDeviceCode(w, r, provider)
+			return
+		}
+	}
+	if r.Method == "POST" && action == "poll" {
+		switch provider {
+		case "qwen":
+			h.genericDevicePoll(w, r, provider, true, defaultTokenMap)
+			return
+		case "kimi", "kimi-coding", "kilocode", "glm":
+			h.genericDevicePoll(w, r, provider, false, defaultTokenMap)
 			return
 		}
 	}
