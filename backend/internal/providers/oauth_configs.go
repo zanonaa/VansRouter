@@ -1,0 +1,37 @@
+package providers
+
+import (
+	_ "embed"
+	"encoding/json"
+)
+
+//go:embed oauth-configs.json
+var oauthConfigs []byte
+
+type OAuthConfig struct {
+	ClientID            string            `json:"clientId"`
+	ClientSecret        string            `json:"clientSecret"`
+	TokenURL            string            `json:"tokenUrl"`
+	AuthorizeURL        string            `json:"authorizeUrl"`
+	RedirectURI         string            `json:"redirectUri"`
+	CodeChallengeMethod string            `json:"codeChallengeMethod"`
+	Scope               string            `json:"scope"`
+	Scopes              []string          `json:"scopes"`
+	ExtraParams         map[string]string `json:"extraParams"`
+	FixedPort           int               `json:"fixedPort"`
+	CallbackPath        string            `json:"callbackPath"`
+}
+
+func OAuthConfigs() map[string]OAuthConfig {
+	var all map[string]OAuthConfig
+	if err := json.Unmarshal(oauthConfigs, &all); err != nil {
+		panic(err)
+	}
+	return all
+}
+func GetOAuthConfig(id string) *OAuthConfig {
+	if c, ok := OAuthConfigs()[id]; ok {
+		return &c
+	}
+	return nil
+}
