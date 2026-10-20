@@ -148,7 +148,7 @@ func (h *HTTP) SettingsPatch(w http.ResponseWriter, r *http.Request) {
 			reply(w, 403, map[string]string{"error": mustChangeOnly})
 			return
 		}
-	} else if session == nil {
+	} else if session == nil && !h.hasValidCLIToken(r) && settings["requireLogin"] != false {
 		// Defesa em profundidade: o guard já recusa, mas o handler exige sessão ou grant.
 		reply(w, 401, map[string]string{"error": "Unauthorized"})
 		return

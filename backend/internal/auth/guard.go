@@ -3,8 +3,7 @@ package auth
 import "net/http"
 
 // guardAutenticado reproduz isAuthenticated do dashboardGuard: sessão JWT ou
-// requireLogin=false. O token CLI (x-9r-cli-token/machineId) ainda não está
-// implementado; chamadas que dependem dele serão recusadas até o lote próprio.
+// requireLogin=false. Token CLI é validado separadamente pelos guards.
 func (h *HTTP) authenticated(r *http.Request) (bool, error) {
 	if h.session(r) != nil {
 		return true, nil
@@ -21,6 +20,10 @@ func (h *HTTP) authenticated(r *http.Request) (bool, error) {
 // token CLI ou requireLogin=false.
 func (h *HTTP) SettingsGuard(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if h.hasValidCLIToken(r) {
+			next(w, r)
+			return
+		}
 		if r.Method == http.MethodPatch && h.grantOnly(r) {
 			next(w, r)
 			return
@@ -36,9 +39,13 @@ func (h *HTTP) SettingsGuard(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // LocalOnlyGuard reproduz canAccessLocalOnlyRoute para /api/auth/reset-password:
-// operador local autenticado passa; token CLI ainda não implementado.
+// operador local autenticado ou token CLI válido passa.
 func (h *HTTP) LocalOnlyGuard(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if h.hasValidCLIToken(r) {
+			next(w, r)
+			return
+		}
 		ok, err := h.authenticated(r)
 		if err == nil && ok && local(r) {
 			next(w, r)
