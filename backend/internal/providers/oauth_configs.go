@@ -9,6 +9,16 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	ProviderID          string            `json:"providerId"`
+	CLIInitURL          string            `json:"cliInitUrl"`
+	CLIPollURL          string            `json:"cliPollUrl"`
+	BusinessLoginURL    string            `json:"businessLoginUrl"`
+	PlanAPIKeyName      string            `json:"planApiKeyName"`
+	InitiateURL         string            `json:"initiateUrl"`
+	PollURLBase         string            `json:"pollUrlBase"`
+	APIBaseURL          string            `json:"apiBaseUrl"`
+	AuthorizeDeviceURL  string            `json:"authorizeDeviceUrl"`
+	ProjectURL          string            `json:"projectUrl"`
 	DeviceCodeURL       string            `json:"deviceCodeUrl"`
 	CopilotTokenURL     string            `json:"copilotTokenUrl"`
 	UserInfoURL         string            `json:"userInfoUrl"`

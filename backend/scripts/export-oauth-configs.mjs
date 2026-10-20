@@ -1,11 +1,21 @@
 // Exporta as configs OAuth reais do registry original para o snapshot Go.
 import registry from '../../open-sse/providers/registry/index.js';
+import { GOOGLE_OAUTH_CLIENT, ANTIGRAVITY_OAUTH_CLIENT } from '../../open-sse/providers/shared.js';
 import { writeFile } from 'node:fs/promises';
 const out = {};
 for (const entry of registry) {
   if (!entry.oauth) continue;
-  const o = entry.oauth;
+  const o = { ...(entry.id === 'gemini-cli' ? GOOGLE_OAUTH_CLIENT : entry.id === 'antigravity' ? ANTIGRAVITY_OAUTH_CLIENT : {}), ...entry.oauth };
   out[entry.id] = {
+    providerId: o.providerId || null,
+    cliInitUrl: o.cliInitUrl || null,
+    cliPollUrl: o.cliPollUrl || null,
+    businessLoginUrl: o.businessLoginUrl || null,
+    planApiKeyName: o.planApiKeyName || null,
+    initiateUrl: o.initiateUrl || null,
+    pollUrlBase: o.pollUrlBase || null,
+    apiBaseUrl: o.apiBaseUrl || null,
+    authorizeDeviceUrl: o.authorizeDeviceUrl || null,
     deviceCodeUrl: o.deviceCodeUrl || null,
     copilotTokenUrl: o.copilotTokenUrl || null,
     userInfoUrl: o.userInfoUrl || null,
