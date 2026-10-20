@@ -1,0 +1,123 @@
+[
+  {
+    "method": "createProviderNode",
+    "args": [
+      {
+        "id": "n",
+        "type": "openai-compatible",
+        "name": "Node",
+        "prefix": "p",
+        "baseUrl": "https://example.test/v1",
+        "apiType": "chat",
+        "ignored": "not stored"
+      }
+    ],
+    "expected": {
+      "id": "n",
+      "type": "openai-compatible",
+      "name": "Node",
+      "prefix": "p",
+      "apiType": "chat",
+      "baseUrl": "https://example.test/v1"
+    }
+  },
+  {
+    "method": "getProviderNodeById",
+    "args": [
+      "n"
+    ],
+    "expected": {
+      "prefix": "p",
+      "apiType": "chat",
+      "baseUrl": "https://example.test/v1",
+      "id": "n",
+      "type": "openai-compatible",
+      "name": "Node"
+    }
+  },
+  {
+    "method": "updateProviderNode",
+    "args": [
+      "n",
+      {
+        "name": "Updated",
+        "extra": {
+          "preserved": true
+        },
+        "prefix": null
+      }
+    ],
+    "expected": {
+      "prefix": null,
+      "apiType": "chat",
+      "baseUrl": "https://example.test/v1",
+      "id": "n",
+      "type": "openai-compatible",
+      "name": "Updated",
+      "extra": {
+        "preserved": true
+      }
+    }
+  },
+  {
+    "method": "getProviderNodes",
+    "args": [
+      {
+        "type": "other"
+      }
+    ],
+    "expected": []
+  },
+  {
+    "method": "getProviderNodes",
+    "args": [
+      {
+        "type": "openai-compatible"
+      }
+    ],
+    "expected": [
+      {
+        "prefix": null,
+        "apiType": "chat",
+        "baseUrl": "https://example.test/v1",
+        "extra": {
+          "preserved": true
+        },
+        "id": "n",
+        "type": "openai-compatible",
+        "name": "Updated"
+      }
+    ]
+  },
+  {
+    "method": "getProviderNodeById",
+    "args": [
+      "missing"
+    ],
+    "expected": null
+  },
+  {
+    "method": "deleteProviderNode",
+    "args": [
+      "n"
+    ],
+    "expected": {
+      "prefix": null,
+      "apiType": "chat",
+      "baseUrl": "https://example.test/v1",
+      "extra": {
+        "preserved": true
+      },
+      "id": "n",
+      "type": "openai-compatible",
+      "name": "Updated"
+    }
+  },
+  {
+    "method": "deleteProviderNode",
+    "args": [
+      "n"
+    ],
+    "expected": null
+  }
+]

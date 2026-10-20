@@ -1,0 +1,161 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools",
+    "status": 200,
+    "body": {
+      "proxyPools": [
+        {
+          "id": "a",
+          "name": "A",
+          "isActive": true
+        },
+        {
+          "id": "b",
+          "name": "B",
+          "isActive": false
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools?includeUsage=true",
+    "status": 200,
+    "body": {
+      "proxyPools": [
+        {
+          "id": "a",
+          "name": "A",
+          "isActive": true,
+          "boundConnectionCount": 2
+        },
+        {
+          "id": "b",
+          "name": "B",
+          "isActive": false,
+          "boundConnectionCount": 1
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools?isActive=false&includeUsage=true",
+    "status": 200,
+    "body": {
+      "proxyPools": [
+        {
+          "id": "b",
+          "name": "B",
+          "isActive": false,
+          "boundConnectionCount": 1
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools?isActive=invalid",
+    "status": 200,
+    "body": {
+      "proxyPools": [
+        {
+          "id": "a",
+          "name": "A",
+          "isActive": true
+        },
+        {
+          "id": "b",
+          "name": "B",
+          "isActive": false
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools?includeUsage=false",
+    "status": 200,
+    "body": {
+      "proxyPools": [
+        {
+          "id": "a",
+          "name": "A",
+          "isActive": true
+        },
+        {
+          "id": "b",
+          "name": "B",
+          "isActive": false
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools/a",
+    "status": 200,
+    "body": {
+      "proxyPool": {
+        "id": "a",
+        "name": "A",
+        "isActive": true
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools/b",
+    "status": 200,
+    "body": {
+      "proxyPool": {
+        "id": "b",
+        "name": "B",
+        "isActive": false
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/proxy-pools/missing",
+    "status": 404,
+    "body": {
+      "error": "Proxy pool not found"
+    }
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/proxy-pools/a",
+    "status": 409,
+    "body": {
+      "error": "Proxy pool is currently in use",
+      "boundConnectionCount": 2
+    }
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/proxy-pools/b",
+    "status": 409,
+    "body": {
+      "error": "Proxy pool is currently in use",
+      "boundConnectionCount": 1
+    }
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/proxy-pools/missing",
+    "status": 404,
+    "body": {
+      "error": "Proxy pool not found"
+    }
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/proxy-pools/free",
+    "status": 200,
+    "body": {
+      "success": true
+    }
+  }
+]

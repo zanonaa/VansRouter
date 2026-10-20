@@ -36,14 +36,25 @@ func TestMigrateFreshAndUpgrade(t *testing.T) {
 		t.Fatal("unknown table lost")
 	}
 	backups, err := filepath.Glob(filepath.Join(dir, "db", "backups", "*.sqlite"))
-	if err != nil || len(backups) == 0 {
-		t.Fatalf("backup missing: %v %v", backups, err)
+	if err != nil || len(backups) != 0 {
+		t.Fatalf("unchanged boot created backup: %v %v", backups, err)
 	}
 	if _, err = db.Exec(`UPDATE _meta SET value='1' WHERE key='schemaVersion'`); err != nil {
 		t.Fatal(err)
 	}
 	if err = Migrate(ctx, db, dir); err != nil {
 		t.Fatal(err)
+	}
+	backups, _ = filepath.Glob(filepath.Join(dir, "db", "backups", "*.sqlite"))
+	if len(backups) != 1 {
+		t.Fatalf("upgrade backup count: %d", len(backups))
+	}
+	if err = Migrate(ctx, db, dir); err != nil {
+		t.Fatal(err)
+	}
+	backups, _ = filepath.Glob(filepath.Join(dir, "db", "backups", "*.sqlite"))
+	if len(backups) != 1 {
+		t.Fatal("repeat boot created backup")
 	}
 	var value any
 	if err = db.QueryRow(`SELECT allowedProviders FROM apiKeys WHERE id='k'`).Scan(&value); err != nil || value != nil {
@@ -53,7 +64,7 @@ func TestMigrateFreshAndUpgrade(t *testing.T) {
 func TestMigrateLegacyJSONRefused(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "db.json"), []byte(`{"settings":{"password":"existing"}}`), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "db.json"), []byte(`{invalid`), 0600); err != nil {
 		t.Fatal(err)
 	}
 	db, err := Open(ctx, dir, "NORMAL")

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,32 +14,41 @@ func specific(c map[string]any) map[string]any {
 	v, _ := c["providerSpecificData"].(map[string]any)
 	return v
 }
+func identityEqual(a, b any) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	ta, tb := reflect.TypeOf(a), reflect.TypeOf(b)
+	// Objetos JS lidos separadamente não compartilham identidade; evitar panic
+	// de comparar maps/slices vindos de JSON arbitrário.
+	return ta == tb && ta.Comparable() && a == b
+}
 func sameIdentity(old, data map[string]any) bool {
 	incoming, existing := specific(data), specific(old)
 	if data["provider"] == "cursor" && data["authType"] == "oauth" && jsonTruthy(incoming["machineId"]) {
-		return old["provider"] == "cursor" && existing["machineId"] == incoming["machineId"]
+		return old["provider"] == "cursor" && identityEqual(existing["machineId"], incoming["machineId"])
 	}
 	if data["authType"] == "oauth" && jsonTruthy(data["email"]) {
-		if old["authType"] != "oauth" || old["email"] != data["email"] {
+		if old["authType"] != "oauth" || !identityEqual(old["email"], data["email"]) {
 			return false
 		}
 		iw, ew := incoming["chatgptAccountId"], existing["chatgptAccountId"]
 		if data["provider"] == "codex" {
-			return jsonTruthy(iw) && jsonTruthy(ew) && iw == ew
+			return jsonTruthy(iw) && jsonTruthy(ew) && identityEqual(iw, ew)
 		}
 		if jsonTruthy(iw) && jsonTruthy(ew) {
-			return iw == ew
+			return identityEqual(iw, ew)
 		}
 		if jsonTruthy(iw) || jsonTruthy(ew) {
 			return false
 		}
 		iu, eu := incoming["username"], existing["username"]
 		if jsonTruthy(iu) && jsonTruthy(eu) {
-			return iu == eu
+			return identityEqual(iu, eu)
 		}
 		return !jsonTruthy(iu) && !jsonTruthy(eu)
 	}
-	return data["authType"] == "apikey" && jsonTruthy(data["name"]) && old["authType"] == "apikey" && old["name"] == data["name"]
+	return data["authType"] == "apikey" && jsonTruthy(data["name"]) && old["authType"] == "apikey" && identityEqual(old["name"], data["name"])
 }
 
 var optionalConnectionFields = []string{"displayName", "email", "globalPriority", "defaultModel", "accessToken", "refreshToken", "expiresAt", "tokenType", "scope", "projectId", "apiKey", "testStatus", "lastTested", "lastError", "lastErrorAt", "rateLimitedUntil", "expiresIn", "errorCode", "consecutiveUseCount", "idToken", "lastRefreshAt"}

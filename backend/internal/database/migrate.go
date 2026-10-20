@@ -59,15 +59,56 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 	if err := db.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").Scan(&tables); err != nil {
 		return err
 	}
+	// Só ler JSON quando o banco puder recebê-lo. Instalações Node antigas
+	// podem manter os arquivos originais sem marcador, com banco já populado.
+	legacy := legacyFiles{}
+	var err error
 	if tables == 0 {
-		if _, err := os.Stat(filepath.Join(dataDir, "db", ".migrated-from-json")); os.IsNotExist(err) {
-			for _, name := range []string{"db.json", "usage.json", "disabledModels.json", "request-details.json"} {
-				if _, err := os.Stat(filepath.Join(dataDir, name)); err == nil {
-					return fmt.Errorf("importação JSON legada necessária (%s); arquivos preservados, inicialização recusada", name)
-				} else if !os.IsNotExist(err) {
+		legacy, err = readLegacy(dataDir)
+	} else {
+		var imported int
+		if scanErr := db.QueryRowContext(ctx, `SELECT count(*) FROM _meta WHERE key='goLegacyImported'`).Scan(&imported); scanErr == nil && imported > 0 {
+			// Reconstituir marcador sem reler arquivos que não são mais fonte de verdade.
+			if _, statErr := os.Stat(filepath.Join(dataDir, "db", ".migrated-from-json")); os.IsNotExist(statErr) {
+				if err = os.WriteFile(filepath.Join(dataDir, "db", ".migrated-from-json"), []byte("committed\n"), 0600); err != nil {
 					return err
 				}
 			}
+		} else {
+			legacy, err = readLegacy(dataDir)
+		}
+	}
+	if err != nil {
+		return err
+	}
+	if tables > 0 && len(legacy) > 0 {
+		var imported int
+		if err = db.QueryRowContext(ctx, `SELECT count(*) FROM _meta WHERE key='goLegacyImported'`).Scan(&imported); err != nil {
+			return fmt.Errorf("banco existente com JSON legado exige revisão antes de importar: %w", err)
+		}
+		if imported == 0 {
+			for _, table := range []string{"settings", "providerConnections", "providerNodes", "proxyPools", "apiKeys", "combos", "usageHistory", "usageDaily", "kv", "requestDetails"} {
+				var count int
+				if err = db.QueryRowContext(ctx, "SELECT count(*) FROM "+quoted(table)).Scan(&count); err != nil {
+					return err
+				}
+				if count > 0 {
+					return fmt.Errorf("importação legada recusada: banco existente contém dados em %s", table)
+				}
+			}
+		}
+	}
+
+	needsChange, err := schemaNeedsChange(ctx, db, schema)
+	if err != nil {
+		return err
+	}
+	if !needsChange {
+		return importLegacy(ctx, db, dataDir, legacy)
+	}
+	if len(legacy) > 0 {
+		if err = os.MkdirAll(filepath.Join(dataDir, "db", "backups"), 0700); err != nil {
+			return err
 		}
 	}
 	if tables > 0 {
@@ -89,6 +130,9 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 		}
 		if _, err = db.ExecContext(ctx, "VACUUM INTO ?", path); err != nil {
 			return fmt.Errorf("backup pré-schema: %w", err)
+		}
+		if err = os.Chmod(path, 0600); err != nil {
+			return fmt.Errorf("proteger backup: %w", err)
 		}
 	}
 	tx, err := db.BeginTx(ctx, nil)
@@ -197,5 +241,8 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 			return err
 		}
 	}
-	return tx.Commit()
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return importLegacy(ctx, db, dataDir, legacy)
 }

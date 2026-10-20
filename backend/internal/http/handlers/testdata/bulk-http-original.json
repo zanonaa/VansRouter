@@ -1,0 +1,180 @@
+[
+  {
+    "input": {},
+    "status": 400,
+    "body": {
+      "error": "items must contain 1-500 connections"
+    }
+  },
+  {
+    "input": {
+      "items": []
+    },
+    "status": 400,
+    "body": {
+      "error": "items must contain 1-500 connections"
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "openai",
+          "name": "N"
+        }
+      ]
+    },
+    "status": 400,
+    "body": {
+      "error": "Every item requires a valid API-key provider, name, and apiKey"
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "openai",
+          "name": "N",
+          "apiKey": "x"
+        },
+        {
+          "provider": "openai",
+          "name": " N ",
+          "apiKey": "y"
+        }
+      ]
+    },
+    "status": 409,
+    "body": {
+      "error": "Duplicate provider/name in batch"
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "openai",
+          "name": " N ",
+          "apiKey": " x ",
+          "priority": 2.5
+        }
+      ]
+    },
+    "status": 201,
+    "body": {
+      "results": [
+        {
+          "provider": "openai",
+          "apiKey": "x",
+          "name": "N",
+          "priority": 1,
+          "testStatus": "unknown"
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "custom-embedding-missing",
+          "name": "N",
+          "apiKey": "x"
+        }
+      ]
+    },
+    "status": 404,
+    "body": {
+      "error": "Custom Embedding node not found"
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "openai-compatible-known",
+          "name": "N",
+          "apiKey": "x",
+          "providerSpecificData": {
+            "extra": true
+          }
+        }
+      ]
+    },
+    "status": 201,
+    "body": {
+      "results": [
+        {
+          "provider": "openai-compatible-known",
+          "apiKey": "x",
+          "name": "N",
+          "priority": 1,
+          "testStatus": "unknown",
+          "providerSpecificData": {
+            "extra": true,
+            "prefix": "n",
+            "apiType": "chat",
+            "baseUrl": "https://node.test/v1",
+            "nodeName": "Node"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "anthropic-compatible-known",
+          "name": "N",
+          "apiKey": "x",
+          "providerSpecificData": "abc"
+        }
+      ]
+    },
+    "status": 201,
+    "body": {
+      "results": [
+        {
+          "provider": "anthropic-compatible-known",
+          "apiKey": "x",
+          "name": "N",
+          "priority": 1,
+          "testStatus": "unknown",
+          "providerSpecificData": {
+            "0": "a",
+            "1": "b",
+            "2": "c",
+            "prefix": "n",
+            "baseUrl": "https://node.test/v1",
+            "nodeName": "Node"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "items": [
+        {
+          "provider": "openai",
+          "name": "N",
+          "apiKey": "x",
+          "priority": 0
+        }
+      ]
+    },
+    "status": 201,
+    "body": {
+      "results": [
+        {
+          "provider": "openai",
+          "apiKey": "x",
+          "name": "N",
+          "priority": 0,
+          "testStatus": "unknown"
+        }
+      ]
+    }
+  }
+]
