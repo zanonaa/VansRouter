@@ -153,6 +153,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Post("/api/settings/database", dbExport.Post)
 			r.Options("/api/settings/database", options("GET, HEAD, OPTIONS, POST"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil {
+			r.Post("/api/settings/proxy-test", handlers.ProxyTestSettings{}.Post)
+			r.Options("/api/settings/proxy-test", options("OPTIONS, POST"))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
