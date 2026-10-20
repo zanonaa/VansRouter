@@ -19,6 +19,10 @@ func New(readiness ...handlers.Readiness) http.Handler {
 }
 
 func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handler {
+	return NewWithNodes(ready, authentication, nil)
+}
+
+func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *handlers.Nodes, providerAPI ...*handlers.Providers) http.Handler {
 	h := handlers.Bootstrap{}
 	h.Ready = ready
 	r := chi.NewRouter()
@@ -69,6 +73,48 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
 		r.Post("/api/auth/oidc/test", authentication.OIDCTest)
+	}
+	if authentication != nil && nodes != nil {
+		providerHandlers := handlers.Providers{Connections: nodes.Connections, Nodes: nodes.Store}
+		if nodes.Connections != nil {
+			r.Get("/api/providers", providerHandlers.List)
+			r.Head("/api/providers", withoutBody(providerHandlers.List))
+		}
+		r.Get("/api/provider-nodes", nodes.List)
+		r.Head("/api/provider-nodes", withoutBody(nodes.List))
+		r.Post("/api/provider-nodes", nodes.Create)
+		r.Options("/api/provider-nodes", options("GET, HEAD, OPTIONS, POST"))
+		if nodes.Mutations != nil && nodes.Connections != nil {
+			r.Put("/api/provider-nodes/{id}", nodes.Update)
+			r.Delete("/api/provider-nodes/{id}", nodes.Delete)
+			r.Options("/api/provider-nodes/{id}", options("DELETE, OPTIONS, PUT"))
+		}
+	}
+	if authentication != nil && len(providerAPI) > 0 && providerAPI[0] != nil {
+		if pools := providerAPI[0].Pools; pools != nil {
+			r.Get("/api/proxy-pools", pools.List)
+			r.Head("/api/proxy-pools", withoutBody(pools.List))
+			r.Post("/api/proxy-pools", pools.Create)
+			r.Options("/api/proxy-pools", options("GET, HEAD, OPTIONS, POST"))
+			r.Get("/api/proxy-pools/{id}", pools.Get)
+			r.Head("/api/proxy-pools/{id}", withoutBody(pools.Get))
+			r.Put("/api/proxy-pools/{id}", pools.Update)
+			r.Delete("/api/proxy-pools/{id}", pools.Delete)
+			r.Options("/api/proxy-pools/{id}", options("DELETE, GET, HEAD, OPTIONS, PUT"))
+		}
+		r.Post("/api/providers", providerAPI[0].Create)
+		if providerAPI[0].CreateBulk != nil {
+			r.Post("/api/providers/bulk", providerAPI[0].Bulk)
+			r.Options("/api/providers/bulk", options("OPTIONS, POST"))
+		}
+		r.Options("/api/providers", options("GET, HEAD, OPTIONS, POST"))
+		if providerAPI[0].GetConnection != nil && providerAPI[0].UpdateConnection != nil && providerAPI[0].DeleteConnection != nil {
+			r.Get("/api/providers/{id}", providerAPI[0].Get)
+			r.Head("/api/providers/{id}", withoutBody(providerAPI[0].Get))
+			r.Put("/api/providers/{id}", providerAPI[0].Update)
+			r.Delete("/api/providers/{id}", providerAPI[0].Delete)
+			r.Options("/api/providers/{id}", options("DELETE, GET, HEAD, OPTIONS, PUT"))
+		}
 	}
 	return r
 }
