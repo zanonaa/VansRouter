@@ -70,6 +70,13 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 			}
 		}
 	}
+	needsChange, err := schemaNeedsChange(ctx, db, schema)
+	if err != nil {
+		return err
+	}
+	if !needsChange {
+		return nil
+	}
 	if tables > 0 {
 		dir := filepath.Join(dataDir, "db", "backups")
 		if err := os.MkdirAll(dir, 0700); err != nil {
