@@ -9,6 +9,7 @@ import (
 )
 
 type Providers struct {
+	Overrides        *Overrides
 	Shutdown         *Shutdown
 	Pricing          *Pricing
 	Logs             *LogEndpoints

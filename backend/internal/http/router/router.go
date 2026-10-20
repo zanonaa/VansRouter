@@ -139,6 +139,13 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Post("/api/shutdown", providerAPI[0].Shutdown.Post)
 			r.Options("/api/shutdown", options("OPTIONS, POST"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Overrides != nil {
+			overrides := providerAPI[0].Overrides
+			r.Get("/api/providers/{id}/overrides", overrides.Get)
+			r.Head("/api/providers/{id}/overrides", withoutBody(overrides.Get))
+			r.Put("/api/providers/{id}/overrides", overrides.Put)
+			r.Options("/api/providers/{id}/overrides", options("GET, HEAD, OPTIONS, PUT"))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
