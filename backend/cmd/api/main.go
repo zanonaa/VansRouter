@@ -88,12 +88,19 @@ func run() error {
 		EnableRequestLogs: os.Getenv("ENABLE_REQUEST_LOGS") == "true",
 		EnableTranslator:  os.Getenv("ENABLE_TRANSLATOR") == "true",
 	}
+	shutdownRequested := make(chan struct{}, 1)
+	shutdownHandler := &handlers.Shutdown{Request: func() {
+		select {
+		case shutdownRequested <- struct{}{}:
+		default:
+		}
+	}}
 	server := &http.Server{
 		Addr: cfg.Address,
 		Handler: router.NewWithNodes(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}, &handlers.Providers{Pricing: &handlers.Pricing{Store: database.Pricing{DB: db}}, Logs: &handlers.LogEndpoints{Store: database.Usage{DB: db}, Connections: database.Connections{DB: db}}, Usage: &handlers.UsageEndpoints{Usage: database.Usage{DB: db}, Nodes: database.Nodes{DB: db}}, Models: &handlers.ModelsEndpoints{Disabled: handlers.DisabledModels{DB: db}, Aliases: database.ModelAliases{DB: db}}, Aliases: &handlers.ModelAliases{Store: database.ModelAliases{DB: db}}, Combos: &handlers.Combos{Store: database.Combos{DB: db}}, CreateBulk: (database.Connections{DB: db}).CreateBulk, Pools: &handlers.ProxyPools{Store: database.ProxyPools{DB: db}, Connections: database.Connections{DB: db}}, GetConnection: (database.Connections{DB: db}).Get, UpdateConnection: (database.Connections{DB: db}).Update, DeleteConnection: (database.Connections{DB: db}).Delete, CreateConnection: (database.Connections{DB: db}).Create, GetNode: (database.Nodes{DB: db}).Get, GetPool: (database.ProxyPools{DB: db}).Get}),
+		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}, &handlers.Providers{Shutdown: shutdownHandler, Pricing: &handlers.Pricing{Store: database.Pricing{DB: db}}, Logs: &handlers.LogEndpoints{Store: database.Usage{DB: db}, Connections: database.Connections{DB: db}}, Usage: &handlers.UsageEndpoints{Usage: database.Usage{DB: db}, Nodes: database.Nodes{DB: db}}, Models: &handlers.ModelsEndpoints{Disabled: handlers.DisabledModels{DB: db}, Aliases: database.ModelAliases{DB: db}}, Aliases: &handlers.ModelAliases{Store: database.ModelAliases{DB: db}}, Combos: &handlers.Combos{Store: database.Combos{DB: db}}, CreateBulk: (database.Connections{DB: db}).CreateBulk, Pools: &handlers.ProxyPools{Store: database.ProxyPools{DB: db}, Connections: database.Connections{DB: db}}, GetConnection: (database.Connections{DB: db}).Get, UpdateConnection: (database.Connections{DB: db}).Update, DeleteConnection: (database.Connections{DB: db}).Delete, CreateConnection: (database.Connections{DB: db}).Create, GetNode: (database.Nodes{DB: db}).Get, GetPool: (database.ProxyPools{DB: db}).Get}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.
@@ -107,6 +114,13 @@ func run() error {
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
 	slog.Info("servidor Go iniciado", "endereco", listener.Addr().String())
+	go func() {
+		select {
+		case <-shutdownRequested:
+			stop()
+		case <-ctx.Done():
+		}
+	}()
 	select {
 	case err := <-done:
 		if errors.Is(err, http.ErrServerClosed) {
