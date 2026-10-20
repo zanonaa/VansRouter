@@ -10,6 +10,7 @@ import (
 
 type Providers struct {
 	Overrides        *Overrides
+	Database         *DatabaseExport
 	Shutdown         *Shutdown
 	Pricing          *Pricing
 	Logs             *LogEndpoints

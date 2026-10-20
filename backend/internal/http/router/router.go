@@ -146,6 +146,13 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Put("/api/providers/{id}/overrides", overrides.Put)
 			r.Options("/api/providers/{id}/overrides", options("GET, HEAD, OPTIONS, PUT"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Database != nil {
+			dbExport := providerAPI[0].Database
+			r.Get("/api/settings/database", dbExport.Get)
+			r.Head("/api/settings/database", withoutBody(dbExport.Get))
+			r.Post("/api/settings/database", dbExport.Post)
+			r.Options("/api/settings/database", options("GET, HEAD, OPTIONS, POST"))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
