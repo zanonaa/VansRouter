@@ -1,0 +1,123 @@
+[
+  {
+    "input": null,
+    "expected": {
+      "ok": true,
+      "value": null
+    }
+  },
+  {
+    "input": "",
+    "expected": {
+      "ok": true,
+      "value": null
+    }
+  },
+  {
+    "input": true,
+    "expected": {
+      "ok": true,
+      "value": 1
+    }
+  },
+  {
+    "input": false,
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": 0,
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": -1,
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": 1.5,
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": 4096,
+    "expected": {
+      "ok": true,
+      "value": 4096
+    }
+  },
+  {
+    "input": "4096",
+    "expected": {
+      "ok": true,
+      "value": 4096
+    }
+  },
+  {
+    "input": "0x100",
+    "expected": {
+      "ok": true,
+      "value": 256
+    }
+  },
+  {
+    "input": "0b100",
+    "expected": {
+      "ok": true,
+      "value": 4
+    }
+  },
+  {
+    "input": "0o10",
+    "expected": {
+      "ok": true,
+      "value": 8
+    }
+  },
+  {
+    "input": "  ",
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": [],
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": [
+      12
+    ],
+    "expected": {
+      "ok": true,
+      "value": 12
+    }
+  },
+  {
+    "input": {},
+    "expected": {
+      "ok": false,
+      "error": "context_length must be a positive integer"
+    }
+  },
+  {
+    "input": 2000001,
+    "expected": {
+      "ok": false,
+      "error": "context_length must not exceed 2000000"
+    }
+  }
+]

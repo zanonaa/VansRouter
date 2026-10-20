@@ -94,6 +94,17 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		}
 	}
 	if authentication != nil && len(providerAPI) > 0 && providerAPI[0] != nil {
+		if combos := providerAPI[0].Combos; combos != nil {
+			r.Get("/api/combos", combos.List)
+			r.Head("/api/combos", withoutBody(combos.List))
+			r.Post("/api/combos", combos.Create)
+			r.Options("/api/combos", options("GET, HEAD, OPTIONS, POST"))
+			r.Get("/api/combos/{id}", combos.Get)
+			r.Head("/api/combos/{id}", withoutBody(combos.Get))
+			r.Put("/api/combos/{id}", combos.Update)
+			r.Delete("/api/combos/{id}", combos.Delete)
+			r.Options("/api/combos/{id}", options("DELETE, GET, HEAD, OPTIONS, PUT"))
+		}
 		if pools := providerAPI[0].Pools; pools != nil {
 			r.Get("/api/proxy-pools", pools.List)
 			r.Head("/api/proxy-pools", withoutBody(pools.List))

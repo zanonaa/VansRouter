@@ -9,6 +9,7 @@ import (
 )
 
 type Providers struct {
+	Combos           *Combos
 	CreateBulk       func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools            *ProxyPools
 	GetConnection    func(context.Context, string) (map[string]any, error)

@@ -1,0 +1,97 @@
+[
+  {
+    "method": "getCombos",
+    "args": [],
+    "expected": []
+  },
+  {
+    "method": "createCombo",
+    "args": [
+      {
+        "name": "combo",
+        "models": [
+          "openai/model"
+        ],
+        "context_length": 4096
+      }
+    ],
+    "expected": {
+      "id": "fixture-id",
+      "name": "combo",
+      "kind": null,
+      "models": [
+        "openai/model"
+      ],
+      "context_length": 4096
+    }
+  },
+  {
+    "method": "getComboByName",
+    "args": [
+      "combo"
+    ],
+    "expected": {
+      "id": "fixture-id",
+      "name": "combo",
+      "kind": null,
+      "models": [
+        "openai/model"
+      ],
+      "context_length": 4096
+    }
+  },
+  {
+    "method": "getComboById",
+    "args": [
+      "missing"
+    ],
+    "expected": null
+  },
+  {
+    "method": "updateCombo",
+    "args": [
+      "fixture-id",
+      {
+        "name": "renamed",
+        "context_length": null,
+        "models": [],
+        "extra": "returned-only"
+      }
+    ],
+    "expected": {
+      "id": "fixture-id",
+      "name": "renamed",
+      "kind": null,
+      "models": [],
+      "context_length": null,
+      "extra": "returned-only"
+    }
+  },
+  {
+    "method": "getComboById",
+    "args": [
+      "fixture-id"
+    ],
+    "expected": {
+      "id": "fixture-id",
+      "name": "renamed",
+      "kind": null,
+      "models": [],
+      "context_length": null
+    }
+  },
+  {
+    "method": "deleteCombo",
+    "args": [
+      "fixture-id"
+    ],
+    "expected": true
+  },
+  {
+    "method": "deleteCombo",
+    "args": [
+      "fixture-id"
+    ],
+    "expected": false
+  }
+]
