@@ -42,7 +42,7 @@ func TestUsageEndpoints(t *testing.T) {
 	r := NewWithNodes(nil, authentication, nil, api)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/usage/history", nil))
-	if w.Code != 200 || !strings.Contains(w.Body.String(), `"promptTokens":100`) {
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"apiKeyMasked":"k***"`) {
 		t.Fatalf("history: %d %s", w.Code, w.Body.String())
 	}
 	w = httptest.NewRecorder()
