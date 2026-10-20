@@ -180,6 +180,18 @@ func (h *OAuthEngine) exchangeTokens(ctx context.Context, provider, code, redire
 func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 	if provider != "claude" && provider != "codex" {
+		if provider == "gemini-cli" || provider == "iflow" {
+			uri := r.URL.Query().Get("redirect_uri")
+			if uri == "" {
+				uri = "http://localhost:8080/callback"
+			}
+			if provider == "gemini-cli" {
+				h.geminiAuthorize(w, r, uri)
+			} else {
+				h.iflowAuthorize(w, r, uri)
+			}
+			return
+		}
 		nodeReply(w, 501, map[string]string{"error": "OAuth authorization not yet migrated for: " + provider})
 		return
 	}
@@ -252,6 +264,14 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 
 	if code == "" || redirectURI == "" || (codeVerifier == "" && !noPkceExchangeProviders[provider]) {
 		nodeReply(w, 400, map[string]string{"error": "Missing required fields"})
+		return
+	}
+	if provider == "gemini-cli" {
+		h.geminiExchange(w, r)
+		return
+	}
+	if provider == "iflow" {
+		h.iflowExchange(w, r)
 		return
 	}
 	if provider != "claude" && provider != "codex" {
