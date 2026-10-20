@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"time"
 )
 
@@ -76,10 +77,14 @@ func importLegacy(ctx context.Context, db *sql.DB, dir string, files legacyFiles
 	if err != nil {
 		return err
 	}
-	for name := range files {
+	for name, expected := range files {
 		raw, err := os.ReadFile(filepath.Join(dir, name))
 		if err != nil {
 			return err
+		}
+		var current map[string]any
+		if json.Unmarshal(raw, &current) != nil || !reflect.DeepEqual(current, expected) {
+			return fmt.Errorf("arquivo legado alterado durante migração: %s; reinicie com escritor legado parado", name)
 		}
 		if err = os.WriteFile(filepath.Join(backupDir, name), raw, 0600); err != nil {
 			return err
