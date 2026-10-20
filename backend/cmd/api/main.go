@@ -93,7 +93,7 @@ func run() error {
 		Handler: router.NewWithNodes(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}, &handlers.Providers{Combos: &handlers.Combos{Store: database.Combos{DB: db}}, CreateBulk: (database.Connections{DB: db}).CreateBulk, Pools: &handlers.ProxyPools{Store: database.ProxyPools{DB: db}, Connections: database.Connections{DB: db}}, GetConnection: (database.Connections{DB: db}).Get, UpdateConnection: (database.Connections{DB: db}).Update, DeleteConnection: (database.Connections{DB: db}).Delete, CreateConnection: (database.Connections{DB: db}).Create, GetNode: (database.Nodes{DB: db}).Get, GetPool: (database.ProxyPools{DB: db}).Get}),
+		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}, &handlers.Providers{Aliases: &handlers.ModelAliases{Store: database.ModelAliases{DB: db}}, Combos: &handlers.Combos{Store: database.Combos{DB: db}}, CreateBulk: (database.Connections{DB: db}).CreateBulk, Pools: &handlers.ProxyPools{Store: database.ProxyPools{DB: db}, Connections: database.Connections{DB: db}}, GetConnection: (database.Connections{DB: db}).Get, UpdateConnection: (database.Connections{DB: db}).Update, DeleteConnection: (database.Connections{DB: db}).Delete, CreateConnection: (database.Connections{DB: db}).Create, GetNode: (database.Nodes{DB: db}).Get, GetPool: (database.ProxyPools{DB: db}).Get}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.

@@ -1,0 +1,466 @@
+[
+  {
+    "method": "getModelAliases",
+    "args": [],
+    "expected": {},
+    "after": {
+      "aliases": []
+    }
+  },
+  {
+    "method": "setModelAlias",
+    "args": [
+      "fast",
+      "openai/gpt"
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "setModelAlias",
+    "args": [
+      "fast",
+      "openai/gpt-2"
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "getModelAliases",
+    "args": [],
+    "expected": {
+      "fast": "openai/gpt-2"
+    },
+    "after": {
+      "aliases": [
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "setModelAlias",
+    "args": [
+      "bad",
+      12345
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "addCustomModel",
+    "args": [
+      {
+        "providerAlias": "oa",
+        "id": "m",
+        "caps": {
+          "vision": true,
+          "bad": "x"
+        },
+        "transport": "gemini-live"
+      }
+    ],
+    "expected": true,
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"m\",\"caps\":{\"vision\":true,\"bad\":\"x\"},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "addCustomModel",
+    "args": [
+      {
+        "providerAlias": "oa",
+        "id": "m",
+        "name": "Updated",
+        "caps": {
+          "reasoning": true
+        }
+      }
+    ],
+    "expected": false,
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"Updated\",\"caps\":{\"reasoning\":true},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "getCustomModels",
+    "args": [],
+    "expected": [
+      {
+        "providerAlias": "oa",
+        "id": "m",
+        "type": "llm",
+        "name": "Updated",
+        "caps": {
+          "reasoning": true
+        },
+        "transport": "gemini-live"
+      }
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"Updated\",\"caps\":{\"reasoning\":true},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "addCustomModelsBulk",
+    "args": [
+      [
+        {
+          "providerAlias": "oa",
+          "id": "b",
+          "name": "B"
+        },
+        {
+          "providerAlias": "oa",
+          "id": "b"
+        },
+        {
+          "id": "skip"
+        },
+        {
+          "providerAlias": "oa",
+          "id": "c"
+        }
+      ]
+    ],
+    "expected": 2,
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"Updated\",\"caps\":{\"reasoning\":true},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "addCustomModel",
+    "args": [
+      {
+        "providerAlias": "oa",
+        "id": "stt",
+        "type": "stt",
+        "transport": "gemini-live"
+      }
+    ],
+    "expected": true,
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"Updated\",\"caps\":{\"reasoning\":true},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|stt|stt",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"stt\",\"type\":\"stt\",\"name\":\"stt\",\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "fast",
+          "value": "\"openai/gpt-2\""
+        }
+      ]
+    }
+  },
+  {
+    "method": "deleteModelAlias",
+    "args": [
+      "fast"
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"Updated\",\"caps\":{\"reasoning\":true},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|stt|stt",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"stt\",\"type\":\"stt\",\"name\":\"stt\",\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        }
+      ]
+    }
+  },
+  {
+    "method": "getModelAliases",
+    "args": [],
+    "expected": {
+      "bad": 12345
+    },
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|m|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"m\",\"type\":\"llm\",\"name\":\"Updated\",\"caps\":{\"reasoning\":true},\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|stt|stt",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"stt\",\"type\":\"stt\",\"name\":\"stt\",\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        }
+      ]
+    }
+  },
+  {
+    "method": "deleteCustomModel",
+    "args": [
+      {
+        "providerAlias": "oa",
+        "id": "m"
+      }
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|stt|stt",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"stt\",\"type\":\"stt\",\"name\":\"stt\",\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        }
+      ]
+    }
+  },
+  {
+    "method": "getCustomModels",
+    "args": [],
+    "expected": [
+      {
+        "providerAlias": "oa",
+        "id": "b",
+        "type": "llm",
+        "name": "B"
+      },
+      {
+        "providerAlias": "oa",
+        "id": "c",
+        "type": "llm",
+        "name": "c"
+      },
+      {
+        "providerAlias": "oa",
+        "id": "stt",
+        "type": "stt",
+        "name": "stt",
+        "transport": "gemini-live"
+      }
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|stt|stt",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"stt\",\"type\":\"stt\",\"name\":\"stt\",\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        }
+      ]
+    }
+  },
+  {
+    "method": "deleteCustomModel",
+    "args": [
+      {
+        "providerAlias": "oa",
+        "id": "missing"
+      }
+    ],
+    "after": {
+      "aliases": [
+        {
+          "scope": "customModels",
+          "key": "oa|b|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"b\",\"type\":\"llm\",\"name\":\"B\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|c|llm",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"c\",\"type\":\"llm\",\"name\":\"c\"}"
+        },
+        {
+          "scope": "customModels",
+          "key": "oa|stt|stt",
+          "value": "{\"providerAlias\":\"oa\",\"id\":\"stt\",\"type\":\"stt\",\"name\":\"stt\",\"transport\":\"gemini-live\"}"
+        },
+        {
+          "scope": "modelAliases",
+          "key": "bad",
+          "value": "12345"
+        }
+      ]
+    }
+  }
+]

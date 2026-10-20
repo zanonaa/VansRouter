@@ -69,6 +69,19 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Put("/{id}", authentication.APIKeyPut)
 			r.Delete("/{id}", authentication.APIKeyDelete)
 		})
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Aliases != nil {
+			aliases := providerAPI[0].Aliases
+			r.Get("/api/models/alias", aliases.List)
+			r.Head("/api/models/alias", withoutBody(aliases.List))
+			r.Put("/api/models/alias", aliases.Set)
+			r.Delete("/api/models/alias", aliases.Delete)
+			r.Options("/api/models/alias", options("DELETE, GET, HEAD, OPTIONS, PUT"))
+			r.Get("/api/models/custom", aliases.CustomList)
+			r.Head("/api/models/custom", withoutBody(aliases.CustomList))
+			r.Post("/api/models/custom", aliases.CustomAdd)
+			r.Delete("/api/models/custom", aliases.CustomDelete)
+			r.Options("/api/models/custom", options("DELETE, GET, HEAD, OPTIONS, POST"))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
