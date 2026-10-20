@@ -40,6 +40,9 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 	r.Get("/api/ready", h.Readiness)
 	r.Get("/api/init", h.Init)
 	r.Post("/api/locale", h.Locale)
+	r.Get("/api/tags", handlers.Tags)
+	r.Head("/api/tags", withoutBody(handlers.Tags))
+	r.Options("/api/tags", handlers.TagsOptions)
 	// Next.js fornece HEAD para GET e OPTIONS/Allow para métodos exportados.
 	r.Head("/api/health", withoutBody(h.Health))
 	r.Head("/api/ready", withoutBody(h.Readiness))
