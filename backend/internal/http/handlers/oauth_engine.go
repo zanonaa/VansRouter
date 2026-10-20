@@ -207,6 +207,14 @@ func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
 		h.kimchiAuthorize(w, r, uri)
 		return
 	}
+	if provider == "antigravity" {
+		uri := r.URL.Query().Get("redirect_uri")
+		if uri == "" {
+			uri = "http://localhost:8080/callback"
+		}
+		h.antigravityAuthorize(w, r, uri)
+		return
+	}
 	if provider != "claude" && provider != "codex" {
 		if provider == "gemini-cli" || provider == "iflow" {
 			uri := r.URL.Query().Get("redirect_uri")
@@ -257,6 +265,10 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 
 	if provider == "kimchi" {
 		h.kimchiExchange(w, r, body)
+		return
+	}
+	if provider == "antigravity" {
+		h.antigravityExchange(w, r, body)
 		return
 	}
 	if strings.HasPrefix(code, "eyJ") && strings.Contains(code, ".") {
