@@ -44,6 +44,11 @@ func TestLegacyImportAndRetry(t *testing.T) {
 	if err = os.Remove(filepath.Join(dir, "db", ".migrated-from-json")); err != nil {
 		t.Fatal(err)
 	}
+	// Após commit, JSON já não é fonte de verdade. Recuperar marcador mesmo
+	// se o original tiver sido alterado/corrompido posteriormente.
+	if err = os.WriteFile(filepath.Join(dir, "usage.json"), []byte(`invalid after commit`), 0600); err != nil {
+		t.Fatal(err)
+	}
 	if err = Migrate(ctx, db, dir); err != nil {
 		t.Fatal(err)
 	}

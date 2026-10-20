@@ -1,0 +1,154 @@
+[
+  {
+    "input": {},
+    "statuses": [],
+    "status": 400,
+    "body": {
+      "error": "Base URL and API key required"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "not a url",
+      "apiKey": "x"
+    },
+    "statuses": [],
+    "status": 400,
+    "body": {
+      "error": "Invalid URL format"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x"
+    },
+    "statuses": [
+      200
+    ],
+    "status": 200,
+    "body": {
+      "valid": true
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x"
+    },
+    "statuses": [
+      401
+    ],
+    "status": 200,
+    "body": {
+      "valid": false,
+      "error": "API key unauthorized"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x"
+    },
+    "statuses": [
+      404
+    ],
+    "status": 200,
+    "body": {
+      "valid": false,
+      "error": "Provider has no /models endpoint — enter a Model ID above to validate via chat instead"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x",
+      "modelId": "m"
+    },
+    "statuses": [
+      404,
+      200
+    ],
+    "status": 200,
+    "body": {
+      "valid": true,
+      "method": "chat"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x",
+      "type": "anthropic-compatible",
+      "modelId": "m"
+    },
+    "statuses": [
+      404,
+      400
+    ],
+    "status": 200,
+    "body": {
+      "valid": false,
+      "error": "Invalid model or bad request",
+      "method": "chat"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x",
+      "type": "custom-embedding"
+    },
+    "statuses": [],
+    "status": 200,
+    "body": {
+      "valid": false,
+      "error": "Model ID required for embedding validation"
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x",
+      "type": "custom-embedding",
+      "modelId": "m"
+    },
+    "statuses": [
+      200
+    ],
+    "data": {
+      "data": [
+        {
+          "embedding": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    "status": 200,
+    "body": {
+      "valid": true,
+      "method": "embeddings",
+      "dimensions": 2
+    }
+  },
+  {
+    "input": {
+      "baseUrl": "http://example.test",
+      "apiKey": "x",
+      "type": "custom-embedding",
+      "modelId": "m"
+    },
+    "statuses": [
+      503
+    ],
+    "text": "error",
+    "status": 200,
+    "body": {
+      "valid": false,
+      "error": "Embeddings request failed (503): error",
+      "method": "embeddings"
+    }
+  }
+]

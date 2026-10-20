@@ -59,7 +59,25 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 	if err := db.QueryRowContext(ctx, "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").Scan(&tables); err != nil {
 		return err
 	}
-	legacy, err := readLegacy(dataDir)
+	// Só ler JSON quando o banco puder recebê-lo. Instalações Node antigas
+	// podem manter os arquivos originais sem marcador, com banco já populado.
+	legacy := legacyFiles{}
+	var err error
+	if tables == 0 {
+		legacy, err = readLegacy(dataDir)
+	} else {
+		var imported int
+		if scanErr := db.QueryRowContext(ctx, `SELECT count(*) FROM _meta WHERE key='goLegacyImported'`).Scan(&imported); scanErr == nil && imported > 0 {
+			// Reconstituir marcador sem reler arquivos que não são mais fonte de verdade.
+			if _, statErr := os.Stat(filepath.Join(dataDir, "db", ".migrated-from-json")); os.IsNotExist(statErr) {
+				if err = os.WriteFile(filepath.Join(dataDir, "db", ".migrated-from-json"), []byte("committed\n"), 0600); err != nil {
+					return err
+				}
+			}
+		} else {
+			legacy, err = readLegacy(dataDir)
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -112,6 +130,9 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 		}
 		if _, err = db.ExecContext(ctx, "VACUUM INTO ?", path); err != nil {
 			return fmt.Errorf("backup pré-schema: %w", err)
+		}
+		if err = os.Chmod(path, 0600); err != nil {
+			return fmt.Errorf("proteger backup: %w", err)
 		}
 	}
 	tx, err := db.BeginTx(ctx, nil)
