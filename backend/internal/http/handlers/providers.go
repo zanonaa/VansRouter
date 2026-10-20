@@ -9,6 +9,7 @@ import (
 )
 
 type Providers struct {
+	Pools            *ProxyPools
 	GetConnection    func(context.Context, string) (map[string]any, error)
 	UpdateConnection func(context.Context, string, map[string]any) (map[string]any, error)
 	DeleteConnection func(context.Context, string) (bool, error)

@@ -91,6 +91,17 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		}
 	}
 	if authentication != nil && len(providerAPI) > 0 && providerAPI[0] != nil {
+		if pools := providerAPI[0].Pools; pools != nil {
+			r.Get("/api/proxy-pools", pools.List)
+			r.Head("/api/proxy-pools", withoutBody(pools.List))
+			r.Post("/api/proxy-pools", pools.Create)
+			r.Options("/api/proxy-pools", options("GET, HEAD, OPTIONS, POST"))
+			r.Get("/api/proxy-pools/{id}", pools.Get)
+			r.Head("/api/proxy-pools/{id}", withoutBody(pools.Get))
+			r.Put("/api/proxy-pools/{id}", pools.Update)
+			r.Delete("/api/proxy-pools/{id}", pools.Delete)
+			r.Options("/api/proxy-pools/{id}", options("DELETE, GET, HEAD, OPTIONS, PUT"))
+		}
 		r.Post("/api/providers", providerAPI[0].Create)
 		r.Options("/api/providers", options("GET, HEAD, OPTIONS, POST"))
 		if providerAPI[0].GetConnection != nil && providerAPI[0].UpdateConnection != nil && providerAPI[0].DeleteConnection != nil {

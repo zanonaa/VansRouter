@@ -20,7 +20,8 @@ func TestProviderCreateHTTP(t *testing.T) {
 	defer db.Close()
 	_, err = db.Exec(`CREATE TABLE providerConnections(id TEXT PRIMARY KEY,provider TEXT NOT NULL,authType TEXT NOT NULL,name TEXT,email TEXT,priority INTEGER,isActive INTEGER,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
  CREATE TABLE providerNodes(id TEXT PRIMARY KEY,type TEXT,name TEXT,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
- CREATE TABLE proxyPools(id TEXT PRIMARY KEY,isActive INTEGER,testStatus TEXT,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);`)
+ CREATE TABLE proxyPools(id TEXT PRIMARY KEY,isActive INTEGER,testStatus TEXT,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
+ CREATE TABLE proxyPoolFitness(poolId TEXT, marker TEXT);`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +29,7 @@ func TestProviderCreateHTTP(t *testing.T) {
 	nodes := database.Nodes{DB: db}
 	pools := database.ProxyPools{DB: db}
 	authentication, _ := wiredAuth(t)
-	api := &handlers.Providers{GetConnection: connections.Get, UpdateConnection: connections.Update, DeleteConnection: connections.Delete, CreateConnection: connections.Create, GetNode: nodes.Get, GetPool: pools.Get}
+	api := &handlers.Providers{Pools: &handlers.ProxyPools{Store: pools, Connections: connections}, GetConnection: connections.Get, UpdateConnection: connections.Update, DeleteConnection: connections.Delete, CreateConnection: connections.Create, GetNode: nodes.Get, GetPool: pools.Get}
 	r := NewWithNodes(nil, authentication, &handlers.Nodes{Store: nodes, Connections: connections}, api)
 	for _, tt := range []struct {
 		body, message string
@@ -106,6 +107,16 @@ func TestProviderCreateHTTP(t *testing.T) {
 	if specific["extra"] != true || len(specific["proxyPoolIds"].([]any)) != 1 {
 		t.Fatalf("pool merge: %v", specific)
 	}
+	boundResponse := httptest.NewRecorder()
+	r.ServeHTTP(boundResponse, httptest.NewRequest("DELETE", "/api/proxy-pools/pool", nil))
+	if boundResponse.Code != 409 || !strings.Contains(boundResponse.Body.String(), `"boundConnectionCount":1`) {
+		t.Fatalf("bound pool deletion: %d %s", boundResponse.Code, boundResponse.Body.String())
+	}
+	usageResponse := httptest.NewRecorder()
+	r.ServeHTTP(usageResponse, httptest.NewRequest("GET", "/api/proxy-pools?includeUsage=true", nil))
+	if usageResponse.Code != 200 || !strings.Contains(usageResponse.Body.String(), `"boundConnectionCount":1`) {
+		t.Fatalf("pool usage: %d %s", usageResponse.Code, usageResponse.Body.String())
+	}
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/providers/"+id, nil))
 	if w.Code != 200 || strings.Contains(w.Body.String(), "replacement") {
@@ -135,6 +146,24 @@ func TestProviderCreateHTTP(t *testing.T) {
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/providers/"+id, nil))
 	if w.Code != 404 {
 		t.Fatalf("missing GET: %d", w.Code)
+	}
+	for _, tt := range []struct {
+		method, path, body, needle string
+		status                     int
+	}{
+		{"POST", "/api/proxy-pools", `{}`, "Name is required", 400},
+		{"POST", "/api/proxy-pools", `{"name":"P"}`, "Proxy URL is required", 400},
+		{"POST", "/api/proxy-pools", `{"name":"P","proxyUrl":"http://example.test","type":"bad"}`, `"type":"http"`, 201},
+		{"PUT", "/api/proxy-pools/pool", `{"name":" Updated ","isActive":false}`, "Updated", 200},
+		{"GET", "/api/proxy-pools?isActive=false", "", `"isActive":false`, 200},
+		{"DELETE", "/api/proxy-pools/pool", "", `"success":true`, 200},
+		{"GET", "/api/proxy-pools/pool", "", "Proxy pool not found", 404},
+	} {
+		response := httptest.NewRecorder()
+		r.ServeHTTP(response, httptest.NewRequest(tt.method, tt.path, strings.NewReader(tt.body)))
+		if response.Code != tt.status || !strings.Contains(response.Body.String(), tt.needle) {
+			t.Fatalf("pool %s %s: %d %s", tt.method, tt.path, response.Code, response.Body.String())
+		}
 	}
 	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": true}, nil }
 	w = httptest.NewRecorder()
