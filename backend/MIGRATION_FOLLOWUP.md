@@ -10,4 +10,6 @@ Testes verificam boot repetido sem cópias adicionais, backup durante upgrade e 
 
 ## Em aberto
 
-Importação JSON legada segue recusada explicitamente, sem ignorar arquivos. Importação transacional, validação diferencial HTTP/TCP, endpoints de conectividade e demais diferenças descritas na revisão continuam pendentes. Esta entrega não conclui a Fase 3 nem autoriza corte de produção.
+Importação JSON legada implementada para db.json, usage.json, disabledModels.json e request-details.json: cópia prévia dos arquivos, transação para todos os dados, conferência de quantidade nas coleções principais e marcador após commit. Registro interno goLegacyImported evita duplicar history quando o marcador de arquivo falha após commit. Originais não são removidos. JSON inválido e banco existente com dados sem prova de importação são recusados, diferentemente da tolerância da origem, por segurança; esse comportamento exige aprovação de compatibilidade. Instâncias Node/Go não devem migrar o mesmo DATA_DIR simultaneamente.
+
+Testes cobrem importação de settings/connections/nodes/API keys/combos/aliases/history, preservação do original, retry sem duplicação e rollback por IDs duplicados. Cobertura específica de dailySummary, customModels, pricing, disabled e request-details ainda precisa ser ampliada; implementação não equivale a homologação completa. Validação diferencial HTTP/TCP, endpoints de conectividade e demais diferenças descritas na revisão continuam pendentes. Esta entrega não conclui a Fase 3 nem autoriza corte de produção.

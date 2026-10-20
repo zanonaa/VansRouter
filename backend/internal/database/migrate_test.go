@@ -64,7 +64,7 @@ func TestMigrateFreshAndUpgrade(t *testing.T) {
 func TestMigrateLegacyJSONRefused(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "db.json"), []byte(`{"settings":{"password":"existing"}}`), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "db.json"), []byte(`{invalid`), 0600); err != nil {
 		t.Fatal(err)
 	}
 	db, err := Open(ctx, dir, "NORMAL")
