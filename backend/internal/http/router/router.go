@@ -103,6 +103,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Options("/api/proxy-pools/{id}", options("DELETE, GET, HEAD, OPTIONS, PUT"))
 		}
 		r.Post("/api/providers", providerAPI[0].Create)
+		if providerAPI[0].CreateBulk != nil {
+			r.Post("/api/providers/bulk", providerAPI[0].Bulk)
+			r.Options("/api/providers/bulk", options("OPTIONS, POST"))
+		}
 		r.Options("/api/providers", options("GET, HEAD, OPTIONS, POST"))
 		if providerAPI[0].GetConnection != nil && providerAPI[0].UpdateConnection != nil && providerAPI[0].DeleteConnection != nil {
 			r.Get("/api/providers/{id}", providerAPI[0].Get)

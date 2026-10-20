@@ -29,7 +29,7 @@ func TestProviderCreateHTTP(t *testing.T) {
 	nodes := database.Nodes{DB: db}
 	pools := database.ProxyPools{DB: db}
 	authentication, _ := wiredAuth(t)
-	api := &handlers.Providers{Pools: &handlers.ProxyPools{Store: pools, Connections: connections}, GetConnection: connections.Get, UpdateConnection: connections.Update, DeleteConnection: connections.Delete, CreateConnection: connections.Create, GetNode: nodes.Get, GetPool: pools.Get}
+	api := &handlers.Providers{CreateBulk: connections.CreateBulk, Pools: &handlers.ProxyPools{Store: pools, Connections: connections}, GetConnection: connections.Get, UpdateConnection: connections.Update, DeleteConnection: connections.Delete, CreateConnection: connections.Create, GetNode: nodes.Get, GetPool: pools.Get}
 	r := NewWithNodes(nil, authentication, &handlers.Nodes{Store: nodes, Connections: connections}, api)
 	for _, tt := range []struct {
 		body, message string
@@ -163,6 +163,26 @@ func TestProviderCreateHTTP(t *testing.T) {
 		r.ServeHTTP(response, httptest.NewRequest(tt.method, tt.path, strings.NewReader(tt.body)))
 		if response.Code != tt.status || !strings.Contains(response.Body.String(), tt.needle) {
 			t.Fatalf("pool %s %s: %d %s", tt.method, tt.path, response.Code, response.Body.String())
+		}
+	}
+	for _, tt := range []struct {
+		body, needle string
+		status       int
+	}{
+		{`{"items":[]}`, "items must contain 1-500 connections", 400},
+		{`{"items":[{"provider":"openai","name":"X"}]}`, "Every item requires", 400},
+		{`{"items":[{"provider":"openai","name":"X","apiKey":"x"},{"provider":"openai","name":"X","apiKey":"y"}]}`, "Duplicate provider/name in batch", 409},
+		{`{"items":[{"provider":"custom-embedding-missing","name":"X","apiKey":"x"}]}`, "Custom Embedding node not found", 404},
+		{`{"items":[{"provider":" OpenAI ","name":" Bulk ","apiKey":" secret ","priority":2.5}]}`, `"updated":false`, 201},
+		{`{"items":[{"provider":"openai","name":"Bulk","apiKey":"new-secret"}]}`, `"updated":true`, 201},
+	} {
+		response := httptest.NewRecorder()
+		r.ServeHTTP(response, httptest.NewRequest("POST", "/api/providers/bulk", strings.NewReader(tt.body)))
+		if response.Code != tt.status || !strings.Contains(response.Body.String(), tt.needle) {
+			t.Fatalf("bulk: %d %s", response.Code, response.Body.String())
+		}
+		if strings.Contains(response.Body.String(), "secret") {
+			t.Fatal("bulk response leaked credential")
 		}
 	}
 	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": true}, nil }
