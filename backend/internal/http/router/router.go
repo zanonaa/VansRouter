@@ -120,6 +120,14 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Head("/api/usage/request-details/{id}", withoutBody(logs.RequestDetailByID))
 			r.Options("/api/usage/request-details/{id}", options("GET, HEAD, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Pricing != nil {
+			pricing := providerAPI[0].Pricing
+			r.Get("/api/pricing", pricing.Get)
+			r.Head("/api/pricing", withoutBody(pricing.Get))
+			r.Patch("/api/pricing", pricing.Patch)
+			r.Delete("/api/pricing", pricing.Delete)
+			r.Options("/api/pricing", options("DELETE, GET, HEAD, OPTIONS, PATCH"))
+		}
 		r.Get("/api/auth/oidc/start", authentication.OIDCStart)
 		r.Head("/api/auth/oidc/start", withoutBody(authentication.OIDCStart))
 		r.Get("/api/auth/oidc/callback", authentication.OIDCCallback)
