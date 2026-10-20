@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -27,7 +28,27 @@ func (h *OAuthEngine) geminiPost(ctx context.Context, accessToken string) (map[s
 			}
 		}
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist", strings.NewReader(`{"metadata":{"ideType":9,"platform":0,"pluginType":2},"mode":1}`))
+	projectURL := "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist"
+	if c := h.config("gemini-cli"); c != nil && c.ProjectURL != "" {
+		projectURL = c.ProjectURL
+	}
+	platform := 0
+	switch runtime.GOOS {
+	case "darwin":
+		platform = 1
+		if runtime.GOARCH == "arm64" {
+			platform = 2
+		}
+	case "linux":
+		platform = 3
+		if runtime.GOARCH == "arm64" {
+			platform = 4
+		}
+	case "windows":
+		platform = 5
+	}
+	payload, _ := json.Marshal(map[string]any{"metadata": map[string]int{"ideType": 9, "platform": platform, "pluginType": 2}, "mode": 1})
+	req, err := http.NewRequestWithContext(ctx, "POST", projectURL, strings.NewReader(string(payload)))
 	if err == nil {
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 		req.Header.Set("Content-Type", "application/json")
@@ -58,7 +79,7 @@ func (h *OAuthEngine) geminiAuthorize(w http.ResponseWriter, r *http.Request, re
 		nodeReply(w, 501, map[string]string{"error": "OAuth authorization not yet migrated for: gemini-cli"})
 		return
 	}
-	verifier, _, err := pkcePair()
+	verifier, challenge, err := pkcePair()
 	if err != nil {
 		nodeReply(w, 500, map[string]string{"error": "Failed to generate PKCE"})
 		return
@@ -69,14 +90,9 @@ func (h *OAuthEngine) geminiAuthorize(w http.ResponseWriter, r *http.Request, re
 		return
 	}
 	params := url.Values{"client_id": {config.ClientID}, "response_type": {"code"}, "redirect_uri": {redirectURI}, "scope": {strings.Join(config.Scopes, " ")}, "state": {state}, "access_type": {"offline"}, "prompt": {"consent"}}
-	nodeReply(w, 200, map[string]any{"authUrl": config.AuthorizeURL + "?" + params.Encode(), "state": state, "codeVerifier": verifier, "redirectUri": redirectURI, "flowType": "authorization_code", "callbackPath": "/callback"})
+	nodeReply(w, 200, map[string]any{"authUrl": config.AuthorizeURL + "?" + params.Encode(), "state": state, "codeVerifier": verifier, "codeChallenge": challenge, "redirectUri": redirectURI, "flowType": "authorization_code", "callbackPath": "/callback"})
 }
-func (h *OAuthEngine) geminiExchange(w http.ResponseWriter, r *http.Request) {
-	body, err := poolInput(r)
-	if err != nil || body == nil {
-		nodeReply(w, 400, map[string]string{"error": "Invalid or empty request body"})
-		return
-	}
+func (h *OAuthEngine) geminiExchange(w http.ResponseWriter, r *http.Request, body map[string]any) {
 	code, _ := body["code"].(string)
 	redirectURI, _ := body["redirectUri"].(string)
 	if code == "" || redirectURI == "" {

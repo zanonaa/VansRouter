@@ -7,7 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zanona/VansRouter/backend/internal/providers"
+	"github.com/go-chi/chi/v5"
+	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 func TestGeminiAndIflowOAuth(t *testing.T) {
@@ -40,7 +41,7 @@ func TestGeminiAndIflowOAuth(t *testing.T) {
 	config := func(id string) *providers.OAuthConfig {
 		switch id {
 		case "gemini-cli":
-			return &providers.OAuthConfig{ClientID: "g", ClientSecret: "gs", TokenURL: server.URL + "/token", AuthorizeURL: server.URL + "/auth", UserInfoURL: server.URL + "/user", Scopes: []string{"cloud-platform", "email"}}
+			return &providers.OAuthConfig{ClientID: "g", ClientSecret: "gs", TokenURL: server.URL + "/token", AuthorizeURL: server.URL + "/auth", UserInfoURL: server.URL + "/user", ProjectURL: server.URL + "/project", Scopes: []string{"cloud-platform", "email"}}
 		case "iflow":
 			return &providers.OAuthConfig{ClientID: "i", ClientSecret: "is", TokenURL: server.URL + "/token", AuthorizeURL: server.URL + "/auth", UserInfoURL: server.URL + "/iflow-user", ExtraParams: map[string]string{"loginMethod": "phone", "type": "login"}}
 		}
@@ -53,7 +54,7 @@ func TestGeminiAndIflowOAuth(t *testing.T) {
 		return data, nil
 	}}
 
-	r2 := httptest.NewRequest("POST", "/", strings.NewReader(`{"code":"c","redirectUri":"http://localhost/cb"}`))
+	r2 := httptest.NewRequest("POST", "/", strings.NewReader(`{"code":"c","redirectUri":"http://localhost/cb","codeVerifier":"required-by-route"}`))
 	setChiProvider(r2, "gemini-cli")
 	w := httptest.NewRecorder()
 	h.Exchange(w, r2)
@@ -64,7 +65,7 @@ func TestGeminiAndIflowOAuth(t *testing.T) {
 		t.Fatal(saved["gemini-cli"])
 	}
 
-	r3 := httptest.NewRequest("POST", "/", strings.NewReader(`{"code":"c","redirectUri":"http://localhost/cb"}`))
+	r3 := httptest.NewRequest("POST", "/", strings.NewReader(`{"code":"c","redirectUri":"http://localhost/cb","codeVerifier":"required-by-route"}`))
 	setChiProvider(r3, "iflow")
 	w = httptest.NewRecorder()
 	h.Exchange(w, r3)
@@ -82,7 +83,7 @@ func TestGeminiAndIflowOAuth(t *testing.T) {
 		return nil
 	}
 	hFail := OAuthEngine{Client: server.Client(), Config: failConfig, CreateConnection: h.CreateConnection}
-	r4 := httptest.NewRequest("POST", "/", strings.NewReader(`{"code":"c","redirectUri":"http://localhost/cb"}`))
+	r4 := httptest.NewRequest("POST", "/", strings.NewReader(`{"code":"c","redirectUri":"http://localhost/cb","codeVerifier":"required-by-route"}`))
 	setChiProvider(r4, "iflow")
 	w = httptest.NewRecorder()
 	hFail.Exchange(w, r4)

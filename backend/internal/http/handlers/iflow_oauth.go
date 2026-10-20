@@ -17,6 +17,11 @@ func (h *OAuthEngine) iflowAuthorize(w http.ResponseWriter, r *http.Request, red
 		nodeReply(w, 501, map[string]string{"error": "OAuth authorization not yet migrated for: iflow"})
 		return
 	}
+	verifier, challenge, err := pkcePair()
+	if err != nil {
+		nodeReply(w, 500, map[string]string{"error": "Failed to generate PKCE"})
+		return
+	}
 	state, err := randomURLSafe(32)
 	if err != nil {
 		nodeReply(w, 500, map[string]string{"error": "Failed to generate state"})
@@ -32,14 +37,9 @@ func (h *OAuthEngine) iflowAuthorize(w http.ResponseWriter, r *http.Request, red
 		}
 	}
 	params := url.Values{"loginMethod": {loginMethod}, "type": {loginType}, "redirect": {redirectURI}, "state": {state}, "client_id": {config.ClientID}}
-	nodeReply(w, 200, map[string]any{"authUrl": config.AuthorizeURL + "?" + params.Encode(), "state": state, "redirectUri": redirectURI, "flowType": "authorization_code", "callbackPath": "/callback"})
+	nodeReply(w, 200, map[string]any{"authUrl": config.AuthorizeURL + "?" + params.Encode(), "state": state, "codeVerifier": verifier, "codeChallenge": challenge, "redirectUri": redirectURI, "flowType": "authorization_code", "callbackPath": "/callback"})
 }
-func (h *OAuthEngine) iflowExchange(w http.ResponseWriter, r *http.Request) {
-	body, err := poolInput(r)
-	if err != nil || body == nil {
-		nodeReply(w, 400, map[string]string{"error": "Invalid or empty request body"})
-		return
-	}
+func (h *OAuthEngine) iflowExchange(w http.ResponseWriter, r *http.Request, body map[string]any) {
 	code, _ := body["code"].(string)
 	redirectURI, _ := body["redirectUri"].(string)
 	if code == "" || redirectURI == "" {

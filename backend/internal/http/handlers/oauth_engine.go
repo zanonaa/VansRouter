@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -28,7 +29,18 @@ func (h *OAuthEngine) config(provider string) *providers.OAuthConfig {
 	if h.Config != nil {
 		return h.Config(provider)
 	}
-	return providers.GetOAuthConfig(provider)
+	if provider == "kimi-coding" {
+		provider = "kimi"
+	}
+	config := providers.GetOAuthConfig(provider)
+	if provider == "kimi" && config != nil {
+		if value := os.Getenv("KIMI_CODING_OAUTH_CLIENT_ID"); value != "" {
+			config.ClientID = value
+		} else if value = os.Getenv("KIMI_OAUTH_CLIENT_ID"); value != "" {
+			config.ClientID = value
+		}
+	}
+	return config
 }
 
 func randomURLSafe(n int) (string, error) {
@@ -267,11 +279,11 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if provider == "gemini-cli" {
-		h.geminiExchange(w, r)
+		h.geminiExchange(w, r, body)
 		return
 	}
 	if provider == "iflow" {
-		h.iflowExchange(w, r)
+		h.iflowExchange(w, r, body)
 		return
 	}
 	if provider != "claude" && provider != "codex" {
@@ -329,10 +341,20 @@ func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if provider == "glm" {
+		if r.Method == "GET" && action == "device-code" {
+			h.glmDevice(w, r)
+			return
+		}
+		if r.Method == "POST" && action == "poll" {
+			h.glmPoll(w, r)
+			return
+		}
+	}
 	// Device-code flows genéricos: qwen (PKCE), kimi/kilocode/glm (sem PKCE).
 	if r.Method == "GET" && action == "device-code" {
 		switch provider {
-		case "qwen", "kimi", "kimi-coding", "kilocode", "glm":
+		case "qwen", "kimi", "kimi-coding", "kilocode":
 			h.genericDeviceCode(w, r, provider)
 			return
 		}
@@ -342,8 +364,11 @@ func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 		case "qwen":
 			h.genericDevicePoll(w, r, provider, true, defaultTokenMap)
 			return
-		case "kimi", "kimi-coding", "kilocode", "glm":
-			h.genericDevicePoll(w, r, provider, false, defaultTokenMap)
+		case "kimi", "kimi-coding":
+			h.genericDevicePoll(w, r, provider, false, kimiTokenMap)
+			return
+		case "kilocode":
+			h.genericDevicePoll(w, r, provider, false, kiloTokenMap)
 			return
 		}
 	}
