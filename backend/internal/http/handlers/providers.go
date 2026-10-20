@@ -9,6 +9,9 @@ import (
 )
 
 type Providers struct {
+	GetConnection    func(context.Context, string) (map[string]any, error)
+	UpdateConnection func(context.Context, string, map[string]any) (map[string]any, error)
+	DeleteConnection func(context.Context, string) (bool, error)
 	Connections      NodeConnections
 	Nodes            NodeStore
 	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
