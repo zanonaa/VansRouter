@@ -9,6 +9,7 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	ProfileURL          string            `json:"profileUrl"`
 	MuseKeyURL          string            `json:"museKeyUrl"`
 	DefaultBaseURL      string            `json:"defaultBaseUrl"`
 	AuthorizeURLPath    string            `json:"authorizeUrlPath"`
