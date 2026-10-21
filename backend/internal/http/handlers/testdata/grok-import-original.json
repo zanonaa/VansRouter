@@ -1,0 +1,170 @@
+[
+  {
+    "input": null,
+    "status": 400,
+    "body": {
+      "error": "No accounts provided"
+    },
+    "saved": []
+  },
+  {
+    "input": [],
+    "status": 400,
+    "body": {
+      "error": "No accounts provided"
+    },
+    "saved": []
+  },
+  {
+    "input": {},
+    "status": 200,
+    "body": {
+      "total": 1,
+      "success": 0,
+      "failed": 1,
+      "results": [
+        {
+          "index": 0,
+          "ok": false,
+          "error": "Missing access_token / accessToken"
+        }
+      ]
+    },
+    "saved": []
+  },
+  {
+    "input": [
+      null,
+      {},
+      "bad"
+    ],
+    "status": 200,
+    "body": {
+      "total": 3,
+      "success": 0,
+      "failed": 3,
+      "results": [
+        {
+          "index": 0,
+          "ok": false,
+          "error": "Item is not an object"
+        },
+        {
+          "index": 1,
+          "ok": false,
+          "error": "Missing access_token / accessToken"
+        },
+        {
+          "index": 2,
+          "ok": false,
+          "error": "Item is not an object"
+        }
+      ]
+    },
+    "saved": []
+  },
+  {
+    "input": {
+      "access_token": "dummy",
+      "email": "op@example.test",
+      "expires_at": "2027-01-01T00:00:00Z"
+    },
+    "status": 200,
+    "body": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "results": [
+        {
+          "index": 0,
+          "ok": true,
+          "id": "saved-1",
+          "email": "op@example.test"
+        }
+      ]
+    },
+    "saved": [
+      {
+        "provider": "grok-cli",
+        "authType": "oauth",
+        "accessToken": "dummy",
+        "refreshToken": null,
+        "expiresAt": "2027-01-01T00:00:00Z",
+        "email": "op@example.test",
+        "providerSpecificData": {
+          "authMethod": "device_code",
+          "email": "op@example.test"
+        },
+        "testStatus": "active"
+      }
+    ]
+  },
+  {
+    "input": {
+      "accounts": [
+        {
+          "accessToken": "first",
+          "name": "N",
+          "providerSpecificData": {
+            "authMethod": "manual",
+            "custom": true
+          }
+        },
+        {
+          "access_token": "second",
+          "refresh_token": "refresh",
+          "id_token": "id-dummy"
+        }
+      ]
+    },
+    "status": 200,
+    "body": {
+      "total": 2,
+      "success": 2,
+      "failed": 0,
+      "results": [
+        {
+          "index": 0,
+          "ok": true,
+          "id": "saved-1",
+          "email": null
+        },
+        {
+          "index": 1,
+          "ok": true,
+          "id": "saved-2",
+          "email": null
+        }
+      ]
+    },
+    "saved": [
+      {
+        "provider": "grok-cli",
+        "authType": "oauth",
+        "accessToken": "first",
+        "refreshToken": null,
+        "expiresAt": null,
+        "email": null,
+        "displayName": "N",
+        "providerSpecificData": {
+          "authMethod": "manual",
+          "custom": true
+        },
+        "testStatus": "active"
+      },
+      {
+        "provider": "grok-cli",
+        "authType": "oauth",
+        "accessToken": "second",
+        "refreshToken": "refresh",
+        "expiresAt": null,
+        "email": null,
+        "providerSpecificData": {
+          "authMethod": "device_code",
+          "idToken": "id-dummy"
+        },
+        "testStatus": "active"
+      }
+    ]
+  }
+]
