@@ -203,7 +203,7 @@
       "method": "GET",
       "path": "/api/media-providers/tts/voices",
       "source": "src/app/api/media-providers/tts/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -305,25 +305,25 @@
       "method": "GET",
       "path": "/api/oauth/{provider}/{action}",
       "source": "src/app/api/oauth/[provider]/[action]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/{provider}/{action}",
       "source": "src/app/api/oauth/[provider]/[action]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/codex/bulk-import",
       "source": "src/app/api/oauth/codex/bulk-import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/codex/import-token",
       "source": "src/app/api/oauth/codex/import-token/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -335,25 +335,25 @@
       "method": "POST",
       "path": "/api/oauth/cursor/import",
       "source": "src/app/api/oauth/cursor/import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/oauth/cursor/import",
       "source": "src/app/api/oauth/cursor/import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/gitlab/pat",
       "source": "src/app/api/oauth/gitlab/pat/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/grok-cli/bulk-import",
       "source": "src/app/api/oauth/grok-cli/bulk-import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -365,7 +365,7 @@
       "method": "POST",
       "path": "/api/oauth/kiro/api-key",
       "source": "src/app/api/oauth/kiro/api-key/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -407,7 +407,7 @@
       "method": "POST",
       "path": "/api/oauth/zed/import",
       "source": "src/app/api/oauth/zed/import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
