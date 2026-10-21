@@ -383,6 +383,16 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 	action := chi.URLParam(r, "action")
 	provider := chi.URLParam(r, "provider")
+	if provider == "qoder" {
+		if r.Method == "GET" && action == "device-code" {
+			h.qoderDevice(w, r)
+			return
+		}
+		if r.Method == "POST" && action == "poll" {
+			h.qoderPoll(w, r)
+			return
+		}
+	}
 	if provider == "freebuff" {
 		if r.Method == "GET" && action == "device-code" {
 			h.freebuffDevice(w, r)
