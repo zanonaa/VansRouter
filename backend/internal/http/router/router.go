@@ -165,6 +165,8 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].OAuth != nil {
 			oauthAPI := providerAPI[0].OAuth
+			r.Post("/api/oauth/zed/import", oauthAPI.ZedImport)
+			r.Options("/api/oauth/zed/import", options("OPTIONS, POST"))
 			r.Get("/api/oauth/cursor/import", handlers.CursorInstructions)
 			r.Head("/api/oauth/cursor/import", withoutBody(handlers.CursorInstructions))
 			r.Post("/api/oauth/cursor/import", oauthAPI.CursorImport)
