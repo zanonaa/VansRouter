@@ -165,6 +165,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].OAuth != nil {
 			oauthAPI := providerAPI[0].OAuth
+			r.Get("/api/oauth/cursor/import", handlers.CursorInstructions)
+			r.Head("/api/oauth/cursor/import", withoutBody(handlers.CursorInstructions))
+			r.Post("/api/oauth/cursor/import", oauthAPI.CursorImport)
+			r.Options("/api/oauth/cursor/import", options("GET, HEAD, OPTIONS, POST"))
 			r.Post("/api/oauth/kiro/api-key", oauthAPI.KiroAPIKey)
 			r.Options("/api/oauth/kiro/api-key", options("OPTIONS, POST"))
 			r.Post("/api/oauth/grok-cli/bulk-import", oauthAPI.GrokBulkImport)
