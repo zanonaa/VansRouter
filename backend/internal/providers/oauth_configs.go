@@ -9,6 +9,10 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	DefaultBaseURL      string            `json:"defaultBaseUrl"`
+	AuthorizeURLPath    string            `json:"authorizeUrlPath"`
+	TokenURLPath        string            `json:"tokenUrlPath"`
+	UserInfoURLPath     string            `json:"userInfoUrlPath"`
 	LoginURL            string            `json:"loginUrl"`
 	DeviceTokenURL      string            `json:"deviceTokenUrl"`
 	BaseURL             string            `json:"baseUrl"`

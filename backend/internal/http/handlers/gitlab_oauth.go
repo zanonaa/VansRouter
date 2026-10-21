@@ -19,7 +19,7 @@ func (h *OAuthEngine) gitlabAuthorize(w http.ResponseWriter, r *http.Request, re
 	meta := r.URL.Query()
 	baseUrl := meta.Get("baseUrl")
 	if baseUrl == "" {
-		baseUrl = strings.TrimRight(c.RedirectURI, "/")
+		baseUrl = c.DefaultBaseURL
 		if baseUrl == "" {
 			baseUrl = "https://gitlab.com"
 		}
@@ -35,7 +35,7 @@ func (h *OAuthEngine) gitlabAuthorize(w http.ResponseWriter, r *http.Request, re
 		nodeReply(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
-	path := c.AuthorizeURL
+	path := c.AuthorizeURLPath
 	if path == "" {
 		path = "/oauth/authorize"
 	}
@@ -62,14 +62,14 @@ func (h *OAuthEngine) gitlabExchange(w http.ResponseWriter, r *http.Request, bod
 	}
 	baseUrl, _ := meta["baseUrl"].(string)
 	if baseUrl == "" {
-		baseUrl = strings.TrimRight(c.RedirectURI, "/")
+		baseUrl = c.DefaultBaseURL
 		if baseUrl == "" {
 			baseUrl = "https://gitlab.com"
 		}
 	}
 	clientId, _ := meta["clientId"].(string)
 	clientSecret, _ := meta["clientSecret"].(string)
-	tokenPath := c.TokenURL
+	tokenPath := c.TokenURLPath
 	if tokenPath == "" {
 		tokenPath = "/oauth/token"
 	}
@@ -87,7 +87,7 @@ func (h *OAuthEngine) gitlabExchange(w http.ResponseWriter, r *http.Request, bod
 		return
 	}
 	// User info
-	userPath := c.UserInfoURL
+	userPath := c.UserInfoURLPath
 	if userPath == "" {
 		userPath = "/api/v4/user"
 	}
@@ -107,9 +107,9 @@ func (h *OAuthEngine) gitlabExchange(w http.ResponseWriter, r *http.Request, bod
 		}
 	}
 	specific := map[string]any{
-		"username": jsString(user["username"]),
+		"username": firstNonEmptyString(user["username"]),
 		"email":    firstNonEmptyString(user["email"], user["public_email"]),
-		"name":     jsString(user["name"]),
+		"name":     firstNonEmptyString(user["name"]),
 		"baseUrl":  baseUrl,
 		"clientId": clientId,
 		"authKind": "oauth",
