@@ -165,6 +165,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].OAuth != nil {
 			oauthAPI := providerAPI[0].OAuth
+			r.Post("/api/oauth/codex/bulk-import", oauthAPI.CodexBulkImport)
+			r.Options("/api/oauth/codex/bulk-import", options("OPTIONS, POST"))
+			r.Post("/api/oauth/codex/import-token", oauthAPI.CodexImportToken)
+			r.Options("/api/oauth/codex/import-token", options("OPTIONS, POST"))
 			r.Post("/api/oauth/gitlab/pat", oauthAPI.GitlabPAT)
 			r.Options("/api/oauth/gitlab/pat", options("OPTIONS, POST"))
 			r.Get("/api/oauth/{provider}/{action}", oauthAPI.Route)
