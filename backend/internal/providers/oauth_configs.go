@@ -9,6 +9,9 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	StateURL            string            `json:"stateUrl"`
+	Platform            string            `json:"platform"`
+	PollInterval        float64           `json:"pollInterval"`
 	TokenExchangeURL    string            `json:"tokenExchangeUrl"`
 	ProviderID          string            `json:"providerId"`
 	CLIInitURL          string            `json:"cliInitUrl"`

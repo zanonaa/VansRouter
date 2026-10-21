@@ -1,5 +1,8 @@
 {
   "antigravity": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -35,6 +38,9 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -68,6 +74,9 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": "https://api.cline.bot/api/v1/auth/token",
     "providerId": null,
     "cliInitUrl": null,
@@ -97,6 +106,9 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "stateUrl": "https://copilot.tencent.com/v2/plugin/auth/state",
+    "platform": "CLI",
+    "pollInterval": 5000,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -126,6 +138,9 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -159,6 +174,9 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -188,6 +206,9 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -221,6 +242,9 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -250,6 +274,9 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -279,6 +306,9 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": "zai",
     "cliInitUrl": "https://zcode.z.ai/api/v1/oauth/cli/init",
@@ -308,6 +338,9 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -337,6 +370,9 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -369,6 +405,9 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -398,6 +437,9 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -427,6 +469,9 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -456,6 +501,9 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -489,6 +537,9 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -518,6 +569,9 @@
     "codeChallengeMethod": null
   },
   "qwen": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -547,6 +601,9 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -576,6 +633,9 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "stateUrl": "https://www.codebuddy.ai/v2/plugin/auth/state",
+    "platform": "ide",
+    "pollInterval": 5000,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -605,6 +665,9 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -634,6 +697,9 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "stateUrl": null,
+    "platform": "zed",
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -663,6 +729,9 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
@@ -692,6 +761,9 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "stateUrl": null,
+    "platform": null,
+    "pollInterval": null,
     "tokenExchangeUrl": null,
     "providerId": null,
     "cliInitUrl": null,
