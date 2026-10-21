@@ -12,7 +12,7 @@ import (
 	"github.com/zanonaa/VansRouter/backend/internal/http/handlers"
 )
 
-func TestDatabaseExportImport(t *testing.T) {
+func TestDatabaseLogicalTransfer(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
 	db, err := database.Open(ctx, dir, "NORMAL")
@@ -23,63 +23,69 @@ func TestDatabaseExportImport(t *testing.T) {
 	if err = database.Migrate(ctx, db, dir); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = db.Exec(`INSERT INTO settings(id,data) VALUES(1,'{"password":"hash-ficticio"}'); INSERT INTO kv(scope,key,value) VALUES('pricing','openai','{}')`); err != nil {
-		t.Fatal(err)
-	}
-	validPassword := false
-	handler := handlers.DatabaseExport{DB: db, VerifyPassword: func(password string) bool { return validPassword && password == "ficticia" }}
-	authentication, _ := wiredAuth(t)
-	r := NewWithNodes(nil, authentication, nil, &handlers.Providers{Database: &handler})
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/settings/database", nil))
-	if w.Code != 401 {
-		t.Fatal(w.Code)
-	}
-	token, err := authentication.Sessions.Create(nil)
+	_, err = db.Exec(`INSERT INTO settings(id,data) VALUES(1,'{"password":"hash-ficticio"}'); INSERT INTO kv(scope,key,value) VALUES('pricing','custom','{"model":{"input":2}}'),('disabledModels','p','["m"]'); INSERT INTO requestDetails(id,timestamp,data) VALUES('detail','now','{}'); INSERT INTO usageHistory(timestamp,tokens) VALUES('now','{}'); CREATE TABLE user_work(id TEXT); INSERT INTO user_work VALUES('keep');`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	sessionCookie := &http.Cookie{Name: "auth_token", Value: token}
-	validPassword = true
-	request := httptest.NewRequest("GET", "/api/settings/database", nil)
-	request.Header.Set("X-9r-password", "ficticia")
-	request.AddCookie(sessionCookie)
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, request)
+	authentication, _ := wiredAuth(t)
+	token, _ := authentication.Sessions.Create(nil)
+	cookie := &http.Cookie{Name: "auth_token", Value: token}
+	handler := handlers.DatabaseExport{DB: db, ValidCLI: authentication.ValidCLIToken, VerifyPassword: func(value string) bool { return value == "dummy-password" }}
+	r := NewWithNodes(nil, authentication, nil, &handlers.Providers{Database: &handler})
+	request := func(method, body, password, cli string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(method, "/api/settings/database", strings.NewReader(body))
+		req.AddCookie(cookie)
+		req.Header.Set("X-9r-password", password)
+		if cli != "" {
+			req.Header.Set("X-9r-cli-token", cli)
+		}
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		return w
+	}
+	if w := request("GET", "", "", "invalid-token"); w.Code != 401 {
+		t.Fatal("invalid CLI header bypass", w.Code)
+	}
+	w := request("GET", "", "dummy-password", "")
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	var payload map[string]any
 	_ = json.Unmarshal(w.Body.Bytes(), &payload)
-	if payload["settings"] == nil || payload["kv"] == nil {
-		t.Fatal("export incomplete")
+	if _, ok := payload["settings"].(map[string]any); !ok {
+		t.Fatal("settings not logical", payload["settings"])
 	}
-	payload["kv"] = []any{map[string]any{"scope": "pricing", "key": "openai", "value": "{}"}}
-	encoded, _ := json.Marshal(map[string]any{"password": "ficticia", "settings": payload["settings"], "kv": payload["kv"], "unknown_table": []any{}})
-	post := httptest.NewRequest("POST", "/api/settings/database", strings.NewReader(string(encoded)))
-	post.AddCookie(sessionCookie)
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, post)
-	if w.Code != 400 || !strings.Contains(w.Body.String(), "unknown table") {
-		t.Fatal(w.Code, w.Body.String())
+	if payload["pricing"] == nil || payload["kv"] != nil || payload["usageHistory"] != nil || payload["_meta"] != nil {
+		t.Fatal("internal tables exported")
 	}
-	delete(payload, "unknown_table")
-	encoded, _ = json.Marshal(map[string]any{"password": "ficticia", "settings": payload["settings"], "kv": payload["kv"]})
-	post = httptest.NewRequest("POST", "/api/settings/database", strings.NewReader(string(encoded)))
-	post.AddCookie(sessionCookie)
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, post)
+	payload["password"] = "dummy-password"
+	payload["settings"] = map[string]any{"theme": "new"}
+	encoded, _ := json.Marshal(payload)
+	w = request("POST", string(encoded), "", "")
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
-	var count int
-	if err = db.QueryRow(`SELECT count(*) FROM kv WHERE scope='pricing'`).Scan(&count); err != nil || count != 1 {
-		t.Fatal(count, err)
+	for _, query := range []string{`SELECT count(*) FROM requestDetails`, `SELECT count(*) FROM usageHistory`, `SELECT count(*) FROM user_work`, `SELECT count(*) FROM kv WHERE scope='disabledModels'`} {
+		var count int
+		if err = db.QueryRow(query).Scan(&count); err != nil || count != 1 {
+			t.Fatal("unrelated data lost", query, count, err)
+		}
 	}
-	authentication.Settings = func(context.Context) (map[string]any, error) { return map[string]any{"requireLogin": true}, nil }
-	w = httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/settings/database", nil))
-	if w.Code != 401 {
-		t.Fatal("unguarded")
+	var revision string
+	if err = db.QueryRow(`SELECT value FROM _meta WHERE key='settings_revision'`).Scan(&revision); err != nil || revision != "1" {
+		t.Fatal(revision, err)
+	}
+	// Erro após o DELETE de settings deve reverter integralmente o import.
+	w = request("POST", `{"password":"dummy-password","settings":{"theme":"bad"},"providerConnections":[{"id":"invalid"}]}`, "", "")
+	if w.Code != 400 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	settings, err := database.ReadAuthSettings(ctx, db)
+	if err != nil || settings["theme"] != "new" {
+		t.Fatal("rollback failed", settings, err)
+	}
+	w = request("GET", "", "", authentication.CLIToken())
+	if w.Code != 200 {
+		t.Fatal("valid CLI refused", w.Code)
 	}
 }
