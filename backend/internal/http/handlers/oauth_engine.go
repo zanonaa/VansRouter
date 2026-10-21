@@ -403,6 +403,16 @@ func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if provider == "codebuddy-cn" || provider == "codebuddy-intl" {
+		if r.Method == "GET" && action == "device-code" {
+			h.codebuddyDevice(w, r, provider)
+			return
+		}
+		if r.Method == "POST" && action == "poll" {
+			h.codebuddyPoll(w, r, provider)
+			return
+		}
+	}
 	// Device-code flows genéricos: qwen (PKCE), kimi/kilocode/glm (sem PKCE).
 	if r.Method == "GET" && action == "device-code" {
 		switch provider {
