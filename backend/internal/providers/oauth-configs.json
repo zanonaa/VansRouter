@@ -1,5 +1,8 @@
 {
   "antigravity": {
+    "loadCodeAssistEndpoint": "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist",
+    "onboardUserEndpoint": "https://cloudcode-pa.googleapis.com/v1internal:onboardUser",
+    "loadCodeAssistUserAgent": "antigravity/ide/2.1.1 darwin/arm64",
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -49,6 +52,9 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -96,6 +102,9 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -139,6 +148,9 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -182,6 +194,9 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -229,6 +244,9 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -272,6 +290,9 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -319,6 +340,9 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -362,6 +386,9 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": "https://gitlab.com",
@@ -405,6 +432,9 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -448,6 +478,9 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -491,6 +524,9 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -537,6 +573,9 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -580,6 +619,9 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": "https://app.kimchi.dev",
     "validationUrl": "https://api.cast.ai/v1/llm/openai/supported-providers",
     "defaultBaseUrl": null,
@@ -623,6 +665,9 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -666,6 +711,9 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -713,6 +761,9 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -758,6 +809,9 @@
     "deviceTokenUrl": "https://openapi.qoder.sh/api/v1/deviceToken/poll"
   },
   "qwen": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -801,6 +855,9 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -844,6 +901,9 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -887,6 +947,9 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -930,6 +993,9 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -973,6 +1039,9 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
@@ -1016,6 +1085,9 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "loadCodeAssistEndpoint": null,
+    "onboardUserEndpoint": null,
+    "loadCodeAssistUserAgent": null,
     "webAppUrl": null,
     "validationUrl": null,
     "defaultBaseUrl": null,
