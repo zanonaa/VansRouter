@@ -1151,7 +1151,7 @@
       "method": "POST",
       "path": "/api/version/update",
       "source": "src/app/api/version/update/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     }
   ]
 }
