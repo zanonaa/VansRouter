@@ -359,7 +359,7 @@
       "method": "POST",
       "path": "/api/oauth/iflow/cookie",
       "source": "src/app/api/oauth/iflow/cookie/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -1151,7 +1151,7 @@
       "method": "POST",
       "path": "/api/version/update",
       "source": "src/app/api/version/update/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     }
   ]
 }
