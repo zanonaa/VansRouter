@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,6 +25,26 @@ type OAuthEngine struct {
 	Client           *http.Client
 	Config           func(string) *providers.OAuthConfig
 	RetryWait        func(context.Context, time.Duration) error
+}
+
+// codexConnectionData espalha o raw token como mapTokens do codex na origem,
+// reaproveitando a montagem do Exchange para o proxy.
+func codexConnectionData(tokenData map[string]any) map[string]any {
+	connectionData := map[string]any{"provider": "codex", "authType": "oauth", "testStatus": "active"}
+	for source, target := range map[string]string{"access_token": "accessToken", "refresh_token": "refreshToken", "id_token": "idToken", "token_type": "tokenType", "scope": "scope", "email": "email"} {
+		if v, ok := tokenData[source]; ok {
+			connectionData[target] = v
+		}
+	}
+	connectionData["lastRefreshAt"] = time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
+	applyCodexClaims(connectionData, decodeJWTClaims(stringField(tokenData, "id_token")), decodeJWTClaims(stringField(tokenData, "access_token")))
+	if v, ok := tokenData["expires_in"].(float64); ok && v > 0 {
+		connectionData["expiresAt"] = time.Now().Add(time.Duration(v) * time.Second).UTC().Format("2006-01-02T15:04:05.000Z")
+	}
+	if expiresIn, ok := tokenData["expires_in"].(float64); ok {
+		connectionData["expiresIn"] = expiresIn
+	}
+	return connectionData
 }
 
 func (h *OAuthEngine) config(provider string) *providers.OAuthConfig {
@@ -224,6 +245,15 @@ func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
 		h.gitlabAuthorize(w, r, uri)
 		return
 	}
+	// xai: PKCE público com discovery e parâmetros nonce/plan/referrer.
+	if provider == "xai" {
+		uri := r.URL.Query().Get("redirect_uri")
+		if uri == "" {
+			uri = "http://localhost:8080/callback"
+		}
+		h.xaiAuthorize(w, r, uri)
+		return
+	}
 	if provider != "claude" && provider != "codex" {
 		if provider == "gemini-cli" || provider == "iflow" {
 			uri := r.URL.Query().Get("redirect_uri")
@@ -339,6 +369,22 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 		h.iflowExchange(w, r, body)
 		return
 	}
+	if provider == "xai" {
+		tokenData, err := h.exchangeXaiTokens(r.Context(), code, redirectURI, codeVerifier)
+		if err != nil {
+			nodeReply(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		connection, err := h.CreateConnection(r.Context(), xaiConnectionData(tokenData))
+		if err != nil {
+			nodeReply(w, 500, map[string]string{"error": "Failed to save connection"})
+			return
+		}
+		nodeReply(w, 200, map[string]any{"success": true, "connection": map[string]any{
+			"id": connection["id"], "provider": connection["provider"], "email": connection["email"], "displayName": connection["displayName"],
+		}})
+		return
+	}
 	if provider != "claude" && provider != "codex" {
 		nodeReply(w, 501, map[string]string{"error": "Provider token exchange not yet migrated for: " + provider})
 		return
@@ -356,14 +402,18 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 	connectionData := map[string]any{
 		"provider": provider, "authType": "oauth", "testStatus": "active",
 	}
-	for source, target := range map[string]string{"access_token": "accessToken", "refresh_token": "refreshToken", "id_token": "idToken", "token_type": "tokenType", "scope": "scope", "email": "email"} {
-		if v, ok := tokenData[source]; ok {
-			connectionData[target] = v
-		}
-	}
 	if provider == "codex" {
-		connectionData["lastRefreshAt"] = time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
-		applyCodexClaims(connectionData, decodeJWTClaims(stringField(tokenData, "id_token")), decodeJWTClaims(stringField(tokenData, "access_token")))
+		for key, value := range codexConnectionData(tokenData) {
+			if key != "provider" {
+				connectionData[key] = value
+			}
+		}
+	} else {
+		for source, target := range map[string]string{"access_token": "accessToken", "refresh_token": "refreshToken", "id_token": "idToken", "token_type": "tokenType", "scope": "scope", "email": "email"} {
+			if v, ok := tokenData[source]; ok {
+				connectionData[target] = v
+			}
+		}
 	}
 	if expiresAt != nil {
 		connectionData["expiresAt"] = expiresAt
@@ -475,16 +525,137 @@ func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if r.Method == "GET" {
+		switch action {
+		case "start-proxy", "poll-status", "stop-proxy":
+			h.proxyAction(w, r, provider, action)
+			return
+		}
+	}
+	if r.Method == "POST" && action == "manual-code" {
+		h.manualCodeAction(w, r, provider)
+		return
+	}
 	switch action {
 	case "authorize":
 		h.Authorize(w, r)
 	case "exchange":
 		h.Exchange(w, r)
-	case "start-proxy", "stop-proxy", "poll-status":
-		nodeReply(w, 400, map[string]string{"error": "Proxy only supported for codex/xai"})
 	case "device-code":
 		nodeReply(w, 501, map[string]string{"error": "Device code flow not yet migrated"})
 	default:
 		nodeReply(w, 400, map[string]string{"error": "Unknown action"})
 	}
+}
+
+// proxyAction espelha start-proxy/poll-status/stop-proxy do GET, com guard
+// provider codex|xai e mensagens idênticas da rota original.
+func (h *OAuthEngine) proxyAction(w http.ResponseWriter, r *http.Request, provider, action string) {
+	if provider != "codex" && provider != "xai" {
+		message := "Proxy only supported for codex/xai"
+		if action == "poll-status" {
+			message = "Poll only supported for codex/xai"
+		}
+		nodeReply(w, 400, map[string]string{"error": message})
+		return
+	}
+	query := r.URL.Query()
+	port := proxyPortFor(provider)
+	switch action {
+	case "start-proxy":
+		appPort := query.Get("app_port")
+		if appPort == "" {
+			nodeReply(w, 400, map[string]string{"error": "Missing app_port"})
+			return
+		}
+		result := startCallbackProxy(provider, port, atoiDefault(appPort), h.buildProxyHandler(provider, atoiDefault(appPort)))
+		serverSide := false
+		if truthy, _ := result["success"].(bool); truthy {
+			serverSide = registerProxySession(provider,
+				query.Get("state"), query.Get("code_verifier"), query.Get("redirect_uri"))
+		}
+		result["serverSide"] = serverSide
+		nodeReply(w, 200, result)
+	case "poll-status":
+		state := query.Get("state")
+		if state == "" {
+			nodeReply(w, 400, map[string]string{"error": "Missing state"})
+			return
+		}
+		session := getProxySession(provider, state)
+		if session == nil {
+			nodeReply(w, 200, map[string]any{"status": "unknown"})
+			return
+		}
+		if session.Status == "done" || session.Status == "error" {
+			clearProxySession(provider, state)
+			nodeReply(w, 200, session)
+			return
+		}
+		nodeReply(w, 200, map[string]any{"status": session.Status})
+	case "stop-proxy":
+		stopCallbackProxy(provider)
+		nodeReply(w, 200, map[string]any{"success": true})
+	}
+}
+
+func proxyPortFor(provider string) int {
+	if provider == "xai" {
+		return xaiProxyPort
+	}
+	return codexProxyPort
+}
+
+func atoiDefault(value string) int {
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return 0
+	}
+	return parsed
+}
+
+// manualCodeAction fecha o fluxo manual do xai: sessão registrada pelo proxy,
+// troca com o redirectUri/verifier originais e limpeza mesmo em falha.
+func (h *OAuthEngine) manualCodeAction(w http.ResponseWriter, r *http.Request, provider string) {
+	if provider != "xai" {
+		nodeReply(w, 400, map[string]string{"error": "Manual code only supported for xai"})
+		return
+	}
+	body, err := poolInput(r)
+	if err != nil || body == nil {
+		nodeReply(w, 400, map[string]string{"error": "Invalid or empty request body"})
+		return
+	}
+	code := strings.TrimSpace(stringField(body, "code"))
+	state := strings.TrimSpace(stringField(body, "state"))
+	session := getProxySession(provider, state)
+	if session == nil {
+		nodeReply(w, 500, map[string]string{"error": "xAI OAuth session not found; restart the login flow and paste the code again"})
+		return
+	}
+	if code == "" {
+		clearProxySession(provider, state)
+		stopCallbackProxy(provider)
+		nodeReply(w, 500, map[string]string{"error": "Missing xAI authorization code"})
+		return
+	}
+	tokenData, err := h.exchangeXaiTokens(r.Context(), code, session.RedirectURI, session.CodeVerifier)
+	if err != nil {
+		clearProxySession(provider, state)
+		stopCallbackProxy(provider)
+		nodeReply(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	connection, err := h.CreateConnection(r.Context(), xaiConnectionData(tokenData))
+	if err != nil {
+		clearProxySession(provider, state)
+		stopCallbackProxy(provider)
+		nodeReply(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	clearProxySession(provider, state)
+	stopCallbackProxy(provider)
+	nodeReply(w, 200, map[string]any{"success": true, "connection": map[string]any{
+		"id": connection["id"], "provider": connection["provider"], "email": connection["email"], "displayName": connection["displayName"],
+	}})
 }

@@ -72,5 +72,15 @@ func GetOAuthConfig(id string) *OAuthConfig {
 	if c, ok := OAuthConfigs()[id]; ok {
 		return &c
 	}
+	// xai não tem bloco oauth no registry: os valores fixos vivem em
+	// constants/xai.js da origem; espelhamos 1:1 aqui (inclui o clientId da transport).
+	if id == "xai" {
+		return &OAuthConfig{
+			ClientID:    "b1a00492-073a-47ea-816f-4c329264a828",
+			Scope:       "openid profile email offline_access grok-cli:access api:access",
+			FixedPort:   56121,
+			RedirectURI: "http://127.0.0.1:56121/callback",
+		}
+	}
 	return nil
 }
