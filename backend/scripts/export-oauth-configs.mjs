@@ -8,6 +8,8 @@ for (const entry of registry) {
   if (!entry.oauth) continue;
   const o = { ...(entry.id === 'gemini-cli' ? GOOGLE_OAUTH_CLIENT : entry.id === 'antigravity' ? ANTIGRAVITY_OAUTH_CLIENT : {}), ...entry.oauth };
   out[entry.id] = {
+    webAppUrl: o.webAppUrl || null,
+    validationUrl: o.validationUrl || null,
     defaultBaseUrl: o.defaultBaseUrl || null,
     authorizeUrlPath: o.authorizeUrlPath || null,
     tokenUrlPath: o.tokenUrlPath || null,

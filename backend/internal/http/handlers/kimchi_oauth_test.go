@@ -34,7 +34,14 @@ func TestKimchiTokenFlow(t *testing.T) {
 	defer server.Close()
 	var saved map[string]any
 	h := OAuthEngine{Client: server.Client(), Config: func(string) *providers.OAuthConfig {
-		return &providers.OAuthConfig{AuthorizeURL: "https://app.kimchi.dev", UserInfoURL: server.URL + "/validate", TokenExchangeURL: server.URL + "/user"}
+		original := providers.GetOAuthConfig("kimchi")
+		if original == nil || original.ValidationURL == "" || original.WebAppURL == "" {
+			t.Fatal("incomplete snapshot", original)
+		}
+		config := *original
+		config.ValidationURL = server.URL + "/validate"
+		config.UserInfoURL = server.URL + "/user"
+		return &config
 	}, CreateConnection: func(_ context.Context, data map[string]any) (map[string]any, error) {
 		saved = data
 		data["id"] = "saved"

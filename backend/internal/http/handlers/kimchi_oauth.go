@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 func (h *OAuthEngine) kimchiAuthorize(w http.ResponseWriter, r *http.Request, redirectURI string) {
@@ -16,7 +15,7 @@ func (h *OAuthEngine) kimchiAuthorize(w http.ResponseWriter, r *http.Request, re
 		nodeReply(w, 500, map[string]string{"error": "Unknown OAuth provider: kimchi"})
 		return
 	}
-	base := c.AuthorizeURL
+	base := c.WebAppURL
 	if base == "" {
 		base = "https://app.kimchi.dev"
 	}
@@ -41,7 +40,7 @@ func (h *OAuthEngine) kimchiExchange(w http.ResponseWriter, r *http.Request, bod
 		return
 	}
 	c := h.config("kimchi")
-	if c == nil || c.UserInfoURL == "" {
+	if c == nil || c.ValidationURL == "" {
 		nodeReply(w, 500, map[string]string{"error": "Kimchi validation URL is not configured"})
 		return
 	}
@@ -62,7 +61,7 @@ func (h *OAuthEngine) kimchiExchange(w http.ResponseWriter, r *http.Request, bod
 		_ = json.Unmarshal(raw, &data)
 		return res.StatusCode, data, nil
 	}
-	if status, _, err := fetchJSON(c.UserInfoURL); err != nil {
+	if status, _, err := fetchJSON(c.ValidationURL); err != nil {
 		nodeReply(w, 500, map[string]string{"error": "Kimchi token validation failed"})
 		return
 	} else if status < 200 || status >= 300 {
@@ -70,20 +69,23 @@ func (h *OAuthEngine) kimchiExchange(w http.ResponseWriter, r *http.Request, bod
 		return
 	}
 	user := map[string]any{}
-	if c.TokenExchangeURL != "" {
-		if _, data, err := fetchJSON(c.TokenExchangeURL); err == nil && data != nil {
+	if c.UserInfoURL != "" {
+		if status, data, err := fetchJSON(c.UserInfoURL); err == nil && status >= 200 && status < 300 && data != nil {
 			user = data
 		}
 	}
-	userId := jsString(user["id"])
-	if userId != "" {
-		userId = ""
+	userId := ""
+	if nodeTruthy(user["id"]) {
+		userId = jsString(user["id"])
 	}
-	if id, ok := user["id"]; ok {
-		userId = fmt.Sprint(id)
+	username := ""
+	if nodeTruthy(user["username"]) {
+		username = jsString(user["username"])
 	}
-	username := jsString(user["username"])
-	email := jsString(user["email"])
+	email := ""
+	if nodeTruthy(user["email"]) {
+		email = jsString(user["email"])
+	}
 	if email == "" && userId != "" {
 		email = "kimchi-user-" + userId
 	}
@@ -111,5 +113,4 @@ func (h *OAuthEngine) kimchiExchange(w http.ResponseWriter, r *http.Request, bod
 		}
 	}
 	nodeReply(w, 200, map[string]any{"success": true, "connection": result})
-	_ = time.Now
 }
