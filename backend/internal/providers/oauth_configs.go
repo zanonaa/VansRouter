@@ -9,6 +9,10 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	BaseURL             string            `json:"baseUrl"`
+	LoginCodePath       string            `json:"loginCodePath"`
+	LoginStatusPath     string            `json:"loginStatusPath"`
+	OAuthTimeoutMS      float64           `json:"oauthTimeoutMs"`
 	Referrer            string            `json:"referrer"`
 	StateURL            string            `json:"stateUrl"`
 	Platform            string            `json:"platform"`
