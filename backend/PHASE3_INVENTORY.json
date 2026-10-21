@@ -83,43 +83,43 @@
       "method": "GET",
       "path": "/api/headroom/extras",
       "source": "src/app/api/headroom/extras/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/headroom/extras",
       "source": "src/app/api/headroom/extras/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "DELETE",
       "path": "/api/headroom/extras",
       "source": "src/app/api/headroom/extras/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/headroom/restart",
       "source": "src/app/api/headroom/restart/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/headroom/start",
       "source": "src/app/api/headroom/start/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/headroom/status",
       "source": "src/app/api/headroom/status/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/headroom/stop",
       "source": "src/app/api/headroom/stop/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
