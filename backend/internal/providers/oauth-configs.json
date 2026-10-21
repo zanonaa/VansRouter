@@ -1,5 +1,9 @@
 {
   "antigravity": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -39,6 +43,10 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -76,6 +84,10 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -109,6 +121,10 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "baseUrl": "https://copilot.tencent.com",
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": "https://copilot.tencent.com/v2/plugin/auth/state",
     "platform": "CLI",
@@ -142,6 +158,10 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -179,6 +199,10 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -212,6 +236,10 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -249,6 +277,10 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -282,6 +314,10 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -315,6 +351,10 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -348,6 +388,10 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": "grok-build",
     "stateUrl": null,
     "platform": null,
@@ -381,6 +425,10 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -417,6 +465,10 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -450,6 +502,10 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -483,6 +539,10 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -516,6 +576,10 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -553,6 +617,10 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -586,6 +654,10 @@
     "codeChallengeMethod": null
   },
   "qwen": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -619,6 +691,10 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -652,6 +728,10 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "baseUrl": "https://www.codebuddy.ai",
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": "https://www.codebuddy.ai/v2/plugin/auth/state",
     "platform": "ide",
@@ -685,6 +765,10 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "baseUrl": "https://freebuff.com",
+    "loginCodePath": "/api/auth/cli/code",
+    "loginStatusPath": "/api/auth/cli/status",
+    "oauthTimeoutMs": 300000,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -718,6 +802,10 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": "zed",
@@ -751,6 +839,10 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
@@ -784,6 +876,10 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "baseUrl": null,
+    "loginCodePath": null,
+    "loginStatusPath": null,
+    "oauthTimeoutMs": null,
     "referrer": null,
     "stateUrl": null,
     "platform": null,
