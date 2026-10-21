@@ -2,6 +2,7 @@
 import registry from '../../open-sse/providers/registry/index.js';
 import { GOOGLE_OAUTH_CLIENT, ANTIGRAVITY_OAUTH_CLIENT } from '../../open-sse/providers/shared.js';
 import { writeFile } from 'node:fs/promises';
+import { QODER_LOGIN_URL,QODER_DEVICE_TOKEN_URL,QODER_USERINFO_URL } from '../../open-sse/shared/qoder/constants.js';
 const out = {};
 for (const entry of registry) {
   if (!entry.oauth) continue;
@@ -44,5 +45,6 @@ for (const entry of registry) {
     codeChallengeMethod: o.codeChallengeMethod || null,
   };
 }
+Object.assign(out.qoder,{loginUrl:QODER_LOGIN_URL,deviceTokenUrl:QODER_DEVICE_TOKEN_URL,userInfoUrl:QODER_USERINFO_URL});
 await writeFile(new URL('../internal/providers/oauth-configs.json', import.meta.url), JSON.stringify(out, null, 2) + '\n');
 console.log(`Exportadas ${Object.keys(out).length} configs OAuth`);

@@ -651,7 +651,9 @@
     "authorizeUrl": null,
     "scopes": [],
     "redirectUri": null,
-    "codeChallengeMethod": null
+    "codeChallengeMethod": null,
+    "loginUrl": "https://qoder.com/device/selectAccounts",
+    "deviceTokenUrl": "https://openapi.qoder.sh/api/v1/deviceToken/poll"
   },
   "qwen": {
     "baseUrl": null,
