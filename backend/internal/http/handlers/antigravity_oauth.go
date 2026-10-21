@@ -40,6 +40,9 @@ func (h *OAuthEngine) antigravityPost(ctx context.Context, access, userInfoURL, 
 		if err == nil {
 			req.Header.Set("Authorization", "Bearer "+access)
 			req.Header.Set("x-request-source", "local")
+			if c := h.config("antigravity"); c != nil && c.LoadCodeAssistUserAgent != "" {
+				req.Header.Set("User-Agent", c.LoadCodeAssistUserAgent)
+			}
 			if res, err := h.client().Do(req); err == nil {
 				if res.StatusCode >= 200 && res.StatusCode < 300 {
 					_ = json.NewDecoder(io.LimitReader(res.Body, 1<<20)).Decode(&userInfo)
@@ -68,6 +71,9 @@ func (h *OAuthEngine) antigravityPost(ctx context.Context, access, userInfoURL, 
 			req.Header.Set("Authorization", "Bearer "+access)
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("x-request-source", "local")
+			if c := h.config("antigravity"); c != nil && c.LoadCodeAssistUserAgent != "" {
+				req.Header.Set("User-Agent", c.LoadCodeAssistUserAgent)
+			}
 			if res, err := h.client().Do(req); err == nil {
 				if res.StatusCode >= 200 && res.StatusCode < 300 {
 					var data struct {
@@ -122,7 +128,14 @@ func (h *OAuthEngine) antigravityExchange(w http.ResponseWriter, r *http.Request
 		return
 	}
 	access := stringField(data, "access_token")
-	userInfo, projectId, _ := h.antigravityPost(r.Context(), access, c.UserInfoURL, c.ProjectURL)
+	loadURL := c.LoadCodeAssistEndpoint
+	if loadURL == "" {
+		loadURL = c.ProjectURL
+	}
+	userInfo, projectId, tier := h.antigravityPost(r.Context(), access, c.UserInfoURL, loadURL)
+	if projectId != "" && c.OnboardUserEndpoint != "" {
+		go h.antigravityOnboard(access, tier, c.OnboardUserEndpoint, c.LoadCodeAssistUserAgent)
+	}
 	mapped := map[string]any{"provider": "antigravity", "authType": "oauth", "accessToken": access, "email": userInfo["email"], "projectId": projectId, "testStatus": "active"}
 	if value, ok := data["refresh_token"]; ok {
 		mapped["refreshToken"] = value

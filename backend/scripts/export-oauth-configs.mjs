@@ -8,6 +8,9 @@ for (const entry of registry) {
   if (!entry.oauth) continue;
   const o = { ...(entry.id === 'gemini-cli' ? GOOGLE_OAUTH_CLIENT : entry.id === 'antigravity' ? ANTIGRAVITY_OAUTH_CLIENT : {}), ...entry.oauth };
   out[entry.id] = {
+    loadCodeAssistEndpoint: o.loadCodeAssistEndpoint || null,
+    onboardUserEndpoint: o.onboardUserEndpoint || null,
+    loadCodeAssistUserAgent: o.loadCodeAssistUserAgent || null,
     webAppUrl: o.webAppUrl || null,
     validationUrl: o.validationUrl || null,
     defaultBaseUrl: o.defaultBaseUrl || null,
