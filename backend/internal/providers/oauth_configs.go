@@ -9,6 +9,8 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	WebAppURL           string            `json:"webAppUrl"`
+	ValidationURL       string            `json:"validationUrl"`
 	ProfileURL          string            `json:"profileUrl"`
 	MuseKeyURL          string            `json:"museKeyUrl"`
 	DefaultBaseURL      string            `json:"defaultBaseUrl"`

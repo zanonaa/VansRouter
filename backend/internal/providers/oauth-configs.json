@@ -1,5 +1,7 @@
 {
   "antigravity": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -47,6 +49,8 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -92,6 +96,8 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -133,6 +139,8 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -174,6 +182,8 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -219,6 +229,8 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -260,6 +272,8 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -305,6 +319,8 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -346,6 +362,8 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": "https://gitlab.com",
     "authorizeUrlPath": "/oauth/authorize",
     "tokenUrlPath": "/oauth/token",
@@ -387,6 +405,8 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -428,6 +448,8 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -469,6 +491,8 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -513,6 +537,8 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -554,6 +580,8 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "webAppUrl": "https://app.kimchi.dev",
+    "validationUrl": "https://api.cast.ai/v1/llm/openai/supported-providers",
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -595,6 +623,8 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -636,6 +666,8 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -681,6 +713,8 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -724,6 +758,8 @@
     "deviceTokenUrl": "https://openapi.qoder.sh/api/v1/deviceToken/poll"
   },
   "qwen": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -765,6 +801,8 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -806,6 +844,8 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -847,6 +887,8 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -888,6 +930,8 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -929,6 +973,8 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
@@ -970,6 +1016,8 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "webAppUrl": null,
+    "validationUrl": null,
     "defaultBaseUrl": null,
     "authorizeUrlPath": null,
     "tokenUrlPath": null,
