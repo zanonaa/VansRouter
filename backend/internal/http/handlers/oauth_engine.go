@@ -23,6 +23,7 @@ type OAuthEngine struct {
 	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
 	Client           *http.Client
 	Config           func(string) *providers.OAuthConfig
+	RetryWait        func(context.Context, time.Duration) error
 }
 
 func (h *OAuthEngine) config(provider string) *providers.OAuthConfig {
@@ -383,6 +384,16 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 	action := chi.URLParam(r, "action")
 	provider := chi.URLParam(r, "provider")
+	if provider == "muse" {
+		if r.Method == "GET" && action == "device-code" {
+			h.museDevice(w, r)
+			return
+		}
+		if r.Method == "POST" && action == "poll" {
+			h.musePoll(w, r)
+			return
+		}
+	}
 	if provider == "qoder" {
 		if r.Method == "GET" && action == "device-code" {
 			h.qoderDevice(w, r)
