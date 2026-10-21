@@ -30,6 +30,7 @@ type Providers struct {
 	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
 	GetNode          func(context.Context, string) (map[string]any, error)
 	GetPool          func(context.Context, string) (map[string]any, error)
+	Headroom         *HeadroomRoutes
 }
 
 func (h Providers) List(w http.ResponseWriter, r *http.Request) {
