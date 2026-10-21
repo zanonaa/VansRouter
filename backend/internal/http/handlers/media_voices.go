@@ -29,7 +29,7 @@ func (m MediaVoices) client() *http.Client {
 }
 
 func fetchEdgeVoices(ctx context.Context, client *http.Client) ([]map[string]any, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/voices/list", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/voices/list?trustedclienttoken=6A5AA1D4EAFF4E9FB37E23D68491D6F4", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func fetchEdgeVoices(ctx context.Context, client *http.Client) ([]map[string]any
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("edge-tts voices: status %d", res.StatusCode)
+		return nil, fmt.Errorf("Edge TTS voices fetch failed: %d", res.StatusCode)
 	}
 	var raw []map[string]any
 	if err := json.NewDecoder(io.LimitReader(res.Body, 4<<20)).Decode(&raw); err != nil {
@@ -49,20 +49,22 @@ func fetchEdgeVoices(ctx context.Context, client *http.Client) ([]map[string]any
 }
 
 func fetchElevenVoices(ctx context.Context, client *http.Client, apiKey string) ([]map[string]any, error) {
+	if apiKey == "" {
+		return nil, fmt.Errorf("ElevenLabs API key required")
+	}
 	req, err := http.NewRequestWithContext(ctx, "GET", "https://api.elevenlabs.io/v1/voices", nil)
 	if err != nil {
 		return nil, err
 	}
-	if apiKey != "" {
-		req.Header.Set("xi-api-key", apiKey)
-	}
+	req.Header.Set("xi-api-key", apiKey)
+	req.Header.Set("Content-Type", "application/json")
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("elevenlabs voices: status %d", res.StatusCode)
+		return nil, fmt.Errorf("ElevenLabs voices fetch failed: %d", res.StatusCode)
 	}
 	var payload struct {
 		Voices []map[string]any `json:"voices"`
@@ -103,7 +105,7 @@ func (m MediaVoices) Get(w http.ResponseWriter, r *http.Request) {
 			gender, _ := v["gender"].(string)
 			voices = append(voices, map[string]any{
 				"id": v["id"], "name": v["name"], "locale": strings.ReplaceAll(locale, "_", "-"),
-				"lang": lang, "country": country, "countryName": country, "langName": lang, "gender": gender,
+				"lang": lang, "country": country, "countryName": voiceRegion(country), "langName": voiceLanguage(lang), "gender": gender,
 			})
 		}
 	case "elevenlabs", "gemini":
@@ -121,8 +123,11 @@ func (m MediaVoices) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			voices = append(voices, map[string]any{
 				"id": v["voice_id"], "name": v["name"], "locale": locale, "lang": lang,
-				"country": "", "countryName": "", "langName": lang, "gender": gender, "category": v["category"],
+				"country": "", "countryName": "", "langName": voiceLanguage(lang), "gender": gender,
 			})
+			if category, exists := v["category"]; exists {
+				voices[len(voices)-1]["category"] = category
+			}
 		}
 	default:
 		for _, v := range raw {
@@ -140,7 +145,7 @@ func (m MediaVoices) Get(w http.ResponseWriter, r *http.Request) {
 			name = regexpReplace(name, " Online (Natural) - ", " (")
 			voices = append(voices, map[string]any{
 				"id": v["ShortName"], "name": name, "locale": locale, "lang": lang,
-				"country": country, "countryName": country, "langName": lang, "gender": v["Gender"],
+				"country": country, "countryName": voiceRegion(country), "langName": voiceLanguage(lang), "gender": v["Gender"],
 			})
 		}
 	}
