@@ -100,7 +100,7 @@ func run() error {
 		Handler: router.NewWithNodes(func(ctx context.Context) error {
 			var ok int
 			return db.QueryRowContext(ctx, "SELECT 1 AS ok").Scan(&ok)
-		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}, &handlers.Providers{OAuth: &handlers.OAuthEngine{CreateConnection: (database.Connections{DB: db}).Create}, Media: &handlers.MediaVoices{Fetchers: map[string]handlers.VoiceFetcher{"edge-tts": func(ctx context.Context, apiKey string) ([]map[string]any, error) {
+		}, authentication, &handlers.Nodes{Store: database.Nodes{DB: db}, Mutations: database.Nodes{DB: db}, Connections: database.Connections{DB: db}}, &handlers.Providers{OAuth: &handlers.OAuthEngine{CreateConnection: (database.Connections{DB: db}).Create}, Media: &handlers.MediaVoices{Fetchers: map[string]handlers.VoiceFetcher{"gemini": handlers.FetchGeminiVoicesPublic, "edge-tts": func(ctx context.Context, apiKey string) ([]map[string]any, error) {
 			return handlers.FetchEdgeVoicesPublic(ctx)
 		}, "elevenlabs": func(ctx context.Context, apiKey string) ([]map[string]any, error) {
 			return handlers.FetchElevenVoicesPublic(ctx, apiKey)

@@ -61,7 +61,7 @@ func TestMediaVoices(t *testing.T) {
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/media-providers/tts/voices?provider=local-device&lang=pt", nil))
 	_ = json.Unmarshal(w.Body.Bytes(), &payload)
-	if payload.Voices[0]["locale"] != "pt-BR" || payload.Voices[0]["countryName"] != "BR" {
+	if payload.Voices[0]["locale"] != "pt-BR" || payload.Voices[0]["countryName"] != "Brazil" {
 		t.Fatalf("local shape: %v", payload.Voices[0])
 	}
 	w = httptest.NewRecorder()
