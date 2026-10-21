@@ -9,6 +9,7 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	Referrer            string            `json:"referrer"`
 	StateURL            string            `json:"stateUrl"`
 	Platform            string            `json:"platform"`
 	PollInterval        float64           `json:"pollInterval"`

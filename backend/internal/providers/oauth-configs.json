@@ -1,5 +1,6 @@
 {
   "antigravity": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -38,6 +39,7 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -74,6 +76,7 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -106,6 +109,7 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "referrer": null,
     "stateUrl": "https://copilot.tencent.com/v2/plugin/auth/state",
     "platform": "CLI",
     "pollInterval": 5000,
@@ -138,6 +142,7 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -174,6 +179,7 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -206,6 +212,7 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -242,6 +249,7 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -274,6 +282,7 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -306,6 +315,7 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -338,6 +348,7 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "referrer": "grok-build",
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -370,6 +381,7 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -405,6 +417,7 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -437,6 +450,7 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -469,6 +483,7 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -501,6 +516,7 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -537,6 +553,7 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -569,6 +586,7 @@
     "codeChallengeMethod": null
   },
   "qwen": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -601,6 +619,7 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -633,6 +652,7 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "referrer": null,
     "stateUrl": "https://www.codebuddy.ai/v2/plugin/auth/state",
     "platform": "ide",
     "pollInterval": 5000,
@@ -665,6 +685,7 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -697,6 +718,7 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "referrer": null,
     "stateUrl": null,
     "platform": "zed",
     "pollInterval": null,
@@ -729,6 +751,7 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,
@@ -761,6 +784,7 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "referrer": null,
     "stateUrl": null,
     "platform": null,
     "pollInterval": null,

@@ -7,6 +7,7 @@ for (const entry of registry) {
   if (!entry.oauth) continue;
   const o = { ...(entry.id === 'gemini-cli' ? GOOGLE_OAUTH_CLIENT : entry.id === 'antigravity' ? ANTIGRAVITY_OAUTH_CLIENT : {}), ...entry.oauth };
   out[entry.id] = {
+    referrer: o.referrer || null,
     stateUrl: o.stateUrl || null,
     platform: o.platform || null,
     pollInterval: o.pollInterval || null,
