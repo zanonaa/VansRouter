@@ -1,5 +1,9 @@
 {
   "antigravity": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -43,6 +47,10 @@
     "codeChallengeMethod": null
   },
   "claude": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -84,6 +92,10 @@
     "codeChallengeMethod": "S256"
   },
   "cline": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -121,6 +133,10 @@
     "codeChallengeMethod": null
   },
   "codebuddy-cn": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": "https://copilot.tencent.com",
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -158,6 +174,10 @@
     "codeChallengeMethod": null
   },
   "codex": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -199,6 +219,10 @@
     "codeChallengeMethod": "S256"
   },
   "cursor": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -236,6 +260,10 @@
     "codeChallengeMethod": null
   },
   "gemini-cli": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -277,6 +305,10 @@
     "codeChallengeMethod": null
   },
   "github": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -314,6 +346,10 @@
     "codeChallengeMethod": null
   },
   "gitlab": {
+    "defaultBaseUrl": "https://gitlab.com",
+    "authorizeUrlPath": "/oauth/authorize",
+    "tokenUrlPath": "/oauth/token",
+    "userInfoUrlPath": "/api/v4/user",
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -351,6 +387,10 @@
     "codeChallengeMethod": "S256"
   },
   "glm": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -388,6 +428,10 @@
     "codeChallengeMethod": null
   },
   "grok-cli": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -425,6 +469,10 @@
     "codeChallengeMethod": null
   },
   "iflow": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -465,6 +513,10 @@
     "codeChallengeMethod": null
   },
   "kilocode": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -502,6 +554,10 @@
     "codeChallengeMethod": null
   },
   "kimchi": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -539,6 +595,10 @@
     "codeChallengeMethod": null
   },
   "kimi": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -576,6 +636,10 @@
     "codeChallengeMethod": null
   },
   "kiro": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -617,6 +681,10 @@
     "codeChallengeMethod": null
   },
   "qoder": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -656,6 +724,10 @@
     "deviceTokenUrl": "https://openapi.qoder.sh/api/v1/deviceToken/poll"
   },
   "qwen": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -693,6 +765,10 @@
     "codeChallengeMethod": "S256"
   },
   "zcode": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -730,6 +806,10 @@
     "codeChallengeMethod": null
   },
   "codebuddy-intl": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": "https://www.codebuddy.ai",
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -767,6 +847,10 @@
     "codeChallengeMethod": null
   },
   "freebuff": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": "https://freebuff.com",
     "loginCodePath": "/api/auth/cli/code",
     "loginStatusPath": "/api/auth/cli/status",
@@ -804,6 +888,10 @@
     "codeChallengeMethod": null
   },
   "zed": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -841,6 +929,10 @@
     "codeChallengeMethod": null
   },
   "qoder-cn": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,
@@ -878,6 +970,10 @@
     "codeChallengeMethod": null
   },
   "muse": {
+    "defaultBaseUrl": null,
+    "authorizeUrlPath": null,
+    "tokenUrlPath": null,
+    "userInfoUrlPath": null,
     "baseUrl": null,
     "loginCodePath": null,
     "loginStatusPath": null,

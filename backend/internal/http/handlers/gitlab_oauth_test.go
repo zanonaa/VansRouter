@@ -36,7 +36,14 @@ func TestGitlabSelfHostedFlow(t *testing.T) {
 
 	var saved map[string]any
 	h := OAuthEngine{Client: server.Client(), Config: func(string) *providers.OAuthConfig {
-		return &providers.OAuthConfig{Scope: "api", CodeChallengeMethod: "S256"}
+		original := providers.GetOAuthConfig("gitlab")
+		if original == nil || original.TokenURLPath != "/oauth/token" || original.AuthorizeURLPath != "/oauth/authorize" || original.DefaultBaseURL != "https://gitlab.com" {
+			t.Fatal("incomplete GitLab snapshot", original)
+		}
+		config := *original
+		// TokenURL absoluto é proposital: deve usar TokenURLPath ao concatenar base.
+		config.TokenURL = "https://gitlab.com/oauth/token"
+		return &config
 	}, CreateConnection: func(_ context.Context, data map[string]any) (map[string]any, error) {
 		saved = data
 		data["id"] = "saved"
