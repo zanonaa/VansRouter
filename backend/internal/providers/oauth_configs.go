@@ -9,6 +9,7 @@ import (
 var oauthConfigs []byte
 
 type OAuthConfig struct {
+	CookieKeyURL            string            `json:"cookieKeyUrl"`
 	LoadCodeAssistEndpoint  string            `json:"loadCodeAssistEndpoint"`
 	OnboardUserEndpoint     string            `json:"onboardUserEndpoint"`
 	LoadCodeAssistUserAgent string            `json:"loadCodeAssistUserAgent"`
