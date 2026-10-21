@@ -104,6 +104,23 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Delete("/api/models/custom", aliases.CustomDelete)
 			r.Options("/api/models/custom", options("DELETE, GET, HEAD, OPTIONS, POST"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Headroom != nil {
+			headroom := providerAPI[0].Headroom
+			r.Get("/api/headroom/status", authentication.LocalOnlyGuard(headroom.Get))
+			r.Head("/api/headroom/status", withoutBody(authentication.LocalOnlyGuard(headroom.Get)))
+			r.Options("/api/headroom/status", authentication.LocalOnlyGuard(options("GET, HEAD, OPTIONS")))
+			r.Post("/api/headroom/start", authentication.LocalOnlyGuard(headroom.Start))
+			r.Options("/api/headroom/start", authentication.LocalOnlyGuard(options("POST, OPTIONS")))
+			r.Post("/api/headroom/stop", authentication.LocalOnlyGuard(headroom.Stop))
+			r.Options("/api/headroom/stop", authentication.LocalOnlyGuard(options("POST, OPTIONS")))
+			r.Post("/api/headroom/restart", authentication.LocalOnlyGuard(headroom.Restart))
+			r.Options("/api/headroom/restart", authentication.LocalOnlyGuard(options("POST, OPTIONS")))
+			r.Get("/api/headroom/extras", authentication.LocalOnlyGuard(headroom.ExtrasGet))
+			r.Head("/api/headroom/extras", withoutBody(authentication.LocalOnlyGuard(headroom.ExtrasGet)))
+			r.Post("/api/headroom/extras", authentication.LocalOnlyGuard(headroom.ExtrasPost))
+			r.Delete("/api/headroom/extras", authentication.LocalOnlyGuard(headroom.ExtrasDelete))
+			r.Options("/api/headroom/extras", authentication.LocalOnlyGuard(options("GET, HEAD, DELETE, OPTIONS, POST")))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Usage != nil {
 			usage := providerAPI[0].Usage
 			r.Get("/api/usage/history", usage.History)

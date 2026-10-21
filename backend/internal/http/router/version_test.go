@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/zanonaa/VansRouter/backend/internal/http/handlers"
 	"strings"
 	"testing"
 )
@@ -57,5 +59,29 @@ func TestVersionUpdateRouteGate(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != 200 && w.Code != 204 {
 		t.Fatalf("authed options %d", w.Code)
+	}
+}
+
+func TestHeadroomRoutesLocalOnly(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{Headroom: &handlers.HeadroomRoutes{H: &handlers.Headroom{DataDir: t.TempDir()}}})
+	methods := map[string]string{
+		"/api/headroom/status":  "GET",
+		"/api/headroom/start":   "POST",
+		"/api/headroom/stop":    "POST",
+		"/api/headroom/restart": "POST",
+		"/api/headroom/extras":  "GET",
+	}
+	for path, method := range methods {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(method, path, nil))
+		if w.Code != 401 && w.Code != 403 && w.Code != 500 {
+			t.Fatalf("%s %s anon espera guarda local: %d %s", method, path, w.Code, w.Body.String())
+		}
+	}
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/headroom/nonexistent", nil))
+	if w.Code != 404 {
+		t.Fatalf("rota não registrada %d", w.Code)
 	}
 }

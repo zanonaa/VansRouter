@@ -11,12 +11,16 @@ var voiceMetadataJSON []byte
 var voiceMetadata = func() struct {
 	Languages, Regions map[string]string
 	Gemini             []map[string]any
-} { var result struct {
-	Languages, Regions map[string]string
-	Gemini             []map[string]any
-}; if err := json.Unmarshal(voiceMetadataJSON, &result); err != nil {
-	panic(err)
-}; return result }()
+} {
+	var result struct {
+		Languages, Regions map[string]string
+		Gemini             []map[string]any
+	}
+	if err := json.Unmarshal(voiceMetadataJSON, &result); err != nil {
+		panic(err)
+	}
+	return result
+}()
 
 func voiceLanguage(code string) string {
 	if value, ok := voiceMetadata.Languages[code]; ok {
