@@ -33,7 +33,7 @@ func TestOAuthEngineContract(t *testing.T) {
 		{"GET", "/api/oauth/claude/authorize?redirect_uri=http://localhost:8080/cb", "", 200, `"codeVerifier"`},
 		{"GET", "/api/oauth/claude/unknown", "", 400, "Unknown action"},
 		{"GET", "/api/oauth/claude/start-proxy?app_port=1234", "", 400, "Proxy only supported"},
-		{"GET", "/api/oauth/claude/poll-status", "", 400, "Proxy only supported"},
+		{"GET", "/api/oauth/claude/poll-status", "", 400, "Poll only supported"},
 		{"GET", "/api/oauth/claude/stop-proxy", "", 400, "Proxy only supported"},
 		{"GET", "/api/oauth/claude/device-code", "", 501, "Device code flow not yet migrated"},
 		{"POST", "/api/oauth/claude/exchange", `invalid`, 400, "Invalid or empty request body"},
