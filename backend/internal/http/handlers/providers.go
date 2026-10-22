@@ -21,6 +21,7 @@ type Providers struct {
 	Deploys           *RelayDeploys
 	KiloFree          *KiloFreeModels
 	ClientList        *ProviderClient
+	Suggestions       *ProviderSuggestions
 	Circuits          *CircuitRegistry
 	TranslatorFiles   *TranslatorFiles
 	OAuth             *OAuthEngine

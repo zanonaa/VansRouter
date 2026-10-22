@@ -557,7 +557,7 @@
       "method": "GET",
       "path": "/api/providers/suggested-models",
       "source": "src/app/api/providers/suggested-models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
