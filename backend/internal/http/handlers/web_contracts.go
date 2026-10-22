@@ -196,25 +196,30 @@ func (g *Gateway) Fetch(w http.ResponseWriter, r *http.Request) {
 			headers["Authorization"] = "Bearer " + token
 		}
 	case "tavily":
-		payload = map[string]any{"api_key": token, "urls": []any{targetURL}}
+		payload = map[string]any{"urls": []any{targetURL}, "extract_depth": "basic"}
+		if token != "" {
+			headers["Authorization"] = "Bearer " + token
+		}
 	case "exa":
-		payload = map[string]any{"urls": []any{targetURL}}
-		headers["Authorization"] = "Bearer " + token
+		payload = map[string]any{"ids": []any{targetURL}, "text": true}
+		if token != "" {
+			headers["x-api-key"] = token
+		}
 	case "tinyfish":
 		payload = map[string]any{"urls": []any{targetURL}, "format": format}
 		headers["X-API-Key"] = token
 	case "jina-reader":
-		endpoint += "/" + targetURL
-		payload = nil
+		endpoint += "/"
 		if token != "" {
 			headers["Authorization"] = "Bearer " + token
 		}
 	}
-	method := "POST"
-	if id == "jina-reader" {
-		method = "GET"
+	if id == "tinyfish" && format != "markdown" && format != "html" {
+		g.webError(w, 400, "Unsupported TinyFish format: "+format)
+		return
 	}
-	status, upstream, err := g.doJSON(r.Context(), method, endpoint, headers, payload, 15*time.Second)
+	started := time.Now()
+	status, upstream, err := g.doJSON(r.Context(), "POST", endpoint, headers, payload, 15*time.Second)
 	if err != nil {
 		g.webError(w, status, err.Error())
 		return
@@ -223,16 +228,13 @@ func (g *Gateway) Fetch(w http.ResponseWriter, r *http.Request) {
 		g.webError(w, status, fmt.Sprintf("%s returned %d", id, status))
 		return
 	}
-	text := string(upstream)
-	var parsed any
-	if json.Unmarshal(upstream, &parsed) == nil {
-		text = ttsString(parsed)
-		if text == "" {
-			text = string(upstream)
-		}
+	normalized, err := normalizeFetch(id, targetURL, format, upstream, int(pxpipeNum(body["max_characters"])), config.Fetch["costPerQuery"], time.Since(started).Milliseconds())
+	if err != nil {
+		g.webError(w, 502, err.Error())
+		return
 	}
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	nodeReply(w, 200, map[string]any{"provider": id, "url": targetURL, "content": map[string]any{"format": format, "text": text, "length": len([]rune(text))}})
+	nodeReply(w, 200, normalized)
 }
 
 func (g *Gateway) Speech(w http.ResponseWriter, r *http.Request) {
