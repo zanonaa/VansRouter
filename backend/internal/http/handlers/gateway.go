@@ -123,7 +123,8 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	provider, model := splitTranslatorModel(ttsString(body["model"]))
-	if provider == "" || providers.TargetFormat(provider) != "openai" || detectRequestFormat(body) != "openai" {
+	body = filterToOpenAI(body)
+	if provider == "" || providers.TargetFormat(provider) != "openai" {
 		g.NotPorted(w, r)
 		return
 	}
@@ -132,6 +133,59 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	clone.Body = io.NopCloser(bytes.NewReader(encoded))
 	g.Send.Send(w, clone)
 }
+func filterToOpenAI(body map[string]any) map[string]any {
+	messages, ok := body["messages"].([]any)
+	if !ok {
+		return body
+	}
+	filtered := []any{}
+	for _, raw := range messages {
+		message, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		if message["role"] == "developer" {
+			message["role"] = "system"
+		}
+		if content, ok := message["content"].([]any); ok {
+			blocks := []any{}
+			for _, rawBlock := range content {
+				block, ok := rawBlock.(map[string]any)
+				if !ok || block["type"] == "thinking" || block["type"] == "redacted_thinking" {
+					continue
+				}
+				if block["type"] == "text" || block["type"] == "image_url" {
+					delete(block, "signature")
+					delete(block, "cache_control")
+					blocks = append(blocks, block)
+				}
+			}
+			if len(blocks) == 0 {
+				blocks = append(blocks, map[string]any{"type": "text", "text": ""})
+			}
+			message["content"] = blocks
+		}
+		filtered = append(filtered, message)
+	}
+	body["messages"] = filtered
+	return body
+}
+
+func (g *Gateway) Responses(w http.ResponseWriter, r *http.Request) {
+	body, err := poolInput(r)
+	if err != nil {
+		nodeReply(w, 400, map[string]any{"error": "Invalid JSON body"})
+		return
+	}
+	if _, exists := body["stream"]; !exists {
+		body["stream"] = false
+	}
+	encoded, _ := json.Marshal(body)
+	clone := r.Clone(r.Context())
+	clone.Body = io.NopCloser(bytes.NewReader(encoded))
+	g.OpenAIChat(w, clone)
+}
+
 func (g *Gateway) NotPorted(w http.ResponseWriter, r *http.Request) {
 	if !g.key(r) {
 		nodeReply(w, 401, map[string]any{"error": "API key required"})
