@@ -120,26 +120,36 @@ func (t *TranslatorTranslate) Post(w http.ResponseWriter, r *http.Request) {
 			fail(501, "Translator conversion not ported for step 3")
 			return
 		}
-		config := providers.OpenAITransport(provider)
-		target := ""
-		headers := map[string]string{}
-		if config != nil {
-			target = config.BaseURL
-			headers = config.Headers
-		}
-		switch format {
-		case "claude":
-			target = "https://api.anthropic.com/v1/messages"
-			headers = map[string]string{"x-api-key": "", "anthropic-version": "2023-06-01"}
-		case "gemini":
-			target = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent"
-		}
-		if target == "" {
-			fail(501, "Translator executor not ported for provider: "+provider)
+		body, err := translateTarget(clientBody, format, model)
+		if err != nil {
+			fail(501, err.Error())
 			return
 		}
-		body := filterToOpenAI(clientBody)
-		body["model"] = model
+		if t.Connections == nil {
+			fail(500, "Connection store unavailable")
+			return
+		}
+		connections, err := t.Connections.List(r.Context(), provider, nil)
+		if err != nil {
+			fail(500, err.Error())
+			return
+		}
+		var connection map[string]any
+		for _, candidate := range connections {
+			if candidate["isActive"] != false {
+				connection = candidate
+				break
+			}
+		}
+		if connection == nil {
+			fail(400, "No active connection for provider: "+provider)
+			return
+		}
+		target, headers, err := translatorPlan(provider, model, clientBody["stream"] != false, connection)
+		if err != nil {
+			fail(501, err.Error())
+			return
+		}
 		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"url": target, "headers": headers, "body": body}})
 	default:
 		fail(400, "Invalid step (1-3)")
