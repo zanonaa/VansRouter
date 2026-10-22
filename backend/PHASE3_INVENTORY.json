@@ -569,7 +569,7 @@
       "method": "POST",
       "path": "/api/providers/validate",
       "source": "src/app/api/providers/validate/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
