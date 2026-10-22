@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 )
 
 // safeSettings reproduz a resposta de settings sem segredos.
@@ -238,8 +239,12 @@ func bodyHas(body map[string]any, key string) bool {
 	return ok
 }
 
+var outboundProxyMu sync.Mutex
+
 func applyOutboundProxy(settings map[string]any) {
-	enabled := settings["outboundProxyEnabled"] == true
+	outboundProxyMu.Lock()
+	defer outboundProxyMu.Unlock()
+	enabled := jsTruthy(settings["outboundProxyEnabled"])
 	proxy := strings.TrimSpace(text(settings, "outboundProxyUrl"))
 	noProxy := strings.TrimSpace(text(settings, "outboundNoProxy"))
 	if !enabled {
@@ -250,20 +255,38 @@ func applyOutboundProxy(settings map[string]any) {
 		}
 		return
 	}
-	if parsed, err := url.Parse(proxy); err == nil && parsed.Host != "" {
+	wasManaged := os.Getenv("NINE_ROUTER_PROXY_MANAGED") == "1"
+	managed := false
+	if wasManaged {
+		if proxy == "" {
+			for _, key := range []string{"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NINE_ROUTER_PROXY_URL"} {
+				os.Unsetenv(key)
+			}
+		}
+		if noProxy == "" {
+			os.Unsetenv("NO_PROXY")
+			os.Unsetenv("NINE_ROUTER_NO_PROXY")
+		}
+	}
+	if parsed, err := url.Parse(proxy); err == nil && parsed.Host != "" && !strings.ContainsAny(proxy, "\n\r`$") {
 		switch parsed.Scheme {
 		case "http", "https", "socks5", "socks4", "socks5h", "socks4a":
 			os.Setenv("HTTP_PROXY", parsed.String())
 			os.Setenv("HTTPS_PROXY", parsed.String())
 			os.Setenv("ALL_PROXY", parsed.String())
 			os.Setenv("NINE_ROUTER_PROXY_URL", parsed.String())
-			os.Setenv("NINE_ROUTER_PROXY_MANAGED", "1")
+			managed = true
 		}
 	}
 	if noProxy != "" {
 		os.Setenv("NO_PROXY", noProxy)
 		os.Setenv("NINE_ROUTER_NO_PROXY", noProxy)
+		managed = true
+	}
+	if managed {
 		os.Setenv("NINE_ROUTER_PROXY_MANAGED", "1")
+	} else if wasManaged {
+		os.Unsetenv("NINE_ROUTER_PROXY_MANAGED")
 	}
 }
 
