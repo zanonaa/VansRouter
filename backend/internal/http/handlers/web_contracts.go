@@ -125,7 +125,14 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 	if kind == "" {
 		kind = "web"
 	}
-	max := int(pxpipeNum(body["max_results"]))
+	requested := body["max_results"]
+	if id == "exa" {
+		options := exaOptions(body)
+		if value, ok := options["numResults"]; ok {
+			requested = value
+		}
+	}
+	max := int(pxpipeNum(requested))
 	if max <= 0 {
 		max = int(pxpipeNum(config.Search["defaultMaxResults"]))
 	}
@@ -156,14 +163,24 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 		g.webError(w, 502, id+" returned invalid JSON")
 		return
 	}
-	results, total, err := normalizeSearch(id, kind, parsed, max, time.Now())
+	results, total, metadata, err := normalizeSearch(id, kind, parsed, max, time.Now())
 	if err != nil {
 		g.webError(w, 502, err.Error())
 		return
 	}
 	duration := time.Since(started).Milliseconds()
+	cost := config.Search["costPerQuery"]
+	if costs, ok := metadata["costDollars"].(map[string]any); ok {
+		if reported, ok := costs["total"].(float64); ok {
+			cost = reported
+		}
+	}
+	response := map[string]any{"provider": id, "query": query, "results": results, "answer": nil, "usage": map[string]any{"queries_used": 1, "search_cost_usd": cost}, "metrics": map[string]any{"response_time_ms": duration, "upstream_latency_ms": duration, "total_results_available": total}, "errors": []any{}}
+	if id == "exa" {
+		response["exa"] = metadata
+	}
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	nodeReply(w, 200, map[string]any{"provider": id, "query": query, "results": results, "answer": nil, "usage": map[string]any{"queries_used": 1, "search_cost_usd": config.Search["costPerQuery"]}, "metrics": map[string]any{"response_time_ms": duration, "upstream_latency_ms": duration, "total_results_available": total}, "errors": []any{}})
+	nodeReply(w, 200, response)
 }
 
 func (g *Gateway) Fetch(w http.ResponseWriter, r *http.Request) {

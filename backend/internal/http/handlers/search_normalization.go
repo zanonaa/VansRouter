@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func normalizeSearch(provider, kind string, data map[string]any, max int, now time.Time) ([]map[string]any, any, error) {
+func normalizeSearch(provider, kind string, data map[string]any, max int, now time.Time) ([]map[string]any, any, map[string]any, error) {
 	var items []any
 	var total any
 	switch provider {
@@ -32,7 +32,7 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 		}
 		items, _ = container["results"].([]any)
 		total = container["totalCount"]
-	case "tavily", "searxng", "linkup":
+	case "tavily", "searxng", "linkup", "exa":
 		items, _ = data["results"].([]any)
 		total = len(items)
 	case "tinyfish":
@@ -63,13 +63,13 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 		items, _ = container[field].([]any)
 		total = len(items)
 	default:
-		return nil, nil, fmt.Errorf("Search normalizer not implemented for provider: %s", provider)
+		return nil, nil, nil, fmt.Errorf("Search normalizer not implemented for provider: %s", provider)
 	}
 	results := []map[string]any{}
 	for index, raw := range items {
 		item, ok := raw.(map[string]any)
 		if !ok {
-			return nil, nil, fmt.Errorf("Invalid search result")
+			return nil, nil, nil, fmt.Errorf("Invalid search result")
 		}
 		target, snippet, published, favicon, fullText, source, image := "", "", any(nil), any(nil), "", any(nil), any(nil)
 		switch provider {
@@ -88,6 +88,22 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 			snippet = ttsString(item["content"])
 			published = item["published_date"]
 			fullText = ttsString(item["raw_content"])
+		case "exa":
+			target = ttsString(item["url"])
+			if highlights, ok := item["highlights"].([]any); ok && len(highlights) > 0 {
+				snippet = ttsString(highlights[0])
+			}
+			if snippet == "" {
+				text := ttsString(item["text"])
+				if len([]rune(text)) > 300 {
+					text = string([]rune(text)[:300])
+				}
+				snippet = text
+			}
+			published = item["publishedDate"]
+			favicon = item["favicon"]
+			image = item["image"]
+			fullText = ttsString(item["text"])
 		case "google-pse", "searchapi":
 			target = ttsString(item["link"])
 			snippet = ttsString(firstNonEmpty(item["snippet"], item["description"]))
@@ -136,7 +152,7 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 			image = firstNonEmpty(item["thumbnail"], item["img_src"])
 		}
 		var score any
-		if value, ok := item["score"].(float64); ok && provider == "tavily" {
+		if value, ok := item["score"].(float64); ok && (provider == "tavily" || provider == "exa") {
 			if value < 0 {
 				value = 0
 			}
@@ -162,6 +178,15 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 		}
 		result := map[string]any{"title": title, "url": target, "snippet": snippet, "position": index + 1, "score": score, "published_at": published, "favicon_url": favicon, "content": content, "metadata": map[string]any{"author": nil, "language": nil, "source_type": source, "image_url": image}, "citation": map[string]any{"provider": provider, "retrieved_at": now.UTC().Format("2006-01-02T15:04:05.000Z"), "rank": index + 1}, "provider_raw": nil}
 		metadata := result["metadata"].(map[string]any)
+		if provider == "exa" {
+			metadata["author"] = item["author"]
+			result["provider_raw"] = map[string]any{"id": item["id"], "publishedDate": item["publishedDate"], "author": item["author"], "image": item["image"], "favicon": item["favicon"], "highlightScores": item["highlightScores"], "summary": item["summary"], "subpages": item["subpages"], "extras": item["extras"]}
+			for key, value := range result["provider_raw"].(map[string]any) {
+				if value == nil {
+					result["provider_raw"].(map[string]any)[key] = nil
+				}
+			}
+		}
 		if provider == "tinyfish" {
 			if authors, ok := item["authors"].([]any); ok {
 				names := []string{}
@@ -202,7 +227,15 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 	if max > 0 && len(results) > max {
 		results = results[:max]
 	}
-	return results, total, nil
+	var metadata map[string]any
+	if provider == "exa" {
+		metadata = map[string]any{"requestId": data["requestId"], "resolvedSearchType": firstNonEmpty(data["resolvedSearchType"], data["searchType"]), "costDollars": data["costDollars"], "output": data["output"]}
+		if items == nil {
+			results = []map[string]any{}
+			total = nil
+		}
+	}
+	return results, total, metadata, nil
 }
 
 func buildBasicSearch(provider, base, token, query, kind string, max int, body map[string]any) (string, string, map[string]string, map[string]any, error) {
@@ -266,6 +299,12 @@ func buildBasicSearch(provider, base, token, query, kind string, max int, body m
 	case "searxng":
 		values := url.Values{"q": {query}, "format": {"json"}}
 		return "GET", base + "?" + values.Encode(), map[string]string{}, nil, nil
+	case "exa":
+		payload, err := buildExaBody(query, kind, max, body)
+		if err != nil {
+			return "", "", nil, nil, err
+		}
+		return "POST", base, map[string]string{"Content-Type": "application/json", "Authorization": "Bearer " + token}, payload, nil
 	default:
 		return buildAdditionalSearch(provider, base, token, query, kind, max, body)
 	}
