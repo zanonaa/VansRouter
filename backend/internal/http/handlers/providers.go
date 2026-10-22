@@ -37,6 +37,7 @@ type Providers struct {
 	Models            *ModelsEndpoints
 	Usage             *UsageEndpoints
 	LiveUsage         *UsageLive
+	UsageContracts    *UsageContracts
 	Combos            *Combos
 	CreateBulk        func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools             *ProxyPools
