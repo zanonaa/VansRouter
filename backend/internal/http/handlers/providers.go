@@ -22,6 +22,7 @@ type Providers struct {
 	KiloFree          *KiloFreeModels
 	ClientList        *ProviderClient
 	Suggestions       *ProviderSuggestions
+	Validation        *ProviderValidation
 	Circuits          *CircuitRegistry
 	TranslatorFiles   *TranslatorFiles
 	OAuth             *OAuthEngine

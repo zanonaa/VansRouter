@@ -105,6 +105,11 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Post("/api/providers/circuit-breakers/{name}/reset", authentication.SettingsGuard(circuits.ResetHTTP))
 			r.Options("/api/providers/circuit-breakers/{name}/reset", options("POST, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Validation != nil {
+			validation := providerAPI[0].Validation
+			r.Post("/api/providers/validate", validation.Post)
+			r.Options("/api/providers/validate", options("POST, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Suggestions != nil {
 			suggestions := providerAPI[0].Suggestions
 			r.Get("/api/providers/suggested-models", suggestions.Get)
