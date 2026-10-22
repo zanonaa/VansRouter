@@ -539,7 +539,7 @@
       "method": "GET",
       "path": "/api/providers/kilo/free-models",
       "source": "src/app/api/providers/kilo/free-models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
