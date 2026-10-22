@@ -14,6 +14,7 @@ type Config struct {
 	Address     string
 	DataDir     string
 	Synchronous string
+	SPADir      string
 }
 
 func Load() (Config, error) {
@@ -62,5 +63,12 @@ func load(env func(string) string, home func() (string, error), platform string)
 	default:
 		return Config{}, fmt.Errorf("SQLITE_SYNCHRONOUS inválido")
 	}
-	return Config{Address: ":" + port, DataDir: dir, Synchronous: mode}, nil
+	spaDir := env("SPA_DIR")
+	if spaDir != "" {
+		info, err := os.Stat(spaDir)
+		if err != nil || !info.IsDir() {
+			return Config{}, fmt.Errorf("SPA_DIR deve ser um diretório existente com o build da SPA")
+		}
+	}
+	return Config{Address: ":" + port, DataDir: dir, Synchronous: mode, SPADir: spaDir}, nil
 }
