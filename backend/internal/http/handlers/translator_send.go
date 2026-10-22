@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
@@ -15,9 +16,11 @@ import (
 // TranslatorSend executes OpenAI-format transports with actual streaming. Other
 // formats remain explicit pending contracts rather than silently mis-translated.
 type TranslatorSend struct {
-	Connections NodeConnections
-	Client      *http.Client
-	GetPool     connectionPoolLookup
+	Connections  NodeConnections
+	Client       *http.Client
+	GetPool      connectionPoolLookup
+	refreshMu    sync.Mutex
+	refreshCalls map[[32]byte]*refreshCall
 }
 
 func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {

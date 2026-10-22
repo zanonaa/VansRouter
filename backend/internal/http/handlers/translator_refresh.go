@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,7 +17,63 @@ import (
 
 // refreshConnection implements the refresh protocols explicitly represented
 // here. Unsupported provider protocols are not guessed from an OAuth URL.
+type refreshCall struct {
+	done      chan struct{}
+	patch     map[string]any
+	err       error
+	completed time.Time
+}
+
 func (t *TranslatorSend) refreshConnection(ctx context.Context, provider string, connection map[string]any) (map[string]any, error) {
+	// Hash the secret rather than retaining a plaintext refresh token as a key.
+	key := sha256.Sum256([]byte(provider + "\x00" + ttsString(connection["id"]) + "\x00" + ttsString(connection["refreshToken"])))
+	t.refreshMu.Lock()
+	if t.refreshCalls == nil {
+		t.refreshCalls = map[[32]byte]*refreshCall{}
+	}
+	now := time.Now()
+	for id, call := range t.refreshCalls {
+		if !call.completed.IsZero() && now.Sub(call.completed) > 30*time.Second {
+			delete(t.refreshCalls, id)
+		}
+	}
+	if call := t.refreshCalls[key]; call != nil {
+		t.refreshMu.Unlock()
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-call.done:
+			return copyRefreshPatch(call.patch), call.err
+		}
+	}
+	call := &refreshCall{done: make(chan struct{})}
+	t.refreshCalls[key] = call
+	t.refreshMu.Unlock()
+	patch, err := t.refreshConnectionOnce(ctx, provider, connection)
+	t.refreshMu.Lock()
+	call.patch, call.err, call.completed = copyRefreshPatch(patch), err, time.Now()
+	// Failed requests can be retried; successful rotated tokens are reused by
+	// lagging requests that still carry the old credentials for a short window.
+	if err != nil || patch == nil {
+		delete(t.refreshCalls, key)
+	}
+	close(call.done)
+	t.refreshMu.Unlock()
+	return patch, err
+}
+
+func copyRefreshPatch(patch map[string]any) map[string]any {
+	if patch == nil {
+		return nil
+	}
+	copy := make(map[string]any, len(patch))
+	for k, v := range patch {
+		copy[k] = v
+	}
+	return copy
+}
+
+func (t *TranslatorSend) refreshConnectionOnce(ctx context.Context, provider string, connection map[string]any) (map[string]any, error) {
 	refresh := ttsString(connection["refreshToken"])
 	if refresh == "" {
 		return nil, nil
