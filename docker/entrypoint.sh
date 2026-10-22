@@ -2,7 +2,7 @@
 set -eu
 
 node /usr/local/bin/migrate-legacy-volume.cjs
-chown -R node:node /app/data /app/data-home 2>/dev/null || true
+chown -R node:node /app/data 2>/dev/null || true
 
 # No locality knob here on purpose. Docker NATs published-port traffic from the
 # host, so the app sees the container gateway as the TCP peer and cannot tell the

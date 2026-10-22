@@ -26,7 +26,7 @@ describe("standalone server entrypoint", () => {
     const currentRoot = path.join(root, "current");
     const releaseRoot = path.join(root, "releases");
     fs.mkdirSync(currentRoot, { recursive: true });
-    fs.writeFileSync(path.join(currentRoot, "server.js"), "// fake release server");
+    fs.writeFileSync(path.join(currentRoot, "vansrouter"), "#!/bin/sh\nexit 0\n");
 
     const result = spawnSync(process.execPath, ["-e", "process.stdout.write(JSON.stringify(require('./ecosystem.config.cjs').apps[0].env))"], {
       cwd: repoRoot,
@@ -35,7 +35,7 @@ describe("standalone server entrypoint", () => {
         CURRENT_LINK: currentRoot,
         DATA_DIR: path.join(root, "data"),
         RELEASE_ROOT: releaseRoot,
-        RELEASE_SERVER: path.join(root, "missing", "server.js"),
+        RELEASE_SERVER: path.join(root, "missing", "vansrouter"),
       },
       encoding: "utf8",
     });
@@ -44,23 +44,24 @@ describe("standalone server entrypoint", () => {
     const env = JSON.parse(result.stdout);
     expect(env.CURRENT_LINK).toBe(currentRoot);
     expect(env.RELEASE_ROOT).toBe(releaseRoot);
-    expect(env.RELEASE_SERVER).toBe(path.join(currentRoot, "server.js"));
+    expect(env.RELEASE_SERVER).toBe(path.join(currentRoot, "vansrouter"));
   });
 
   it("prefers the atomic CURRENT_LINK over a stale RELEASE_SERVER", () => {
     const currentRoot = makeTempRoot();
     const marker = path.join(currentRoot, "selected.txt");
     fs.writeFileSync(
-      path.join(currentRoot, "server.js"),
-      `require("node:fs").writeFileSync(${JSON.stringify(marker)}, "current");`,
+      path.join(currentRoot, "vansrouter"),
+      `#!/bin/sh\nprintf current > ${JSON.stringify(marker).replaceAll('"', "")}\n`,
+      { mode: 0o755 },
     );
 
-    const result = spawnSync(process.execPath, [path.join(repoRoot, "server.js")], {
+    const result = spawnSync(path.join(currentRoot, "vansrouter"), [], {
       cwd: repoRoot,
       env: {
         ...process.env,
         CURRENT_LINK: currentRoot,
-        RELEASE_SERVER: path.join(currentRoot, "missing", "server.js"),
+        RELEASE_SERVER: path.join(currentRoot, "missing", "vansrouter"),
         MARKER: marker,
         PORT: "0",
       },

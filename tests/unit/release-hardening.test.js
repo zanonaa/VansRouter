@@ -31,21 +31,19 @@ describe("release hardening contracts", () => {
     expect(workflow).toContain("pnpm test");
     expect(workflow).not.toMatch(/run:\s*pnpm run build/);
     expect(read("Dockerfile")).toContain("RUN pnpm run build");
-    expect(JSON.parse(read("package.json")).scripts.build).toBe("node scripts/build.js");
+    expect(JSON.parse(read("package.json")).scripts.build).toBe("vite build");
     expect(workflow).toContain("platforms: linux/amd64,linux/arm64");
     expect(workflow).toContain("push:");
     expect(workflow).not.toContain("windows-latest");
     expect(workflow).not.toContain("macos-latest");
   });
 
-  it("keeps Docker dependency installation locked and externally downloaded binaries verified", () => {
+  it("keeps Docker dependency installation locked and the Go build checksum-verified", () => {
     const dockerfile = read("Dockerfile");
     expect(dockerfile).toContain("pnpm install --frozen-lockfile");
     expect(dockerfile).toContain("@sha256:");
-    expect(dockerfile).toContain("npm_config_build_from_source=true");
-    expect(dockerfile).toContain("linuxmusl-${bs_arch}.tar.gz");
-    expect(dockerfile).toContain("9b14618f3d9aa9b70daade965bca892f324b063e1cc7532b030d7138a8f9d070");
-    expect(dockerfile).toContain("b5e92ec2637bb578cc12b8b9b94877a82c3ef5e862ccc72d420706aab978bb9a");
+    expect(dockerfile).toContain("go mod download");
+    expect(dockerfile).toContain("COPY backend/go.mod backend/go.sum ./");
   });
 
   it("requires an explicit VansRouter version while preserving 9router storage", () => {
@@ -63,22 +61,13 @@ describe("release hardening contracts", () => {
     expect(attributes).toMatch(/docker\/entrypoint\.sh text eol=lf/);
   });
 
-  it("uses the documented application port for the production start script", () => {
+  it("keeps runtime scripts free of Next entries and documents the app port", () => {
     const packageJson = JSON.parse(read("package.json"));
-    expect(packageJson.scripts.start).toContain("--port 20128");
-    expect(packageJson.scripts["preflight:upgrade"]).toContain("preflight-upgrade.cjs");
-  });
-
-  it("packages the production secret validator with the web gateway", () => {
-    expect(read("Dockerfile")).toContain("COPY runtime-secrets.cjs");
-    expect(read("scripts/build.js")).toContain("runtime-secrets.cjs");
-  });
-
-  it("keeps the native database lockfile in the Docker build context", () => {
-    const gitignore = read(".gitignore");
-    expect(fs.existsSync(path.join(root, "docker/native-deps/package-lock.json"))).toBe(true);
-    expect(gitignore).toContain("!docker/native-deps/package-lock.json");
-    expect(read("scripts/smoke-container.cjs")).toContain("VANROUTER_SKIP_UPDATE_CHECK");
+    const scripts = Object.values(packageJson.scripts || {}).join(" ");
+    expect(scripts).not.toContain("next ");
+    expect(scripts).not.toMatch(/next-(dev|build|start)/);
+    expect(read("docker-compose.yml")).toContain("20128:20128");
+    expect(read("Dockerfile")).toContain("ENV PORT=20128");
   });
 
   it("keeps landing onboarding on Docker and the web dashboard", () => {

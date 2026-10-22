@@ -2,8 +2,7 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
-const { defaultDataDir, resolveRuntimePaths } = require("../../scripts/runtime-paths.cjs");
-const { readPm2App, readPm2Environment } = require("../../scripts/deploy-atomic.cjs");
+const { defaultDataDir, resolveRuntimePaths, readPm2App, readPm2Environment } = require("../../scripts/runtime-paths.cjs");
 
 describe("runtime paths and PM2 state", () => {
   it("uses the compatibility ~/.9router default when DATA_DIR is absent", () => {

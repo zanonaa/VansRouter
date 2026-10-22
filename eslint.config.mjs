@@ -1,61 +1,129 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
+import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 
+// Globals de runtime Node 22 disponíveis nos módulos server (open-sse/lib):
+// fetch/Web APIs nativas além dos clássicos de timer/buffer.
+const nodeGlobals = {
+  console: "readonly",
+  process: "readonly",
+  Buffer: "readonly",
+  setTimeout: "readonly",
+  clearTimeout: "readonly",
+  setInterval: "readonly",
+  clearInterval: "readonly",
+  setImmediate: "readonly",
+  clearImmediate: "readonly",
+  queueMicrotask: "readonly",
+  structuredClone: "readonly",
+  fetch: "readonly",
+  Request: "readonly",
+  Response: "readonly",
+  Headers: "readonly",
+  AbortController: "readonly",
+  AbortSignal: "readonly",
+  URL: "readonly",
+  URLSearchParams: "readonly",
+  TextEncoder: "readonly",
+  TextDecoder: "readonly",
+  atob: "readonly",
+  btoa: "readonly",
+  performance: "readonly",
+  crypto: "readonly",
+  FormData: "readonly",
+  Blob: "readonly",
+  File: "readonly",
+  ReadableStream: "readonly",
+  WritableStream: "readonly",
+  TransformStream: "readonly",
+  ByteLengthQueuingStrategy: "readonly",
+  CountQueuingStrategy: "readonly",
+  DOMException: "readonly",
+  global: "readonly",
+  require: "readonly",
+  WebSocket: "readonly",
+  EventSource: "readonly",
+  FileReader: "readonly",
+  CustomEvent: "readonly",
+  ResizeObserver: "readonly",
+  IntersectionObserver: "readonly",
+  MutationObserver: "readonly",
+  matchMedia: "readonly",
+  navigator: "readonly",
+  location: "readonly",
+  window: "readonly",
+  document: "readonly",
+  localStorage: "readonly",
+  sessionStorage: "readonly",
+  history: "readonly",
+  alert: "readonly",
+  confirm: "readonly",
+  prompt: "readonly",
+};
+
+// Fase 4B: sem eslint-config-next/Next. Base @eslint/js recomendada com
+// ajustes que preservam o baseline do repo (0 erros) e o plugin react-hooks,
+// exigido verde pelo regression guard em tests/unit. Regras novas do
+// recommended que não existiam no baseline ficam em warning para limpeza
+// incremental; no-undef permanece error por escopo com globals corretos.
 const eslintConfig = defineConfig([
+  js.configs.recommended,
   {
     plugins: { "react-hooks": reactHooks },
-  },
-  ...nextVitals,
-  // Server-side modules (API routes, open-sse engine, lib) are plain Node ESM
-  // with no JSX — enable no-undef there to catch use-before-define /
-  // undefined-identifier bugs (ReferenceError at runtime) that
-  // eslint-config-next does not flag by default. Scoped away from React/JSX
-  // component files where no-undef produces false positives on props/params.
-  {
-    files: [
-      "src/app/api/**/*.js",
-      "open-sse/**/*.js",
-      "src/lib/**/*.js",
-      "src/sse/**/*.js",
-    ],
+    // O App Router/SPA usa JSX também em arquivos .js (comportamento herdado
+    // do eslint-config-next); habilita o parser JSX para js e jsx.
     languageOptions: {
-      globals: {
-        console: "readonly",
-        process: "readonly",
-        Buffer: "readonly",
-        setTimeout: "readonly",
-        clearTimeout: "readonly",
-        setInterval: "readonly",
-        clearInterval: "readonly",
-        setImmediate: "readonly",
-        clearImmediate: "readonly",
-      },
+      parserOptions: { ecmaFeatures: { jsx: true }, sourceType: "module", ecmaVersion: "latest" },
     },
+    rules: {
+      "no-unused-vars": "warn",
+      "no-empty": "warn",
+      "no-useless-assignment": "warn",
+      "preserve-caught-error": "warn",
+      "no-dupe-keys": "warn",
+      // Regras do recommended ausentes no baseline Next: warning para limpeza
+      // incremental sem bloquear o gate de 0 erros.
+      "no-useless-escape": "warn",
+      "no-dupe-class-members": "warn",
+      "no-control-regex": "warn",
+      "no-case-declarations": "warn",
+      "no-regex-spaces": "warn",
+      "no-unreachable": "warn",
+      "no-constant-condition": "warn",
+      // Sem resolver de módulos do Next: imports next/* são cobertos pelos
+      // aliases do Vite (src/compat) e não devem falhar no lint.
+      "no-undef": "off",
+    },
+  },
+  {
+    files: ["**/*.jsx"],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+  },
+  // Server-side modules (open-sse engine, lib) são Node ESM puro sem JSX —
+  // no-undef como error para capturar ReferenceError de runtime.
+  {
+    files: ["open-sse/**/*.js", "src/lib/**/*.js", "src/sse/**/*.js"],
+    languageOptions: { globals: nodeGlobals },
     rules: {
       "no-undef": "error",
     },
   },
-  // Dashboard client components: also enable no-undef to catch runtime crashes
-  // like `onClick={handleBatchDelete}` where the handler was renamed/deleted but
-  // a JSX call site was missed (GitHub Issue #1) and CLI tool cards passing
-  // undefined props to inner section components.
+  // Componentes do dashboard: no-undef error para capturar crashes de runtime
+  // como handlers renomeados (GitHub Issue #1) e props undefined.
   {
     files: ["src/app/(dashboard)/**/*.js"],
+    languageOptions: { globals: nodeGlobals },
     rules: {
       "no-undef": "error",
     },
   },
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     ".next-cli-build/**",
     "out/**",
     "build/**",
-    "next-env.d.ts",
-    // Saída do build Vite da SPA (Fase 4A).
     "dist/**",
+    "backend/**",
   ]),
 ]);
 

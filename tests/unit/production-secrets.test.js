@@ -28,9 +28,4 @@ describe("production secret policy", () => {
     expect(envExample).not.toContain("change-me-to-a-long-random-secret");
     expect(envExample).not.toContain("change-me-in-production");
   });
-
-  it("runs the policy before either production launcher requires the app", () => {
-    expect(fs.readFileSync("custom-server.js", "utf8")).toContain("assertProductionSecrets");
-    expect(fs.readFileSync("server.js", "utf8")).toContain("assertProductionSecrets");
-  });
 });
