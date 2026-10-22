@@ -23,6 +23,13 @@ func NewWithAuth(ready handlers.Readiness, authentication *auth.HTTP) http.Handl
 }
 
 func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *handlers.Nodes, providerAPI ...*handlers.Providers) http.Handler {
+	return NewWithSPA(ready, authentication, nodes, providerAPI, "")
+}
+
+// NewWithSPA monta o roteador; spaDir não vazio serve o build da SPA pela
+// mesma origem (Fase 4B): index apenas nas rotas da SPA, assets públicos e
+// 404 para caminhos fora do app.
+func NewWithSPA(ready handlers.Readiness, authentication *auth.HTTP, nodes *handlers.Nodes, providerAPI []*handlers.Providers, spaDir string) http.Handler {
 	h := handlers.Bootstrap{}
 	h.Ready = ready
 	r := chi.NewRouter()
@@ -30,11 +37,18 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 	if authentication != nil {
 		r.Use(authentication.Middleware)
 	}
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Cache-Control", "no-store")
-		_, _ = w.Write([]byte("Hello World\n"))
-	})
+	if spaDir != "" {
+		spa := &spaServer{root: spaDir}
+		r.Get("/", spa.serveIndex)
+		r.NotFound(spa.ServeHTTP)
+	} else {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-store")
+			_, _ = w.Write([]byte("Hello World\n"))
+		})
+		r.NotFound(http.NotFound)
+	}
 	version := handlers.NewVersion()
 	versionUpdate := handlers.NewVersionUpdate()
 	versionShutdown := handlers.NewVersionShutdown()

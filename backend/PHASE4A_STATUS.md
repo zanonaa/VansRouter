@@ -21,7 +21,7 @@ Primeiro lote da Fase 4A (React SPA sem Next.js), base 8453db8b. Estado: **funda
 - Únicas leituras de `NEXT_PUBLIC_*` no app estão em módulos server-only (`src/lib/auth/oidc.js`, `src/lib/db/repos/settingsRepo.js`); nenhum componente client as consome e nenhum segredo é exposto.
 - `vite.config.js` passa a definir explicitamente `NEXT_PUBLIC_BASE_URL`/`NEXT_PUBLIC_CLOUD_URL` (override de dev/build disponível), mantendo o restante de `process.env` vazio no navegador.
 - Smoke estendido e aprovado (`SMOKE_OK`): CRUD real de `/api/keys` no contexto autenticado (criar 201 → listar → deletar → ausente), `GET /api/models` 200 e SSE autenticado (`text/event-stream`) na origem Go com o cookie da sessão do navegador.
-- Pendência descoberta: o proxy do dev server Vite prende respostas SSE (flush em `proxyRes` não resolveu); streaming pela mesma origem é resolvido na Fase 4B e está anotado no `vite.config.js`.
+- Pendência descoberta: o proxy do dev server Vite prende respostas SSE (flush em `proxyRes` não resolveu); streaming pela mesma origem é resolvido na Fase 4B e está anotado no `vite.config.js`. **[Resolvido no lote 1 da 4B: SSE validado via EventSource na mesma origem servida pelo Go — ver `backend/PHASE4B_STATUS.md`.]**
 
 ## O que entrou
 

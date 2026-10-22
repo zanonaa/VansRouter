@@ -4,7 +4,7 @@
 // Nota: waitUntil "load" (networkidle nunca ocorre com o WebSocket do HMR).
 const { chromium } = require("playwright-core");
 
-const BASE = "http://localhost:20129";
+const BASE = process.env.SAME_ORIGIN === "1" ? "http://localhost:20128" : "http://localhost:20129";
 const PASSWORD = "Smoke-Test-2026!Strong";
 
 function fail(step, message) {
@@ -88,38 +88,58 @@ function fail(step, message) {
   if (modelsStatus !== 200) fail("models", `GET /api/models -> ${modelsStatus}`);
   console.log("OK GET /api/models 200");
 
-  // 9. SSE na origem Go com o cookie real da sessão do navegador.
-  // (O proxy do dev server Vite prende respostas SSE — ver nota no vite.config;
-  // a mesma-origem com streaming é escopo da Fase 4B.)
-  const cookies = await page.context().cookies(BASE);
-  const token = cookies.find((c) => c.name === "auth_token")?.value;
-  if (!token) fail("sse", "cookie auth_token ausente após login");
-  const sse = await new Promise((resolve) => {
-    const req = require("http").request(
-      new URL("/api/translator/console-logs/stream", BASE.replace("20129", "20128")),
-      { headers: { Cookie: `auth_token=${token}`, Accept: "text/event-stream" }, timeout: 8000 },
-      (res) => {
-        if (res.statusCode !== 200 || !String(res.headers["content-type"] || "").includes("text/event-stream")) {
-          resolve({ ok: false, status: res.statusCode, ct: res.headers["content-type"] });
-          res.resume();
-          return;
-        }
-        // Buffer de logs vazio não emite chunk; headers de evento + conexão
-        // mantida já comprovam o stream autenticado na origem.
-        resolve({ ok: true, status: res.statusCode, ct: res.headers["content-type"] });
-        setTimeout(() => req.destroy(), 500);
-        res.resume();
-      }
+  // 9. SSE autenticado.
+  // SAME_ORIGIN=1: EventSource direto na mesma origem (Go serve API e SPA) —
+  // valida o fechamento da pendência de streaming da 4A. No modo dev-proxy,
+  // o proxy do Vite prende SSE (ver vite.config.js) e validamos na origem Go.
+  let sse;
+  if (process.env.SAME_ORIGIN === "1") {
+    sse = await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const es = new EventSource("/api/translator/console-logs/stream");
+          const done = (result) => {
+            es.close();
+            resolve(result);
+          };
+          es.onopen = () => done({ ok: true, mode: "eventsource-same-origin" });
+          es.onerror = () => done({ ok: false });
+          setTimeout(() => done({ ok: es.readyState === 1 }), 8000);
+        })
     );
-    req.on("timeout", () => {
-      resolve({ ok: false, timeout: true });
-      req.destroy();
+    if (!sse.ok) fail("sse", JSON.stringify(sse));
+    console.log("OK SSE mesma origem:", JSON.stringify(sse));
+  } else {
+    const cookies = await page.context().cookies(BASE);
+    const token = cookies.find((c) => c.name === "auth_token")?.value;
+    if (!token) fail("sse", "cookie auth_token ausente após login");
+    sse = await new Promise((resolve) => {
+      const req = require("http").request(
+        new URL("/api/translator/console-logs/stream", BASE.replace("20129", "20128")),
+        { headers: { Cookie: `auth_token=${token}`, Accept: "text/event-stream" }, timeout: 8000 },
+        (res) => {
+          if (res.statusCode !== 200 || !String(res.headers["content-type"] || "").includes("text/event-stream")) {
+            resolve({ ok: false, status: res.statusCode, ct: res.headers["content-type"] });
+            res.resume();
+            return;
+          }
+          // Buffer de logs vazio não emite chunk; headers de evento + conexão
+          // mantida já comprovam o stream autenticado na origem.
+          resolve({ ok: true, status: res.statusCode, ct: res.headers["content-type"] });
+          setTimeout(() => req.destroy(), 500);
+          res.resume();
+        }
+      );
+      req.on("timeout", () => {
+        resolve({ ok: false, timeout: true });
+        req.destroy();
+      });
+      req.on("error", () => {});
+      req.end();
     });
-    req.on("error", () => {});
-    req.end();
-  });
-  if (!sse.ok) fail("sse", JSON.stringify(sse));
-  console.log("OK SSE na origem Go:", JSON.stringify(sse));
+    if (!sse.ok) fail("sse", JSON.stringify(sse));
+    console.log("OK SSE na origem Go:", JSON.stringify(sse));
+  }
 
   console.log("--- chamadas /api via proxy ---");
   console.log(requests.slice(0, 20).join("\n"));

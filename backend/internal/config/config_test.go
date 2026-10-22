@@ -18,6 +18,8 @@ func TestLoad(t *testing.T) {
 		{"temporário produção", map[string]string{"NODE_ENV": "production", "DATA_DIR": "/tmp/9router-data-test"}, true},
 		{"temporário autorizado", map[string]string{"NODE_ENV": "production", "DATA_DIR": "/tmp/9router-data-test", "DATA_DIR_ALLOW_TEMP": "1"}, false},
 		{"configuração explícita", map[string]string{"PORT": "20228", "DATA_DIR": "/dados/router", "SQLITE_SYNCHRONOUS": "full"}, false},
+		{"spa inexistente", map[string]string{"SPA_DIR": "/caminho/que/nao/existe"}, true},
+		{"spa em arquivo", map[string]string{"SPA_DIR": "/etc/hosts"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
