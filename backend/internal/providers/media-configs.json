@@ -1,0 +1,190 @@
+{
+  "assemblyai": {
+    "stt": {
+      "baseUrl": "https://api.assemblyai.com/v2/transcript",
+      "authType": "apikey",
+      "authHeader": "authorization",
+      "format": "assemblyai"
+    }
+  },
+  "aws-polly": {
+    "tts": {
+      "baseUrl": "https://polly.{region}.amazonaws.com/v1/speech",
+      "authType": "apikey",
+      "authHeader": "aws-sigv4",
+      "format": "aws-polly"
+    }
+  },
+  "cartesia": {
+    "tts": {
+      "baseUrl": "https://api.cartesia.ai/tts/bytes",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "format": "cartesia"
+    }
+  },
+  "coqui": {
+    "tts": {
+      "baseUrl": "http://localhost:5002/api/tts",
+      "authType": "none",
+      "authHeader": "none",
+      "format": "coqui"
+    }
+  },
+  "deepgram": {
+    "stt": {
+      "baseUrl": "https://api.deepgram.com/v1/listen",
+      "authType": "apikey",
+      "authHeader": "token",
+      "format": "deepgram"
+    }
+  },
+  "edge-tts": {
+    "tts": {
+      "baseUrl": "edge-tts",
+      "authType": "none",
+      "authHeader": "none",
+      "format": "edge-tts"
+    }
+  },
+  "elevenlabs": {
+    "tts": {
+      "baseUrl": "https://api.elevenlabs.io/v1/text-to-speech",
+      "authType": "apikey",
+      "authHeader": "xi-api-key",
+      "format": "elevenlabs"
+    }
+  },
+  "gemini": {
+    "tts": {
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/models",
+      "authType": "apikey",
+      "authHeader": "key",
+      "format": "gemini-tts"
+    },
+    "stt": {
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/models",
+      "authType": "apikey",
+      "authHeader": "key",
+      "format": "gemini-stt"
+    }
+  },
+  "google-tts": {
+    "tts": {
+      "baseUrl": "google-tts",
+      "authType": "none",
+      "authHeader": "none",
+      "format": "google-tts"
+    }
+  },
+  "groq": {
+    "stt": {
+      "baseUrl": "https://api.groq.com/openai/v1/audio/transcriptions",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "openai"
+    }
+  },
+  "huggingface": {
+    "stt": {
+      "baseUrl": "https://router.huggingface.co/hf-inference/models",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "huggingface-asr"
+    }
+  },
+  "inworld": {
+    "tts": {
+      "baseUrl": "https://api.inworld.ai/tts/v1/voice",
+      "authType": "apikey",
+      "authHeader": "basic",
+      "format": "inworld"
+    }
+  },
+  "local-device": {
+    "tts": {
+      "baseUrl": "local-device",
+      "authType": "none",
+      "authHeader": "none",
+      "format": "local-device"
+    }
+  },
+  "minimax-cn": {
+    "tts": {
+      "baseUrl": "https://api.minimaxi.com/v1/t2a_v2",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "minimax-tts"
+    }
+  },
+  "minimax": {
+    "tts": {
+      "baseUrl": "https://api.minimax.io/v1/t2a_v2",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "minimax-tts"
+    }
+  },
+  "openai": {
+    "tts": {
+      "baseUrl": "https://api.openai.com/v1/audio/speech",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "openai"
+    },
+    "stt": {
+      "baseUrl": "https://api.openai.com/v1/audio/transcriptions",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "openai"
+    }
+  },
+  "playht": {
+    "tts": {
+      "baseUrl": "https://api.play.ht/api/v2/tts/stream",
+      "authType": "apikey",
+      "authHeader": "playht",
+      "format": "playht"
+    }
+  },
+  "tortoise": {
+    "tts": {
+      "baseUrl": "http://localhost:5000/api/tts",
+      "authType": "none",
+      "authHeader": "none",
+      "format": "tortoise"
+    }
+  },
+  "xiaomi-mimo": {
+    "tts": {
+      "baseUrl": "https://api.xiaomimimo.com/v1/chat/completions",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "xiaomi-mimo-tts"
+    }
+  },
+  "fish-audio": {
+    "tts": {
+      "baseUrl": "https://api.fish.audio/v1/tts",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "fish-audio"
+    }
+  },
+  "selfhosted-stt": {
+    "stt": {
+      "baseUrl": "http://localhost:8080/v1/audio/transcriptions",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "openai"
+    }
+  },
+  "selfhosted-tts": {
+    "tts": {
+      "baseUrl": "http://localhost:8880",
+      "authType": "apikey",
+      "authHeader": "",
+      "format": "openai-speech"
+    }
+  }
+}
