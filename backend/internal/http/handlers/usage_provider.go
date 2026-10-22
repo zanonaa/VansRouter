@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -35,11 +34,10 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		if status < 200 || status >= 300 {
-			nodeReply(w, 200, map[string]any{"message": fmt.Sprintf("DeepSeek usage unavailable (%d).", status)})
+			nodeReply(w, 200, map[string]any{"plan": "DeepSeek", "message": fmt.Sprintf("DeepSeek balance API error (%d)", status)})
 			return
 		}
-		encoded, _ := json.Marshal(data)
-		nodeReply(w, 200, map[string]any{"provider": provider, "usage": json.RawMessage(encoded)})
+		nodeReply(w, 200, normalizeDeepSeekUsage(data))
 	case "ollama":
 		if token == "" {
 			nodeReply(w, 200, map[string]any{"message": "Ollama Cloud API key not available."})
@@ -54,8 +52,11 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			nodeReply(w, 200, map[string]any{"message": "Ollama Cloud API key invalid or expired."})
 			return
 		}
-		encoded, _ := json.Marshal(data)
-		nodeReply(w, status, map[string]any{"provider": provider, "usage": json.RawMessage(encoded)})
+		if status < 200 || status >= 300 {
+			nodeReply(w, 200, map[string]any{"message": fmt.Sprintf("Ollama Cloud usage API error (%d).", status)})
+			return
+		}
+		nodeReply(w, 200, normalizeOllamaUsage(data, nil))
 	default:
 		nodeReply(w, 200, map[string]any{"message": "Usage API not implemented for " + provider})
 	}
