@@ -299,7 +299,7 @@
       "method": "POST",
       "path": "/api/models/test",
       "source": "src/app/api/models/test/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -461,13 +461,13 @@
       "method": "GET",
       "path": "/api/providers/{id}/gcp-projects",
       "source": "src/app/api/providers/[id]/gcp-projects/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/providers/{id}/models",
       "source": "src/app/api/providers/[id]/models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -503,13 +503,13 @@
       "method": "POST",
       "path": "/api/providers/{id}/test",
       "source": "src/app/api/providers/[id]/test/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/providers/{id}/test-models",
       "source": "src/app/api/providers/[id]/test-models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -563,7 +563,7 @@
       "method": "POST",
       "path": "/api/providers/test-batch",
       "source": "src/app/api/providers/test-batch/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -755,19 +755,19 @@
       "method": "GET",
       "path": "/api/translator/console-logs",
       "source": "src/app/api/translator/console-logs/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "DELETE",
       "path": "/api/translator/console-logs",
       "source": "src/app/api/translator/console-logs/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/translator/console-logs/stream",
       "source": "src/app/api/translator/console-logs/stream/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -785,37 +785,37 @@
       "method": "POST",
       "path": "/api/translator/send",
       "source": "src/app/api/translator/send/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/translator/translate",
       "source": "src/app/api/translator/translate/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/usage/{connectionId}/claude-reset",
       "source": "src/app/api/usage/[connectionId]/claude-reset/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/usage/{connectionId}/codex-reset-credits",
       "source": "src/app/api/usage/[connectionId]/codex-reset-credits/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/usage/{connectionId}/codex-reset-credits",
       "source": "src/app/api/usage/[connectionId]/codex-reset-credits/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/usage/{connectionId}",
       "source": "src/app/api/usage/[connectionId]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -863,7 +863,7 @@
       "method": "GET",
       "path": "/api/usage/stats",
       "source": "src/app/api/usage/stats/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -875,253 +875,253 @@
       "method": "OPTIONS",
       "path": "/api/v1/api/chat",
       "source": "src/app/api/v1/api/chat/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/api/chat",
       "source": "src/app/api/v1/api/chat/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/audio/speech",
       "source": "src/app/api/v1/audio/speech/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/audio/speech",
       "source": "src/app/api/v1/audio/speech/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/audio/transcriptions",
       "source": "src/app/api/v1/audio/transcriptions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/audio/transcriptions",
       "source": "src/app/api/v1/audio/transcriptions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/audio/voices",
       "source": "src/app/api/v1/audio/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/v1/audio/voices",
       "source": "src/app/api/v1/audio/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/chat/completions",
       "source": "src/app/api/v1/chat/completions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/chat/completions",
       "source": "src/app/api/v1/chat/completions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/embeddings",
       "source": "src/app/api/v1/embeddings/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/embeddings",
       "source": "src/app/api/v1/embeddings/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/images/generations",
       "source": "src/app/api/v1/images/generations/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/images/generations",
       "source": "src/app/api/v1/images/generations/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/messages/count_tokens",
       "source": "src/app/api/v1/messages/count_tokens/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/messages/count_tokens",
       "source": "src/app/api/v1/messages/count_tokens/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/messages",
       "source": "src/app/api/v1/messages/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/messages",
       "source": "src/app/api/v1/messages/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/models/{kind}",
       "source": "src/app/api/v1/models/[kind]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/v1/models/{kind}",
       "source": "src/app/api/v1/models/[kind]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/models/info",
       "source": "src/app/api/v1/models/info/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/v1/models/info",
       "source": "src/app/api/v1/models/info/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/models",
       "source": "src/app/api/v1/models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/v1/models",
       "source": "src/app/api/v1/models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/responses/compact",
       "source": "src/app/api/v1/responses/compact/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/responses/compact",
       "source": "src/app/api/v1/responses/compact/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/responses",
       "source": "src/app/api/v1/responses/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/responses",
       "source": "src/app/api/v1/responses/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/search",
       "source": "src/app/api/v1/search/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/search",
       "source": "src/app/api/v1/search/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/videos/{id}",
       "source": "src/app/api/v1/videos/[id]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/v1/videos/{id}",
       "source": "src/app/api/v1/videos/[id]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/videos/edits",
       "source": "src/app/api/v1/videos/edits/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/videos/edits",
       "source": "src/app/api/v1/videos/edits/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/videos/extensions",
       "source": "src/app/api/v1/videos/extensions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/videos/extensions",
       "source": "src/app/api/v1/videos/extensions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/videos/generations",
       "source": "src/app/api/v1/videos/generations/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/videos/generations",
       "source": "src/app/api/v1/videos/generations/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/web/fetch",
       "source": "src/app/api/v1/web/fetch/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1/web/fetch",
       "source": "src/app/api/v1/web/fetch/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1beta/models/{...path}",
       "source": "src/app/api/v1beta/models/[...path]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/v1beta/models/{...path}",
       "source": "src/app/api/v1beta/models/[...path]/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
