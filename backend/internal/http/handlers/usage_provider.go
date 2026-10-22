@@ -11,6 +11,17 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 	token := ttsString(firstNonEmpty(connection["apiKey"], connection["accessToken"]))
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
 	switch provider {
+	case "codex":
+		status, data, err := u.resetJSON(r.Context(), "GET", "https://chatgpt.com/backend-api/wham/usage", map[string]string{"Authorization": "Bearer " + ttsString(connection["accessToken"]), "Accept": "application/json"}, nil)
+		if err != nil {
+			nodeReply(w, 500, map[string]any{"error": "Failed to fetch Codex usage: " + err.Error()})
+			return
+		}
+		if status < 200 || status >= 300 {
+			nodeReply(w, 200, map[string]any{"message": fmt.Sprintf("Codex connected. Usage API temporarily unavailable (%d).", status)})
+			return
+		}
+		nodeReply(w, 200, normalizeCodexUsage(data))
 	case "qwen":
 		message := "Qwen connected. Usage tracked per request."
 		if strings.TrimSpace(ttsString(metadata["resourceUrl"])) == "" {
