@@ -121,29 +121,27 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	method, target, payload := "POST", base, map[string]any{"query": query}
-	headers := map[string]string{"Content-Type": "application/json", "Authorization": "Bearer " + token}
-	switch id {
-	case "serper":
-		target += "/search"
-		payload = map[string]any{"q": query}
-		headers = map[string]string{"Content-Type": "application/json", "X-API-Key": token}
-	case "brave-search":
-		method = "GET"
-		values := url.Values{"q": {query}}
-		target += "/web/search?" + values.Encode()
-		payload = nil
-		headers = map[string]string{"Accept": "application/json", "X-Subscription-Token": token}
-	case "tavily":
-		payload["api_key"] = token
-		delete(headers, "Authorization")
-	case "searxng":
-		method = "GET"
-		values := url.Values{"q": {query}, "format": {"json"}}
-		target += "?" + values.Encode()
-		payload = nil
-		headers = map[string]string{}
+	kind := ttsString(body["search_type"])
+	if kind == "" {
+		kind = "web"
 	}
+	max := int(pxpipeNum(body["max_results"]))
+	if max <= 0 {
+		max = int(pxpipeNum(config.Search["defaultMaxResults"]))
+	}
+	if max <= 0 {
+		max = 5
+	}
+	limit := int(pxpipeNum(config.Search["maxMaxResults"]))
+	if limit > 0 && max > limit {
+		max = limit
+	}
+	method, target, headers, payload, err := buildBasicSearch(id, base, token, query, kind, max, body)
+	if err != nil {
+		g.webError(w, 501, err.Error())
+		return
+	}
+	started := time.Now()
 	status, upstream, err := g.doJSON(r.Context(), method, target, headers, payload, 15*time.Second)
 	if err != nil {
 		g.webError(w, status, id+" error: "+err.Error())
@@ -153,13 +151,19 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 		g.webError(w, status, fmt.Sprintf("%s returned %d: %s", id, status, strings.TrimSpace(string(upstream))))
 		return
 	}
-	var parsed any
+	var parsed map[string]any
 	if json.Unmarshal(upstream, &parsed) != nil {
 		g.webError(w, 502, id+" returned invalid JSON")
 		return
 	}
+	results, total, err := normalizeSearch(id, kind, parsed, max, time.Now())
+	if err != nil {
+		g.webError(w, 502, err.Error())
+		return
+	}
+	duration := time.Since(started).Milliseconds()
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	nodeReply(w, 200, map[string]any{"provider": id, "query": query, "results": parsed})
+	nodeReply(w, 200, map[string]any{"provider": id, "query": query, "results": results, "answer": nil, "usage": map[string]any{"queries_used": 1, "search_cost_usd": config.Search["costPerQuery"]}, "metrics": map[string]any{"response_time_ms": duration, "upstream_latency_ms": duration, "total_results_available": total}, "errors": []any{}})
 }
 
 func (g *Gateway) Fetch(w http.ResponseWriter, r *http.Request) {
