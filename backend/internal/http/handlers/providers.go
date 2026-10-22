@@ -25,6 +25,7 @@ type Providers struct {
 	Validation        *ProviderValidation
 	Circuits          *CircuitRegistry
 	TranslatorFiles   *TranslatorFiles
+	Console           *ConsoleBuffer
 	OAuth             *OAuthEngine
 	CursorAutoImport  *CursorAutoImport
 	KiroAutoImport    *KiroAutoImport
