@@ -156,10 +156,30 @@ func convertChatResponse(native map[string]any, from, to, model string) (map[str
 		}
 		return map[string]any{"id": id, "type": "message", "role": "assistant", "model": model, "content": content, "stop_reason": reason, "stop_sequence": nil, "usage": map[string]any{"input_tokens": usage["prompt_tokens"], "output_tokens": usage["completion_tokens"]}}, nil
 	case "openai-responses":
-		if message["tool_calls"] != nil {
-			return nil, fmt.Errorf("Responses tool output conversion not implemented")
+		output := []any{}
+		if text := ttsString(message["content"]); text != "" {
+			output = append(output, map[string]any{"type": "message", "role": "assistant", "status": "completed", "content": []any{map[string]any{"type": "output_text", "text": text, "annotations": []any{}}}})
 		}
-		return map[string]any{"id": id, "object": "response", "model": model, "status": "completed", "output": []any{map[string]any{"type": "message", "role": "assistant", "status": "completed", "content": []any{map[string]any{"type": "output_text", "text": message["content"], "annotations": []any{}}}}}, "usage": map[string]any{"input_tokens": usage["prompt_tokens"], "output_tokens": usage["completion_tokens"], "total_tokens": usage["total_tokens"]}}, nil
+		calls, _ := message["tool_calls"].([]any)
+		for _, raw := range calls {
+			call, _ := raw.(map[string]any)
+			function, _ := call["function"].(map[string]any)
+			arguments := ttsString(function["arguments"])
+			if !json.Valid([]byte(arguments)) {
+				return nil, fmt.Errorf("Responses tool arguments are not valid JSON")
+			}
+			output = append(output, map[string]any{"type": "function_call", "call_id": call["id"], "name": function["name"], "arguments": arguments, "status": "completed"})
+		}
+		if len(output) == 0 {
+			return nil, fmt.Errorf("Responses output is empty")
+		}
+		status := "completed"
+		result := map[string]any{"id": id, "object": "response", "model": model, "status": status, "output": output, "usage": map[string]any{"input_tokens": usage["prompt_tokens"], "output_tokens": usage["completion_tokens"], "total_tokens": usage["total_tokens"]}}
+		if finish == "length" {
+			result["status"] = "incomplete"
+			result["incomplete_details"] = map[string]any{"reason": "max_output_tokens"}
+		}
+		return result, nil
 	default:
 		return nil, fmt.Errorf("Unsupported client response format: %s", to)
 	}
