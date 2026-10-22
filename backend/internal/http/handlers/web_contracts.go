@@ -236,10 +236,13 @@ func (g *Gateway) Fetch(w http.ResponseWriter, r *http.Request) {
 		payload = map[string]any{"urls": []any{targetURL}, "format": format}
 		headers["X-API-Key"] = token
 	case "jina-reader":
-		endpoint += "/"
+		payload = map[string]any{"url": targetURL}
 		if token != "" {
 			headers["Authorization"] = "Bearer " + token
 		}
+	default:
+		g.webError(w, 400, "Unsupported provider: "+id)
+		return
 	}
 	if id == "tinyfish" && format != "markdown" && format != "html" {
 		g.webError(w, 400, "Unsupported TinyFish format: "+format)
