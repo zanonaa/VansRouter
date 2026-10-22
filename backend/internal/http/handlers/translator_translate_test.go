@@ -14,8 +14,8 @@ func TestTranslatorDetectsStepOne(t *testing.T) {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
 	w = httptest.NewRecorder()
-	handler.Post(w, httptest.NewRequest("POST", "/", strings.NewReader(`{"step":2,"body":{"model":"openai/gpt-4o"}}`)))
-	if w.Code != 501 || !strings.Contains(w.Body.String(), "not ported") {
+	handler.Post(w, httptest.NewRequest("POST", "/", strings.NewReader(`{"step":2,"body":{"model":"openai/gpt-4o","messages":[{"role":"user","content":"hi"}]}}`)))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"body"`) {
 		t.Fatalf("step2 %d %s", w.Code, w.Body.String())
 	}
 	w = httptest.NewRecorder()

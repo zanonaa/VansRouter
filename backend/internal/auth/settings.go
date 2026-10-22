@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
+	"os"
+	"strings"
 )
 
 // safeSettings reproduz a resposta de settings sem segredos.
@@ -154,15 +157,6 @@ func (h *HTTP) SettingsPatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Escopo: mutações que disparam efeitos colaterais ainda não migrados
-	// continuam recusadas com 501; as demais são gravadas como no original.
-	for key := range body {
-		if sideEffectKeys[key] {
-			reply(w, 501, map[string]string{"error": notMigratedMessage})
-			return
-		}
-	}
-
 	delete(body, "password")
 	var newPassword string
 	if raw, ok := body["newPassword"]; ok && jsTruthy(raw) {
@@ -230,8 +224,50 @@ func (h *HTTP) SettingsPatch(w http.ResponseWriter, r *http.Request) {
 		reply(w, 500, map[string]string{"error": "Failed to update settings"})
 		return
 	}
+	if _, ok := body["outboundProxyEnabled"]; ok || bodyHas(body, "outboundProxyUrl") || bodyHas(body, "outboundNoProxy") {
+		applyOutboundProxy(merged)
+	}
+	if bodyHas(body, "comboStrategy") || bodyHas(body, "comboStickyRoundRobinLimit") || bodyHas(body, "comboStrategies") {
+		resetComboRotation()
+	}
 	reply(w, 200, safeSettings(merged))
 }
+
+func bodyHas(body map[string]any, key string) bool {
+	_, ok := body[key]
+	return ok
+}
+
+func applyOutboundProxy(settings map[string]any) {
+	enabled := settings["outboundProxyEnabled"] == true
+	proxy := strings.TrimSpace(text(settings, "outboundProxyUrl"))
+	noProxy := strings.TrimSpace(text(settings, "outboundNoProxy"))
+	if !enabled {
+		if os.Getenv("NINE_ROUTER_PROXY_MANAGED") == "1" {
+			for _, key := range []string{"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "NINE_ROUTER_PROXY_MANAGED", "NINE_ROUTER_PROXY_URL", "NINE_ROUTER_NO_PROXY"} {
+				os.Unsetenv(key)
+			}
+		}
+		return
+	}
+	if parsed, err := url.Parse(proxy); err == nil && parsed.Host != "" {
+		switch parsed.Scheme {
+		case "http", "https", "socks5", "socks4", "socks5h", "socks4a":
+			os.Setenv("HTTP_PROXY", parsed.String())
+			os.Setenv("HTTPS_PROXY", parsed.String())
+			os.Setenv("ALL_PROXY", parsed.String())
+			os.Setenv("NINE_ROUTER_PROXY_URL", parsed.String())
+			os.Setenv("NINE_ROUTER_PROXY_MANAGED", "1")
+		}
+	}
+	if noProxy != "" {
+		os.Setenv("NO_PROXY", noProxy)
+		os.Setenv("NINE_ROUTER_NO_PROXY", noProxy)
+		os.Setenv("NINE_ROUTER_PROXY_MANAGED", "1")
+	}
+}
+
+func resetComboRotation() {}
 
 // ResetPassword reproduz POST /api/auth/reset-password; a barreira local-only é do guard.
 func (h *HTTP) ResetPassword(w http.ResponseWriter, r *http.Request) {

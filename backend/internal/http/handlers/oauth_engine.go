@@ -256,20 +256,16 @@ func (h *OAuthEngine) Authorize(w http.ResponseWriter, r *http.Request) {
 		h.xaiAuthorize(w, r, uri)
 		return
 	}
-	if provider != "claude" && provider != "codex" {
-		if provider == "gemini-cli" || provider == "iflow" {
-			uri := r.URL.Query().Get("redirect_uri")
-			if uri == "" {
-				uri = "http://localhost:8080/callback"
-			}
-			if provider == "gemini-cli" {
-				h.geminiAuthorize(w, r, uri)
-			} else {
-				h.iflowAuthorize(w, r, uri)
-			}
-			return
+	if provider == "gemini-cli" || provider == "iflow" {
+		uri := r.URL.Query().Get("redirect_uri")
+		if uri == "" {
+			uri = "http://localhost:8080/callback"
 		}
-		nodeReply(w, 501, map[string]string{"error": "OAuth authorization not yet migrated for: " + provider})
+		if provider == "gemini-cli" {
+			h.geminiAuthorize(w, r, uri)
+		} else {
+			h.iflowAuthorize(w, r, uri)
+		}
 		return
 	}
 	redirectURI := r.URL.Query().Get("redirect_uri")
@@ -385,10 +381,6 @@ func (h *OAuthEngine) Exchange(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 200, map[string]any{"success": true, "connection": map[string]any{
 			"id": connection["id"], "provider": connection["provider"], "email": connection["email"], "displayName": connection["displayName"],
 		}})
-		return
-	}
-	if provider != "claude" && provider != "codex" {
-		nodeReply(w, 501, map[string]string{"error": "Provider token exchange not yet migrated for: " + provider})
 		return
 	}
 	state, _ := body["state"].(string)
@@ -544,7 +536,7 @@ func (h *OAuthEngine) Route(w http.ResponseWriter, r *http.Request) {
 	case "exchange":
 		h.Exchange(w, r)
 	case "device-code":
-		nodeReply(w, 501, map[string]string{"error": "Device code flow not yet migrated"})
+		h.genericDeviceCode(w, r, provider)
 	default:
 		nodeReply(w, 400, map[string]string{"error": "Unknown action"})
 	}
