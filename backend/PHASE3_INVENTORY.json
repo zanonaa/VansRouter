@@ -377,25 +377,25 @@
       "method": "POST",
       "path": "/api/oauth/kiro/import",
       "source": "src/app/api/oauth/kiro/import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/kiro/import-cli-proxy",
       "source": "src/app/api/oauth/kiro/import-cli-proxy/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/oauth/kiro/social-authorize",
       "source": "src/app/api/oauth/kiro/social-authorize/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/oauth/kiro/social-exchange",
       "source": "src/app/api/oauth/kiro/social-exchange/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
