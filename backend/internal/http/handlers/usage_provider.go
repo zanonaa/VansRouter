@@ -93,6 +93,12 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		nodeReply(w, 200, normalizeVercelUsage(data))
+	case "glm", "glm-cn":
+		nodeReply(w, 200, u.glmUsage(r, provider, token))
+	case "minimax", "minimax-cn":
+		nodeReply(w, 200, u.miniMaxUsage(r, provider, token))
+	case "kimi":
+		nodeReply(w, 200, u.kimiUsage(r, connection))
 	case "gemini-cli":
 		nodeReply(w, 200, u.geminiUsage(r, ttsString(connection["accessToken"]), connection))
 	case "antigravity":
