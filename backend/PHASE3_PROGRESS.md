@@ -46,4 +46,15 @@ React/Vite, remoção SSR/Next, empacotamento final e tag rc pertencem às fases
 
 ## Critério de saída
 
-Todos os contratos no escopo classificados manualmente, implementados ou excluídos por decisão explícita; nenhum sucesso fictício; suite/vet/race/build; testes por boundary e runtime diferencial; streaming e OAuth exercitados localmente; PR/merge da fase sem pendências ocultas. A Fase 3 **não atende ainda** a esses critérios. Não há ETA confiável de calendário estabelecido.
+Todos os contratos no escopo classificados manualmente, implementados ou excluídos por decisão explícita; nenhum sucesso fictício; suite/vet/race/build; testes por boundary e runtime diferencial; streaming e OAuth exercitados localmente; PR/merge da fase sem pendências ocultas.
+
+## Encerramento — 2026-10-22
+
+A Fase 3 foi encerrada por decisão explícita do usuário. Aplicação do critério:
+
+- **Classificação**: 192 contratos inventariados; 0 sem registro; 0 `Pending`; 38 contratos em 9 grupos marcados `excluded-by-user-decision` em `PHASE3_GAPS.json` (não implementados; motivos preservados).
+- **Sem sucesso fictício**: lacunas excluídas permanecem documentadas; executores sem paridade recusam com erro explícito.
+- **Suite/vet/race/build**: aprovados por lote nos PRs #96–#149 e reexecutados no PR de encerramento.
+- **Runtime diferencial, streaming e OAuth locais**: NÃO executados; essa dispensa é parte integrante da decisão explícita do usuário e fica registrada como desvio aprovado, não como verificação.
+
+O PR de encerramento formaliza a decisão e encerra a fase. Fase 4 não iniciada.
