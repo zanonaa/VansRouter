@@ -85,3 +85,46 @@ func TestHeadroomRoutesLocalOnly(t *testing.T) {
 		t.Fatalf("rota não registrada %d", w.Code)
 	}
 }
+
+func TestVersionShutdownRouteRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithAuth(nil, auth)
+	// ALWAYS_PROTECTED exige 401 antes do gate/exit.
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("POST", "/api/version/shutdown", nil))
+	if w.Code != 401 {
+		t.Fatalf("anon %d %s", w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("OPTIONS", "/api/version/shutdown", nil))
+	if w.Code == 404 {
+		t.Fatal("options não registrada")
+	}
+}
+
+func TestV1BetaModelsRoutePublic(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithAuth(nil, auth)
+	// Public LLM prefix: loopback do peer TCP é confiável; remoto exige key.
+	loopback := httptest.NewRequest("GET", "/api/v1beta/models", nil)
+	loopback.RemoteAddr = "127.0.0.1:5000"
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, loopback)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"models"`) {
+		t.Fatalf("v1beta %d", w.Code)
+	}
+	remote := httptest.NewRequest("GET", "/api/v1beta/models", nil)
+	remote.RemoteAddr = "203.0.113.5:5000"
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, remote)
+	if w.Code != 401 {
+		t.Fatalf("remoto %d %s", w.Code, w.Body.String())
+	}
+	loopbackNoAPI := httptest.NewRequest("GET", "/v1beta/models", nil)
+	loopbackNoAPI.RemoteAddr = "127.0.0.1:5000"
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, loopbackNoAPI)
+	if w.Code != 200 {
+		t.Fatalf("prefixo sem api %d", w.Code)
+	}
+}

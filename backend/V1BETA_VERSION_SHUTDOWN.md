@@ -1,0 +1,6 @@
+# v1beta (listagem Gemini) e version/shutdown
+
+- `GET /v1beta/models` e `GET /api/v1beta/models` (ambos sob PUBLIC_PREFIXES, guard de public LLM já no middleware): listagem em formato Gemini montada a partir do catálogo consolidado (`models-catalog.json`), com nomes `models/<provider>/<id>`, dedupe, alias curto `models/<id>` para gemini com `streamGenerateContent`, limites fixos 128000/8192. Vazia `models/semid/` — id ausente é filtrado.
+- `POST /api/version/shutdown` (ALWAYS_PROTECTED): `detectRuntime` via marcadores de env (pm2/systemd/tmux/screen/docker via `/.dockerenv`+cgroup), `killAppProcesses` best effort, comando `updateAndRestartCommand` por runtime (pm2 nome do `pm2_env`, unit systemd a partir do binário, screens/tmux sesões destacadas, hint docker), spawn destacado `bash -c "sleep 2 && <cmd>"` sem env de PM2 e `exit(0)` após 1,5 s (hook `Exit` para testes). Responde `{success, runtime, mode, autoRestart, autoRestartCommand?/installCommand?, message}` com textos idênticos.
+- Pendente: `POST /v1beta/models/{...path}`/`OPTIONS` (generateContent/streamGenerateContent) dependem do núcleo do gateway (`/v1`) e entram no respectivo lote.
+- Divergência: unit systemd deriva de `os.Executable()`; a origem usa `process.execPath` — mesmo semântica para o binário em execução.
