@@ -146,6 +146,33 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		fail(500, err.Error())
 		return
 	}
+	if response.StatusCode == http.StatusUnauthorized || response.StatusCode == http.StatusForbidden {
+		patch, refreshErr := t.refreshConnection(r.Context(), provider, connection)
+		if refreshErr != nil {
+			response.Body.Close()
+			fail(500, refreshErr.Error())
+			return
+		}
+		if patch != nil {
+			response.Body.Close()
+			retry := request.Clone(r.Context())
+			retry.Body, err = request.GetBody()
+			if err != nil {
+				fail(500, err.Error())
+				return
+			}
+			// OAuth refresh must update the bearer token, never overwrite a
+			// separately configured API key selected by the auth descriptor.
+			if ttsString(connection["apiKey"]) == "" {
+				retry.Header.Set("Authorization", "Bearer "+ttsString(patch["accessToken"]))
+			}
+			response, err = client.Do(retry)
+			if err != nil {
+				fail(500, err.Error())
+				return
+			}
+		}
+	}
 	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		details, _ := io.ReadAll(response.Body)
