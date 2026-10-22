@@ -209,13 +209,18 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Head("/api/usage/providers", withoutBody(usage.Providers))
 			r.Options("/api/usage/providers", options("GET, HEAD, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].LiveUsage != nil {
+			r.Get("/api/usage/stream", providerAPI[0].LiveUsage.Stream)
+			r.Options("/api/usage/stream", options("GET, HEAD, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Logs != nil {
 			logs := providerAPI[0].Logs
-			for _, path := range []string{"/api/usage/logs", "/api/usage/request-logs"} {
-				r.Get(path, logs.RecentLogs)
-				r.Head(path, withoutBody(logs.RecentLogs))
-				r.Options(path, options("GET, HEAD, OPTIONS"))
-			}
+			r.Get("/api/usage/logs", logs.RecentLogs)
+			r.Head("/api/usage/logs", withoutBody(logs.RecentLogs))
+			r.Options("/api/usage/logs", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/usage/request-logs", logs.RecentLogs)
+			r.Head("/api/usage/request-logs", withoutBody(logs.RecentLogs))
+			r.Options("/api/usage/request-logs", options("GET, HEAD, OPTIONS"))
 			r.Get("/api/usage/request-details", logs.RequestDetails)
 			r.Head("/api/usage/request-details", withoutBody(logs.RequestDetails))
 			r.Options("/api/usage/request-details", options("GET, HEAD, OPTIONS"))
