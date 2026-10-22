@@ -66,7 +66,7 @@ func (u *UsageContracts) Get(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 200, map[string]any{"message": "Usage not available for this connection"})
 		return
 	}
-	nodeReply(w, 501, map[string]any{"error": "Provider usage executor not ported", "provider": connection["provider"]})
+	u.providerUsage(w, r, connection)
 }
 func (u *UsageContracts) ClaudeReset(w http.ResponseWriter, r *http.Request) {
 	u.claudeReset(w, r)

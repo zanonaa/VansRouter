@@ -35,12 +35,12 @@ func TestOAuthEngineContract(t *testing.T) {
 		{"GET", "/api/oauth/claude/start-proxy?app_port=1234", "", 400, "Proxy only supported"},
 		{"GET", "/api/oauth/claude/poll-status", "", 400, "Poll only supported"},
 		{"GET", "/api/oauth/claude/stop-proxy", "", 400, "Proxy only supported"},
-		{"GET", "/api/oauth/claude/device-code", "", 501, "Device code flow not yet migrated"},
+		{"GET", "/api/oauth/claude/device-code", "", 400, "does not support device code flow"},
 		{"POST", "/api/oauth/claude/exchange", `invalid`, 400, "Invalid or empty request body"},
 		{"POST", "/api/oauth/claude/exchange", `{}`, 400, "Missing required fields"},
 		{"POST", "/api/oauth/claude/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb"}`, 400, "Missing required fields"},
-		{"POST", "/api/oauth/not-migrated/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb","codeVerifier":"v"}`, 501, "not yet migrated"},
-		{"POST", "/api/oauth/unsupported/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb","codeVerifier":"v"}`, 501, "not yet migrated"},
+		{"POST", "/api/oauth/not-migrated/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb","codeVerifier":"v"}`, 500, "Unknown OAuth provider"},
+		{"POST", "/api/oauth/unsupported/exchange", `{"code":"abc","redirectUri":"http://localhost:8080/cb","codeVerifier":"v"}`, 500, "Unknown OAuth provider"},
 	} {
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, httptest.NewRequest(tt.method, tt.path, strings.NewReader(tt.body)))

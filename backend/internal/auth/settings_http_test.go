@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
@@ -183,13 +184,13 @@ func TestSettingsPatchSessionFlow(t *testing.T) {
 	if strings.Contains(w.Body.String(), "password") {
 		t.Fatal("segredo na resposta")
 	}
-	// Chave com efeito colateral não migrado continua 501 sem gravar.
+	// Proxy de saída é gravado e aplicado imediatamente.
 	before := stub.calls
-	r = request("PATCH", "/api/settings", `{"outboundProxyUrl":"http://proxy"}`, "127.0.0.1:1234")
+	r = request("PATCH", "/api/settings", `{"outboundProxyEnabled":true,"outboundProxyUrl":"http://proxy.example"}`, "127.0.0.1:1234")
 	r.AddCookie(cookie)
 	w = httptest.NewRecorder()
 	h.SettingsPatch(w, r)
-	if w.Code != 501 || stub.calls != before || store["outboundProxyUrl"] != nil {
+	if w.Code != 200 || stub.calls != before+1 || store["outboundProxyUrl"] != "http://proxy.example" || os.Getenv("HTTP_PROXY") == "" {
 		t.Fatalf("efeito colateral: %d %d %v", w.Code, stub.calls, store["outboundProxyUrl"])
 	}
 	// Corpo apenas com chave protegida: gravação vazia como no original.
@@ -198,7 +199,7 @@ func TestSettingsPatchSessionFlow(t *testing.T) {
 	r.AddCookie(cookie)
 	w = httptest.NewRecorder()
 	h.SettingsPatch(w, r)
-	if w.Code != 200 || stub.calls != before+1 || strings.Contains(w.Body.String(), `"password":"tentativa"`) {
+	if w.Code != 200 || stub.calls != before+2 || strings.Contains(w.Body.String(), `"password":"tentativa"`) {
 		t.Fatalf("mass assignment: %d %s", w.Code, w.Body.String())
 	}
 	// oidcClientSecret vazio é removido, não gravado.

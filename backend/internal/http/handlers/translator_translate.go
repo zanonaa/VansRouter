@@ -101,8 +101,31 @@ func (t *TranslatorTranslate) Post(w http.ResponseWriter, r *http.Request) {
 	case "1":
 		provider, model := splitTranslatorModel(ttsString(clientBody["model"]))
 		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"provider": provider, "model": model, "sourceFormat": detectRequestFormat(clientBody), "targetFormat": providers.TargetFormat(provider)}})
-	case "2", "3":
-		fail(501, "Translator conversion not ported for step "+jsString(step))
+	case "2":
+		if detectRequestFormat(clientBody) != "openai" {
+			fail(501, "Translator conversion not ported for step 2")
+			return
+		}
+		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"body": filterToOpenAI(clientBody)}})
+	case "3":
+		provider := ttsString(firstNonEmpty(payload["provider"], clientBody["provider"]))
+		model := ttsString(firstNonEmpty(payload["model"], clientBody["model"]))
+		if provider == "" || model == "" {
+			fail(400, "provider and model required")
+			return
+		}
+		if providers.TargetFormat(provider) != "openai" {
+			fail(501, "Translator conversion not ported for step 3")
+			return
+		}
+		config := providers.OpenAITransport(provider)
+		if config == nil {
+			fail(501, "Translator executor not ported for provider: "+provider)
+			return
+		}
+		body := filterToOpenAI(clientBody)
+		body["model"] = model
+		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"url": config.BaseURL, "headers": config.Headers, "body": body}})
 	default:
 		fail(400, "Invalid step (1-3)")
 	}

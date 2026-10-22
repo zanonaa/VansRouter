@@ -19,7 +19,7 @@ func TestProviderValidationStatusAndUnsupported(t *testing.T) {
 	}
 	w = httptest.NewRecorder()
 	h.Post(w, httptest.NewRequest("POST", "/", strings.NewReader(`{"provider":"not-ported","apiKey":"key"}`)))
-	if w.Code != 501 {
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "validation unavailable") {
 		t.Fatalf("unsupported status %d", w.Code)
 	}
 }

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 // ProviderValidation executa as sondas reais de chave. Provedores sem contrato
@@ -64,8 +66,19 @@ func (p *ProviderValidation) Post(w http.ResponseWriter, r *http.Request) {
 	case "gemini":
 		status, probeErr = p.do(r.Context(), "GET", "https://generativelanguage.googleapis.com/v1/models?key="+key, nil, nil)
 	default:
-		nodeReply(w, 501, map[string]any{"error": fmt.Sprintf("Provider validation not ported: %s", provider), "valid": false})
-		return
+		config := providers.Discovery(provider)
+		if config == nil || config.URL == "" {
+			nodeReply(w, 400, map[string]any{"error": fmt.Sprintf("Provider validation unavailable: %s", provider), "valid": false})
+			return
+		}
+		header, prefix := "Authorization", "Bearer "
+		if config.AuthHeader != "" {
+			header = config.AuthHeader
+		}
+		if config.AuthPrefix != "" || config.AuthHeader != "" {
+			prefix = config.AuthPrefix
+		}
+		status, probeErr = p.do(r.Context(), "GET", config.URL, map[string]string{header: prefix + key}, nil)
 	}
 	if probeErr != nil {
 		nodeReply(w, 502, map[string]any{"error": probeErr.Error(), "valid": false})
