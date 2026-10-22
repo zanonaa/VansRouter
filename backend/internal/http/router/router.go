@@ -114,6 +114,20 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Delete("/api/models/custom", aliases.CustomDelete)
 			r.Options("/api/models/custom", options("DELETE, GET, HEAD, OPTIONS, POST"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].ModelAvailability != nil {
+			availability := providerAPI[0].ModelAvailability
+			r.Get("/api/models/availability", availability.Get)
+			r.Head("/api/models/availability", withoutBody(availability.Get))
+			r.Post("/api/models/availability", availability.Post)
+			r.Options("/api/models/availability", options("GET, HEAD, OPTIONS, POST"))
+		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].CatalogSync != nil {
+			catalogSync := providerAPI[0].CatalogSync
+			r.Get("/api/models/catalog-sync", catalogSync.Get)
+			r.Head("/api/models/catalog-sync", withoutBody(catalogSync.Get))
+			r.Post("/api/models/catalog-sync", catalogSync.Post)
+			r.Options("/api/models/catalog-sync", options("GET, HEAD, OPTIONS, POST"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Headroom != nil {
 			headroom := providerAPI[0].Headroom
 			r.Get("/api/headroom/status", authentication.LocalOnlyGuard(headroom.Get))
