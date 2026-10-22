@@ -440,9 +440,12 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Head("/api/providers/{id}/gcp-projects", withoutBody(projects.Get))
 		r.Options("/api/providers/{id}/gcp-projects", options("GET, HEAD, OPTIONS"))
 	}
-	r.Get("/api/providers/{id}/models", handlers.Pending)
-	r.Head("/api/providers/{id}/models", withoutBody(handlers.Pending))
-	r.Options("/api/providers/{id}/models", options("GET, HEAD, OPTIONS"))
+	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Discovery != nil {
+		discovery := providerAPI[0].Discovery
+		r.Get("/api/providers/{id}/models", discovery.Get)
+		r.Head("/api/providers/{id}/models", withoutBody(discovery.Get))
+		r.Options("/api/providers/{id}/models", options("GET, HEAD, OPTIONS"))
+	}
 	r.Post("/api/providers/{id}/test", handlers.Pending)
 	r.Options("/api/providers/{id}/test", options("POST, OPTIONS"))
 	r.Post("/api/providers/{id}/test-models", handlers.Pending)
