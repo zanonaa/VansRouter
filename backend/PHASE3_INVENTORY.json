@@ -329,7 +329,7 @@
       "method": "GET",
       "path": "/api/oauth/cursor/auto-import",
       "source": "src/app/api/oauth/cursor/auto-import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -371,7 +371,7 @@
       "method": "GET",
       "path": "/api/oauth/kiro/auto-import",
       "source": "src/app/api/oauth/kiro/auto-import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -401,7 +401,7 @@
       "method": "GET",
       "path": "/api/oauth/zed/auto-import",
       "source": "src/app/api/oauth/zed/auto-import/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -521,19 +521,19 @@
       "method": "POST",
       "path": "/api/providers/circuit-breakers/{name}/reset",
       "source": "src/app/api/providers/circuit-breakers/[name]/reset/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/providers/circuit-breakers",
       "source": "src/app/api/providers/circuit-breakers/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/providers/client",
       "source": "src/app/api/providers/client/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",

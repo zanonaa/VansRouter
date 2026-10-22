@@ -20,6 +20,8 @@ type Providers struct {
 	ImportPublic      *ImportPublic
 	Deploys           *RelayDeploys
 	KiloFree          *KiloFreeModels
+	ClientList        *ProviderClient
+	Circuits          *CircuitRegistry
 	OAuth             *OAuthEngine
 	CursorAutoImport  *CursorAutoImport
 	KiroAutoImport    *KiroAutoImport
