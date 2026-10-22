@@ -52,4 +52,9 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  // Módulos compartilhados open-sse leem process.env em nível de módulo
+  // (ex.: config/grokCli.js). No navegador essas leituras devem ser vazias.
+  define: {
+    "process.env": {},
+  },
 });

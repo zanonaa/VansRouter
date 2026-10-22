@@ -2,6 +2,13 @@
 
 Primeiro lote da Fase 4A (React SPA sem Next.js), base 8453db8b. Estado: **fundação entregue; migração em andamento**.
 
+## Lote 3 (2026-10-22): smoke de runtime no navegador
+
+- Corrigido shim `router.refresh()`: chamadas `push(url)` + `refresh()` liam a URL antes da navegação pendente e cancelavam o push (bug observado no login); agora revalida a rota corrente após a navegação.
+- `define: { "process.env": {} }` no Vite: módulos open-sse leem `process.env` em nível de módulo (ex. `config/grokCli.js`), o que crashava o bundle no navegador.
+- `scripts/spa-runtime-smoke.cjs` (playwright-core + Chromium do sistema): sobe Go (`PORT=20128`, `DATA_DIR` descartável, `JWT_SECRET`, `INITIAL_PASSWORD`) e Vite dev (20129, proxy `/api`), e valida no navegador real: raiz→`/masuk`; login→`/dashboard`; layout do dashboard renderiza; deep link `/dashboard/providers` com reload mantém sessão; rota inexistente mostra 404 da SPA. Resultado: `SMOKE_OK`, com as chamadas `/api` visíveis pelo proxy.
+- Descoberta operacional: `/api/auth/check` só responde 200 com `JWT_SECRET` definido (`CheckConfigured`) — o smoke documenta essa exigência.
+
 ## Lote 2 (2026-10-22): guard de páginas
 
 - `src/spa/authGuard.js` + `AuthGuard.jsx`: decisão de autenticação sempre via `/api/auth/check` (cookie de sessão no backend); lógica pura testada em `tests/unit/spa-auth-guard.test.js` (autoriza 200; nega 401/403; deny-by-default em falha de rede; redirect raiz por autenticação).

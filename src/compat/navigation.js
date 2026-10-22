@@ -11,14 +11,22 @@ export function usePathname() {
 
 export function useRouter() {
   const navigate = useNavigate();
-  const location = useLocation();
+  // refresh() do Next reexecuta Server Components da rota atual. Em SPA, a
+  // semântica equivalente é revalidar a rota corrente — mas chamadas como
+  // push(url) seguido de refresh() precisam ler a URL DEPOIS da navegação
+  // pendente, senão o refresh cancelaria o push (bug observado no login).
+  const revalidate = () => {
+    setTimeout(() => {
+      const { pathname, search, hash } = window.location;
+      navigate(pathname + search + hash, { replace: true });
+    }, 0);
+  };
   return {
     push: (url) => navigate(url),
     replace: (url) => navigate(url, { replace: true }),
     back: () => navigate(-1),
     forward: () => navigate(1),
-    refresh: () =>
-      navigate(location.pathname + location.search + location.hash, { replace: true }),
+    refresh: revalidate,
     prefetch: () => {},
   };
 }
