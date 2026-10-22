@@ -35,7 +35,7 @@ func TestOpenAIChatUsesResolvedProvider(t *testing.T) {
 	if w.Code != 200 || !strings.Contains(w.Body.String(), "data: ok") {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
-	request = httptest.NewRequest("POST", "/", strings.NewReader(`{"model":"claude/claude","messages":[]}`))
+	request = httptest.NewRequest("POST", "/", strings.NewReader(`{"model":"claude/claude","messages":[],"stream":false}`))
 	request.Header.Set("Authorization", "Bearer secret")
 	w = httptest.NewRecorder()
 	gateway.OpenAIChat(w, request)

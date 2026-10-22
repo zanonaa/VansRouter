@@ -132,15 +132,51 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		g.webError(w, 403, `Provider "`+provider+`" is not allowed for this API key`)
 		return
 	}
-	body = filterToOpenAI(body)
+	source := detectRequestFormat(body)
+	if strings.Contains(r.URL.Path, "/v1/messages") {
+		source = "claude"
+	}
+	if strings.Contains(r.URL.Path, "/v1/responses") {
+		source = "openai-responses"
+	}
+	stream := body["stream"] != false
 	format := providers.TargetFormat(provider)
 	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
 		g.NotPorted(w, r)
 		return
 	}
+	if source != format {
+		if stream && !(source == "openai" && (format == "claude" || format == "gemini") || source == "claude" && format == "openai") {
+			g.webError(w, 501, "Streaming conversion not implemented for this format pair")
+			return
+		}
+		intermediate, err := translateSource(body, source)
+		if err != nil {
+			g.webError(w, 501, err.Error())
+			return
+		}
+		body, err = translateTarget(intermediate, format, model)
+		if err != nil {
+			g.webError(w, 501, err.Error())
+			return
+		}
+	}
+	body["stream"] = stream
 	encoded, _ := json.Marshal(map[string]any{"provider": provider, "model": model, "body": body})
 	clone := r.Clone(r.Context())
 	clone.Body = io.NopCloser(bytes.NewReader(encoded))
+	if source != format {
+		if stream {
+			converted := &streamConversion{destination: w, source: source, target: format, model: model, textBlock: -1}
+			g.Send.Send(converted, clone)
+			converted.finish()
+			return
+		}
+		converted := &convertedResponse{destination: w, source: source, target: format, model: model}
+		g.Send.Send(converted, clone)
+		converted.finish()
+		return
+	}
 	g.Send.Send(w, clone)
 }
 func filterToOpenAI(body map[string]any) map[string]any {
