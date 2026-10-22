@@ -26,6 +26,7 @@ type Providers struct {
 	Circuits          *CircuitRegistry
 	TranslatorFiles   *TranslatorFiles
 	TranslatorSend    *TranslatorSend
+	Translator        *TranslatorTranslate
 	Console           *ConsoleBuffer
 	OAuth             *OAuthEngine
 	CursorAutoImport  *CursorAutoImport
@@ -40,6 +41,7 @@ type Providers struct {
 	LiveUsage         *UsageLive
 	UsageContracts    *UsageContracts
 	Gateway           *Gateway
+	AudioVoices       *AudioVoices
 	GCPProjects       *GCPProjects
 	Discovery         *ProviderDiscovery
 	ConnectionProbe   *ConnectionProbe
