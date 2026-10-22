@@ -227,25 +227,25 @@
       "method": "GET",
       "path": "/api/models/availability",
       "source": "src/app/api/models/availability/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/models/availability",
       "source": "src/app/api/models/availability/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/models/catalog-sync",
       "source": "src/app/api/models/catalog-sync/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/models/catalog-sync",
       "source": "src/app/api/models/catalog-sync/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",

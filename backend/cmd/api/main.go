@@ -95,6 +95,7 @@ func run() error {
 		default:
 		}
 	}}
+	catalogSync := handlers.NewModelCatalogSync(cfg.DataDir)
 	server := &http.Server{
 		Addr: cfg.Address,
 		Handler: router.NewWithNodes(func(ctx context.Context) error {
@@ -106,7 +107,7 @@ func run() error {
 			return handlers.FetchElevenVoicesPublic(ctx, apiKey)
 		}}}, Database: &handlers.DatabaseExport{DB: db, ValidCLI: authentication.ValidCLIToken, VerifyPassword: func(password string) bool {
 			return authentication.VerifyDashboardPassword(context.Background(), password)
-		}}, Overrides: &handlers.Overrides{Read: authentication.Settings, Write: authentication.WriteSettings}, Shutdown: shutdownHandler, Pricing: &handlers.Pricing{Store: database.Pricing{DB: db}}, Logs: &handlers.LogEndpoints{Store: database.Usage{DB: db}, Connections: database.Connections{DB: db}}, Usage: &handlers.UsageEndpoints{Usage: database.Usage{DB: db}, Nodes: database.Nodes{DB: db}}, Models: &handlers.ModelsEndpoints{Disabled: handlers.DisabledModels{DB: db}, Aliases: database.ModelAliases{DB: db}}, Aliases: &handlers.ModelAliases{Store: database.ModelAliases{DB: db}}, Combos: &handlers.Combos{Store: database.Combos{DB: db}}, CreateBulk: (database.Connections{DB: db}).CreateBulk, Pools: &handlers.ProxyPools{Store: database.ProxyPools{DB: db}, Connections: database.Connections{DB: db}}, GetConnection: (database.Connections{DB: db}).Get, UpdateConnection: (database.Connections{DB: db}).Update, DeleteConnection: (database.Connections{DB: db}).Delete, CreateConnection: (database.Connections{DB: db}).Create, GetNode: (database.Nodes{DB: db}).Get, GetPool: (database.ProxyPools{DB: db}).Get, Headroom: &handlers.HeadroomRoutes{H: &handlers.Headroom{DataDir: cfg.DataDir}, Read: authentication.Settings}, Pxpipe: handlers.NewPxpipe(cfg.DataDir, authentication.Settings), TTSVoices: &handlers.TTSVoices{Connections: database.Connections{DB: db}}}),
+		}}, Overrides: &handlers.Overrides{Read: authentication.Settings, Write: authentication.WriteSettings}, Shutdown: shutdownHandler, Pricing: &handlers.Pricing{Store: database.Pricing{DB: db}}, Logs: &handlers.LogEndpoints{Store: database.Usage{DB: db}, Connections: database.Connections{DB: db}}, Usage: &handlers.UsageEndpoints{Usage: database.Usage{DB: db}, Nodes: database.Nodes{DB: db}}, Models: &handlers.ModelsEndpoints{Disabled: handlers.DisabledModels{DB: db}, Aliases: database.ModelAliases{DB: db}}, Aliases: &handlers.ModelAliases{Store: database.ModelAliases{DB: db}}, Combos: &handlers.Combos{Store: database.Combos{DB: db}}, CreateBulk: (database.Connections{DB: db}).CreateBulk, Pools: &handlers.ProxyPools{Store: database.ProxyPools{DB: db}, Connections: database.Connections{DB: db}}, GetConnection: (database.Connections{DB: db}).Get, UpdateConnection: (database.Connections{DB: db}).Update, DeleteConnection: (database.Connections{DB: db}).Delete, CreateConnection: (database.Connections{DB: db}).Create, GetNode: (database.Nodes{DB: db}).Get, GetPool: (database.ProxyPools{DB: db}).Get, Headroom: &handlers.HeadroomRoutes{H: &handlers.Headroom{DataDir: cfg.DataDir}, Read: authentication.Settings}, Pxpipe: handlers.NewPxpipe(cfg.DataDir, authentication.Settings), ModelAvailability: &handlers.ModelAvailability{Connections: database.Connections{DB: db}}, CatalogSync: catalogSync, TTSVoices: &handlers.TTSVoices{Connections: database.Connections{DB: db}}}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		// Sem WriteTimeout global: futuros streams de IA podem ser longos.
@@ -119,6 +120,7 @@ func run() error {
 	defer stop()
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
+	catalogSync.StartTimer()
 	slog.Info("servidor Go iniciado", "endereco", listener.Addr().String())
 	go func() {
 		select {

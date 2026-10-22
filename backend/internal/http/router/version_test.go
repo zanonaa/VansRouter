@@ -154,3 +154,28 @@ func TestPxpipeRoutesRegistered(t *testing.T) {
 		t.Fatalf("sem wiring %d", w.Code)
 	}
 }
+
+func TestModelsExtrasRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{
+		ModelAvailability: &handlers.ModelAvailability{},
+		CatalogSync:       &handlers.ModelCatalogSync{DataDir: t.TempDir()},
+	})
+	for _, probe := range []string{"/api/models/availability", "/api/models/catalog-sync"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("GET", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s GET não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("POST", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s POST não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s OPTIONS não registrada", probe)
+		}
+	}
+}

@@ -113,7 +113,7 @@ func pxpipeErrorCode(err error) any {
 // chamadas concorrentes aguardam; a reexecução subsequente é inócua, pois o
 // pacote já estará instalado — divergência benigna documentada.
 type pxpipeInstallState struct {
-	mu        sync.Mutex
+	mu         sync.Mutex
 	installing bool
 }
 

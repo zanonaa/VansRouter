@@ -9,30 +9,32 @@ import (
 )
 
 type Providers struct {
-	Overrides        *Overrides
-	Database         *DatabaseExport
-	Media            *MediaVoices
-	TTSVoices        *TTSVoices
-	Pxpipe           *Pxpipe
-	OAuth            *OAuthEngine
-	Shutdown         *Shutdown
-	Pricing          *Pricing
-	Logs             *LogEndpoints
-	Aliases          *ModelAliases
-	Models           *ModelsEndpoints
-	Usage            *UsageEndpoints
-	Combos           *Combos
-	CreateBulk       func(context.Context, []map[string]any) ([]map[string]any, error)
-	Pools            *ProxyPools
-	GetConnection    func(context.Context, string) (map[string]any, error)
-	UpdateConnection func(context.Context, string, map[string]any) (map[string]any, error)
-	DeleteConnection func(context.Context, string) (bool, error)
-	Connections      NodeConnections
-	Nodes            NodeStore
-	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
-	GetNode          func(context.Context, string) (map[string]any, error)
-	GetPool          func(context.Context, string) (map[string]any, error)
-	Headroom         *HeadroomRoutes
+	Overrides         *Overrides
+	Database          *DatabaseExport
+	Media             *MediaVoices
+	TTSVoices         *TTSVoices
+	Pxpipe            *Pxpipe
+	ModelAvailability *ModelAvailability
+	CatalogSync       *ModelCatalogSync
+	OAuth             *OAuthEngine
+	Shutdown          *Shutdown
+	Pricing           *Pricing
+	Logs              *LogEndpoints
+	Aliases           *ModelAliases
+	Models            *ModelsEndpoints
+	Usage             *UsageEndpoints
+	Combos            *Combos
+	CreateBulk        func(context.Context, []map[string]any) ([]map[string]any, error)
+	Pools             *ProxyPools
+	GetConnection     func(context.Context, string) (map[string]any, error)
+	UpdateConnection  func(context.Context, string, map[string]any) (map[string]any, error)
+	DeleteConnection  func(context.Context, string) (bool, error)
+	Connections       NodeConnections
+	Nodes             NodeStore
+	CreateConnection  func(context.Context, map[string]any) (map[string]any, error)
+	GetNode           func(context.Context, string) (map[string]any, error)
+	GetPool           func(context.Context, string) (map[string]any, error)
+	Headroom          *HeadroomRoutes
 }
 
 func (h Providers) List(w http.ResponseWriter, r *http.Request) {
