@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -70,63 +69,8 @@ func (u *UsageContracts) Get(w http.ResponseWriter, r *http.Request) {
 	nodeReply(w, 501, map[string]any{"error": "Provider usage executor not ported", "provider": connection["provider"]})
 }
 func (u *UsageContracts) ClaudeReset(w http.ResponseWriter, r *http.Request) {
-	connection, ok := u.connection(w, r)
-	if !ok {
-		return
-	}
-	if connection["provider"] != "claude" || connection["authType"] != "oauth" {
-		nodeReply(w, 400, map[string]any{"error": "Limit reset is only available for Claude OAuth connections."})
-		return
-	}
-	body, _ := poolInput(r)
-	grant := ttsString(body["grantId"])
-	request, err := http.NewRequestWithContext(r.Context(), "POST", "https://api.anthropic.com/api/oauth/usage/reset", strings.NewReader(`{"grantId":"`+grant+`"}`))
-	if err != nil {
-		nodeReply(w, 500, map[string]any{"error": err.Error()})
-		return
-	}
-	request.Header.Set("Authorization", "Bearer "+ttsString(connection["accessToken"]))
-	request.Header.Set("Content-Type", "application/json")
-	client := u.Client
-	if client == nil {
-		client = http.DefaultClient
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		nodeReply(w, 500, map[string]any{"error": err.Error()})
-		return
-	}
-	defer response.Body.Close()
-	nodeReply(w, response.StatusCode, map[string]any{"ok": response.StatusCode < 300, "status": response.StatusCode})
+	u.claudeReset(w, r)
 }
 func (u *UsageContracts) CodexCredits(w http.ResponseWriter, r *http.Request) {
-	connection, ok := u.connection(w, r)
-	if !ok {
-		return
-	}
-	if connection["provider"] != "codex" || connection["authType"] != "oauth" && connection["authType"] != "access_token" {
-		nodeReply(w, 400, map[string]any{"error": "Codex reset credits require an OAuth or access-token connection."})
-		return
-	}
-	method := "GET"
-	if r.Method == "POST" {
-		method = "POST"
-	}
-	request, err := http.NewRequestWithContext(r.Context(), method, "https://chatgpt.com/backend-api/wham/rate-limit-reset-credits", nil)
-	if err != nil {
-		nodeReply(w, 500, map[string]any{"error": err.Error()})
-		return
-	}
-	request.Header.Set("Authorization", "Bearer "+ttsString(connection["accessToken"]))
-	client := u.Client
-	if client == nil {
-		client = http.DefaultClient
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		nodeReply(w, 500, map[string]any{"error": err.Error()})
-		return
-	}
-	defer response.Body.Close()
-	nodeReply(w, response.StatusCode, map[string]any{"status": response.StatusCode})
+	u.codexCredits(w, r)
 }
