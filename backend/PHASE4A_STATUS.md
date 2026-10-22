@@ -2,6 +2,13 @@
 
 Primeiro lote da Fase 4A (React SPA sem Next.js), base 8453db8b. Estado: **fundação entregue; migração em andamento**.
 
+## Lote 2 (2026-10-22): guard de páginas
+
+- `src/spa/authGuard.js` + `AuthGuard.jsx`: decisão de autenticação sempre via `/api/auth/check` (cookie de sessão no backend); lógica pura testada em `tests/unit/spa-auth-guard.test.js` (autoriza 200; nega 401/403; deny-by-default em falha de rede; redirect raiz por autenticação).
+- Rotas fiéis ao dashboardGuard: `/` apenas redireciona (autenticado→`/dashboard`, senão→`/masuk`; landing preservada em `/landing`), `/login`→`/masuk` sem renderizar, `/dashboard*` envolvido por `AuthGuard` com tela de verificação, `/masuk` autenticado→`/dashboard` e não autenticado carrega `/api/auth/status`.
+- Divergência aceita: um instante de verificação (loading) onde o SSR decidia antes do HTML.
+
+
 ## O que entrou
 
 - `vite.config.js` + `index.html`: build Vite (rolldown/oxc), alias `@`→`src`, alias `open-sse` replicando jsconfig, proxy dev `/api` → `localhost:20128` ( porta interna Go), scripts `dev:spa`/`build:spa`.
@@ -28,7 +35,6 @@ Primeiro lote da Fase 4A (React SPA sem Next.js), base 8453db8b. Estado: **funda
 
 ## Pendências do 4A (próximos lotes)
 
-- Reproduzir o `dashboardGuard` na SPA (redirect login/dashboard) e o middleware de página.
 - Exercitar fluxos reais contra o Go local (login/OIDC, CRUD, streaming) e validar `useSearchParams`/deep links.
 - Auditar `NEXT_PUBLIC_*` (hoje apenas BASE_URL/CLOUD_URL) para env Vite.
 - Integração por mesma origem, remoção do Next e de `src/app/api` (Fase 4B).
