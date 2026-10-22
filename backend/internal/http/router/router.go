@@ -469,8 +469,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Head("/api/translator/console-logs/stream", withoutBody(console.Stream))
 		r.Options("/api/translator/console-logs/stream", options("GET, HEAD, OPTIONS"))
 	}
-	r.Post("/api/translator/send", handlers.Pending)
-	r.Options("/api/translator/send", options("POST, OPTIONS"))
+	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].TranslatorSend != nil {
+		r.Post("/api/translator/send", providerAPI[0].TranslatorSend.Send)
+		r.Options("/api/translator/send", options("POST, OPTIONS"))
+	}
 	r.Post("/api/translator/translate", handlers.Pending)
 	r.Options("/api/translator/translate", options("POST, OPTIONS"))
 	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].UsageContracts != nil {
