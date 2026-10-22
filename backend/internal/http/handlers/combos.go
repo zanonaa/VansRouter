@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 type ComboStore interface {
@@ -153,7 +154,16 @@ func (h Combos) write(w http.ResponseWriter, r *http.Request, create bool) {
 		}
 		result, err = h.Store.Create(r.Context(), map[string]any{"name": name, "models": models, "kind": kind, "context_length": body["context_length"]})
 	} else {
+		previous, readErr := h.Store.Get(r.Context(), id)
+		if readErr != nil {
+			fail()
+			return
+		}
 		result, err = h.Store.Update(r.Context(), id, body)
+		if err == nil && result != nil {
+			providers.ResetComboRotation(ttsString(previous["name"]))
+			providers.ResetComboRotation(ttsString(result["name"]))
+		}
 	}
 	if err != nil {
 		fail()
@@ -170,6 +180,11 @@ func (h Combos) write(w http.ResponseWriter, r *http.Request, create bool) {
 	nodeReply(w, status, result)
 }
 func (h Combos) Delete(w http.ResponseWriter, r *http.Request) {
+	previous, err := h.Store.Get(r.Context(), chi.URLParam(r, "id"))
+	if err != nil {
+		nodeReply(w, 500, map[string]string{"error": "Failed to delete combo"})
+		return
+	}
 	deleted, err := h.Store.Delete(r.Context(), chi.URLParam(r, "id"))
 	if err != nil {
 		nodeReply(w, 500, map[string]string{"error": "Failed to delete combo"})
@@ -179,5 +194,6 @@ func (h Combos) Delete(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 404, map[string]string{"error": "Combo not found"})
 		return
 	}
+	providers.ResetComboRotation(ttsString(previous["name"]))
 	nodeReply(w, 200, map[string]bool{"success": true})
 }

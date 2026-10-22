@@ -127,6 +127,11 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 400, map[string]any{"error": "Invalid JSON body"})
 		return
 	}
+	if !strings.Contains(ttsString(body["model"]), "/") {
+		if g.chatCombo(w, r, key, body) {
+			return
+		}
+	}
 	provider, model := splitTranslatorModel(ttsString(body["model"]))
 	if provider != "" && !gatewayPermission(key, "allowedProviders", provider) {
 		g.webError(w, 403, `Provider "`+provider+`" is not allowed for this API key`)

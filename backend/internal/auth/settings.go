@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 // safeSettings reproduz a resposta de settings sem segredos.
@@ -290,7 +292,7 @@ func applyOutboundProxy(settings map[string]any) {
 	}
 }
 
-func resetComboRotation() {}
+func resetComboRotation() { providers.ResetComboRotation("") }
 
 // ResetPassword reproduz POST /api/auth/reset-password; a barreira local-only é do guard.
 func (h *HTTP) ResetPassword(w http.ResponseWriter, r *http.Request) {
