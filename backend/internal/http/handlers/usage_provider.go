@@ -93,6 +93,17 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		nodeReply(w, 200, normalizeVercelUsage(data))
+	case "opencode-zen", "opencode-go":
+		nodeReply(w, 200, u.openCodeUsage(r, provider, token))
+	case "github":
+		result, status, err := u.githubUsage(r, ttsString(connection["accessToken"]))
+		if err != nil {
+			nodeReply(w, status, map[string]any{"error": err.Error()})
+			return
+		}
+		nodeReply(w, 200, result)
+	case "qoder":
+		nodeReply(w, 200, u.qoderUsage(r, ttsString(connection["accessToken"])))
 	default:
 		nodeReply(w, 200, map[string]any{"message": "Usage API not implemented for " + provider})
 	}
