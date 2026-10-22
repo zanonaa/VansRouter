@@ -833,7 +833,7 @@
       "method": "GET",
       "path": "/api/usage/logs",
       "source": "src/app/api/usage/logs/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -857,7 +857,7 @@
       "method": "GET",
       "path": "/api/usage/request-logs",
       "source": "src/app/api/usage/request-logs/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -869,7 +869,7 @@
       "method": "GET",
       "path": "/api/usage/stream",
       "source": "src/app/api/usage/stream/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
