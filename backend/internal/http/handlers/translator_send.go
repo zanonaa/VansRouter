@@ -53,10 +53,7 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 	config := providers.OpenAITransport(provider)
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
 	if providers.TargetFormat(provider) == "claude" {
-		config = &providers.Transport{BaseURL: "https://api.anthropic.com/v1/messages", Format: "claude", Auth: &struct {
-			Header string `json:"header"`
-			Scheme string `json:"scheme"`
-		}{Header: "x-api-key", Scheme: ""}}
+		config = providers.TransportFor(provider)
 	}
 	if providers.TargetFormat(provider) == "gemini" {
 		config = &providers.Transport{BaseURL: "https://generativelanguage.googleapis.com/v1beta/models/" + url.PathEscape(model) + ":generateContent", Format: "gemini"}
@@ -81,15 +78,21 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		outbound[key] = value
 	}
 	outbound["model"] = model
-	if config.Format == "claude" {
-		outbound = map[string]any{"model": model, "max_tokens": 1024, "messages": outbound["messages"]}
-	}
+	// This endpoint receives the target-format body produced by translator step
+	// three. Preserve all turns, tools, system instructions and generation options.
 	if config.Format == "gemini" {
-		outbound = map[string]any{"contents": []any{map[string]any{"role": "user", "parts": []any{map[string]any{"text": "hi"}}}}}
-		if messages, ok := body["messages"].([]any); ok && len(messages) > 0 {
-			last, _ := messages[len(messages)-1].(map[string]any)
-			outbound = map[string]any{"contents": []any{map[string]any{"role": "user", "parts": []any{map[string]any{"text": ttsString(last["content"])}}}}}
+		delete(outbound, "model") // Gemini selects the model in the URL.
+		if body["stream"] != false {
+			config.BaseURL = strings.TrimSuffix(config.BaseURL, ":generateContent") + ":streamGenerateContent?alt=sse"
 		}
+		delete(outbound, "stream")
+	} else if config.Format == "claude" {
+		requestHeaders := make(map[string]string, len(config.Headers)+1)
+		for key, value := range config.Headers {
+			requestHeaders[key] = value
+		}
+		requestHeaders["anthropic-version"] = "2023-06-01"
+		config.Headers = requestHeaders
 	}
 	encoded, err := json.Marshal(outbound)
 	if err != nil {
@@ -107,13 +110,23 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 	}
 	token := ttsString(firstNonEmpty(connection["apiKey"], connection["accessToken"]))
 	if config.Format == "gemini" {
-		request.URL.RawQuery = "key=" + url.QueryEscape(token)
+		query := request.URL.Query()
+		query.Set("key", token)
+		request.URL.RawQuery = query.Encode()
 	} else if !config.NoAuth {
 		header, prefix := "Authorization", "Bearer "
-		if config.Auth != nil && config.Auth.Header != "" {
-			header = config.Auth.Header
-			if config.Auth.Scheme != "bearer" {
-				prefix = ""
+		if config.Auth != nil {
+			name, scheme := config.Auth.Header, config.Auth.Scheme
+			if ttsString(connection["apiKey"]) != "" && config.Auth.APIKey != nil {
+				name, scheme = config.Auth.APIKey.Header, config.Auth.APIKey.Scheme
+			} else if ttsString(connection["accessToken"]) != "" && config.Auth.OAuth != nil {
+				name, scheme = config.Auth.OAuth.Header, config.Auth.OAuth.Scheme
+			}
+			if name != "" {
+				header = name
+				if scheme != "bearer" {
+					prefix = ""
+				}
 			}
 		}
 		request.Header.Set(header, prefix+token)
