@@ -125,6 +125,10 @@ func (g *Gateway) chatCombo(w http.ResponseWriter, r *http.Request, key, body ma
 	if override := ttsString(custom["fallbackStrategy"]); override != "" {
 		strategy = override
 	}
+	if strategy == "fusion" {
+		g.fusionCombo(w, r, models, name, custom, body)
+		return true
+	}
 	if strategy != "fallback" && strategy != "round-robin" {
 		g.webError(w, 501, "Combo strategy not implemented: "+strategy)
 		return true
