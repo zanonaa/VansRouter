@@ -43,6 +43,7 @@ type Providers struct {
 	Discovery         *ProviderDiscovery
 	ConnectionProbe   *ConnectionProbe
 	ModelPing         *ModelPing
+	ModelTests        *ProviderModelTests
 	Combos            *Combos
 	CreateBulk        func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools             *ProxyPools

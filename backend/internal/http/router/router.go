@@ -454,8 +454,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Post("/api/providers/{id}/test", providerAPI[0].ConnectionProbe.Post)
 		r.Options("/api/providers/{id}/test", options("POST, OPTIONS"))
 	}
-	r.Post("/api/providers/{id}/test-models", handlers.Pending)
-	r.Options("/api/providers/{id}/test-models", options("POST, OPTIONS"))
+	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].ModelTests != nil {
+		r.Post("/api/providers/{id}/test-models", providerAPI[0].ModelTests.Post)
+		r.Options("/api/providers/{id}/test-models", options("POST, OPTIONS"))
+	}
 	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Console != nil {
 		console := providerAPI[0].Console
 		r.Get("/api/translator/console-logs", console.Get)
