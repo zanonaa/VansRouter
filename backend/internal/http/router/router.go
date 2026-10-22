@@ -248,6 +248,30 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].OAuth != nil {
 			oauthAPI := providerAPI[0].OAuth
+			cursorAuto := providerAPI[0].CursorAutoImport
+			if cursorAuto == nil {
+				cursorAuto = handlers.NewCursorAutoImport()
+			}
+			kiroAuto := providerAPI[0].KiroAutoImport
+			if kiroAuto == nil {
+				kiroAuto = handlers.NewKiroAutoImport()
+			}
+			zedAuto := providerAPI[0].ZedAutoImport
+			if zedAuto == nil {
+				zedAuto = handlers.NewZedAutoImport()
+			}
+			for _, entry := range []struct {
+				path string
+				get  http.HandlerFunc
+			}{
+				{"/api/oauth/cursor/auto-import", cursorAuto.Get},
+				{"/api/oauth/kiro/auto-import", kiroAuto.Get},
+				{"/api/oauth/zed/auto-import", zedAuto.Get},
+			} {
+				r.Get(entry.path, entry.get)
+				r.Head(entry.path, withoutBody(entry.get))
+				r.Options(entry.path, options("GET, HEAD, OPTIONS"))
+			}
 			r.Post("/api/oauth/iflow/cookie", oauthAPI.IflowCookie)
 			r.Options("/api/oauth/iflow/cookie", options("OPTIONS, POST"))
 			r.Post("/api/oauth/zed/import", oauthAPI.ZedImport)

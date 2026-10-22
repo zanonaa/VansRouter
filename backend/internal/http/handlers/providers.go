@@ -20,6 +20,9 @@ type Providers struct {
 	ImportPublic      *ImportPublic
 	Deploys           *RelayDeploys
 	OAuth             *OAuthEngine
+	CursorAutoImport  *CursorAutoImport
+	KiroAutoImport    *KiroAutoImport
+	ZedAutoImport     *ZedAutoImport
 	Shutdown          *Shutdown
 	Pricing           *Pricing
 	Logs              *LogEndpoints

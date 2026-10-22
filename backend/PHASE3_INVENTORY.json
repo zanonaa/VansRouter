@@ -605,13 +605,13 @@
       "method": "POST",
       "path": "/api/proxy-pools/cloudflare-deploy",
       "source": "src/app/api/proxy-pools/cloudflare-deploy/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/proxy-pools/deno-deploy",
       "source": "src/app/api/proxy-pools/deno-deploy/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -647,7 +647,7 @@
       "method": "POST",
       "path": "/api/proxy-pools/vercel-deploy",
       "source": "src/app/api/proxy-pools/vercel-deploy/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
