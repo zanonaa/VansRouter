@@ -93,6 +93,8 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		nodeReply(w, 200, normalizeVercelUsage(data))
+	case "codebuddy-cn", "codebuddy-intl":
+		nodeReply(w, 200, u.codeBuddyUsage(r, provider, connection))
 	case "kiro":
 		nodeReply(w, 200, u.kiroUsage(r, ttsString(connection["accessToken"]), connection))
 	case "freebuff":
