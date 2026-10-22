@@ -2,7 +2,7 @@
 // Caminhos e parâmetros dinâmicos são idênticos aos arquivos page.js; páginas são
 // carregadas em lazy para preservar o code-splitting por rota do Next.
 import { lazy } from "react";
-import { Outlet, useNavigate, useRouteError, isRouteErrorResponse } from "react-router-dom";
+import { Outlet, useNavigate, useRouteError, isRouteErrorResponse, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/shared/components";
 import { RuntimeI18nProvider } from "@/i18n/RuntimeI18nProvider";
 import { DashboardLayout } from "@/shared/components";
@@ -11,9 +11,9 @@ import RootError from "./RootError.jsx";
 import MasukRoute from "./MasukRoute.jsx";
 import MediaKindRoute from "./MediaKindRoute.jsx";
 import EndpointRoute from "./EndpointRoute.jsx";
+import { AuthGuard, RootRedirect } from "./AuthGuard.jsx";
 
 const landing = lazy(() => import("@/app/landing/page.js"));
-const login = lazy(() => import("@/app/login/page.js"));
 const callback = lazy(() => import("@/app/callback/page.js"));
 const dashboardHome = lazy(() => import("@/app/(dashboard)/dashboard/page.js"));
 const basicChat = lazy(() => import("@/app/(dashboard)/dashboard/basic-chat/page.js"));
@@ -64,8 +64,12 @@ export const routes = [
     element: <RootLayout />,
     errorElement: <RootError />,
     children: [
-      { index: true, element: <landing /> },
-      { path: "login", element: <login /> },
+      // "/" do guard original: apenas redireciona (autenticado → /dashboard,
+      // senão /masuk). A landing continua em /landing, como no App Router.
+      { index: true, element: <RootRedirect /> },
+      { path: "landing", element: <landing /> },
+      // O guard original redireciona /login → /masuk sem renderizar a página.
+      { path: "login", element: <Navigate to="/masuk" replace /> },
       { path: "masuk", element: <MasukRoute /> },
       { path: "callback", element: <callback /> },
       // /dashboard/settings/pricing fica fora do grupo (dashboard) e, como no
@@ -73,7 +77,11 @@ export const routes = [
       { path: "dashboard/settings/pricing", element: <pricing /> },
       {
         path: "dashboard",
-        element: <DashboardLayout />,
+        element: (
+          <AuthGuard>
+            <DashboardLayout />
+          </AuthGuard>
+        ),
         errorElement: <DashboardErrorRoute />,
         children: [
           { index: true, element: <dashboardHome /> },
