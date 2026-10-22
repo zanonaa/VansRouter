@@ -16,6 +16,13 @@ Primeiro lote da Fase 4A (React SPA sem Next.js), base 8453db8b. Estado: **funda
 - Divergência aceita: um instante de verificação (loading) onde o SSR decidia antes do HTML.
 
 
+## Lote 4 (2026-10-22): auditoria de variáveis públicas + CRUD/SSE no smoke
+
+- Únicas leituras de `NEXT_PUBLIC_*` no app estão em módulos server-only (`src/lib/auth/oidc.js`, `src/lib/db/repos/settingsRepo.js`); nenhum componente client as consome e nenhum segredo é exposto.
+- `vite.config.js` passa a definir explicitamente `NEXT_PUBLIC_BASE_URL`/`NEXT_PUBLIC_CLOUD_URL` (override de dev/build disponível), mantendo o restante de `process.env` vazio no navegador.
+- Smoke estendido e aprovado (`SMOKE_OK`): CRUD real de `/api/keys` no contexto autenticado (criar 201 → listar → deletar → ausente), `GET /api/models` 200 e SSE autenticado (`text/event-stream`) na origem Go com o cookie da sessão do navegador.
+- Pendência descoberta: o proxy do dev server Vite prende respostas SSE (flush em `proxyRes` não resolveu); streaming pela mesma origem é resolvido na Fase 4B e está anotado no `vite.config.js`.
+
 ## O que entrou
 
 - `vite.config.js` + `index.html`: build Vite (rolldown/oxc), alias `@`→`src`, alias `open-sse` replicando jsconfig, proxy dev `/api` → `localhost:20128` ( porta interna Go), scripts `dev:spa`/`build:spa`.
@@ -42,8 +49,6 @@ Primeiro lote da Fase 4A (React SPA sem Next.js), base 8453db8b. Estado: **funda
 
 ## Pendências do 4A (próximos lotes)
 
-- Exercitar fluxos reais contra o Go local (login/OIDC, CRUD, streaming) e validar `useSearchParams`/deep links.
-- Auditar `NEXT_PUBLIC_*` (hoje apenas BASE_URL/CLOUD_URL) para env Vite.
 - Integração por mesma origem, remoção do Next e de `src/app/api` (Fase 4B).
 
 A Fase 4B não foi iniciada. Não há declaração de conclusão da Fase 4A.
