@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 )
 
-func normalizeSearch(provider, kind string, data map[string]any, max int, now time.Time) ([]map[string]any, any, map[string]any, error) {
+func normalizeSearch(provider, kind string, data map[string]any, max int, now time.Time) ([]map[string]any, any, map[string]any, map[string]any, error) {
 	var items []any
 	var total any
 	switch provider {
@@ -62,14 +63,44 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 		}
 		items, _ = container[field].([]any)
 		total = len(items)
+	case "ollama-search":
+		items, _ = data["results"].([]any)
+		total = len(items)
+	case "xquik":
+		items, _ = data["tweets"].([]any)
+	case "glm":
+		payload := data
+		content, _ := data["result"].(map[string]any)
+		parts, _ := content["content"].([]any)
+		if len(parts) > 0 {
+			part, _ := parts[0].(map[string]any)
+			if text, ok := part["text"].(string); ok {
+				var decoded any
+				if json.Unmarshal([]byte(text), &decoded) == nil {
+					switch value := decoded.(type) {
+					case map[string]any:
+						payload = value
+					case []any:
+						items = value
+					}
+				}
+			}
+		}
+		if items == nil {
+			items, _ = payload["results"].([]any)
+			if items == nil {
+				items, _ = payload["items"].([]any)
+			}
+		}
+		total = len(items)
 	default:
-		return nil, nil, nil, fmt.Errorf("Search normalizer not implemented for provider: %s", provider)
+		return nil, nil, nil, nil, fmt.Errorf("Search normalizer not implemented for provider: %s", provider)
 	}
 	results := []map[string]any{}
 	for index, raw := range items {
 		item, ok := raw.(map[string]any)
 		if !ok {
-			return nil, nil, nil, fmt.Errorf("Invalid search result")
+			return nil, nil, nil, nil, fmt.Errorf("Invalid search result")
 		}
 		target, snippet, published, favicon, fullText, source, image := "", "", any(nil), any(nil), "", any(nil), any(nil)
 		switch provider {
@@ -137,6 +168,50 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 			favicon = item["favicon_url"]
 			image = item["thumbnail_url"]
 			source = kind
+		case "ollama-search":
+			target = ttsString(item["url"])
+			snippet = ttsString(item["content"])
+			fullText = snippet
+			published = item["published_at"]
+		case "glm":
+			target = ttsString(firstNonEmpty(item["link"], item["url"]))
+			snippet = ttsString(item["content"])
+			fullText = snippet
+			published = firstNonEmpty(item["publish_time"], item["published_at"])
+			image = item["icon"]
+			source = "mcp_web_search_prime"
+		case "xquik":
+			author, _ := item["author"].(map[string]any)
+			username, tweetID := ttsString(author["username"]), ttsString(item["id"])
+			if username != "" && tweetID != "" {
+				target = "https://x.com/" + url.PathEscape(username) + "/status/" + url.PathEscape(tweetID)
+			} else if tweetID != "" {
+				target = "https://x.com/i/web/status/" + url.PathEscape(tweetID)
+			}
+			label := ""
+			if username != "" {
+				label = "@" + username
+			} else {
+				label = ttsString(author["name"])
+			}
+			item["title"] = "X post"
+			if label != "" {
+				item["title"] = label + " on X"
+			}
+			snippet = ttsString(item["text"])
+			fullText = snippet
+			published = item["createdAt"]
+			source = "x_post"
+			if media, ok := item["media"].([]any); ok {
+				for _, raw := range media {
+					entry, _ := raw.(map[string]any)
+					if value, ok := entry["mediaUrl"].(string); ok {
+						image = value
+						break
+					}
+				}
+			}
+			item["_xquikAuthor"] = label
 		case "searxng":
 			target = ttsString(item["url"])
 			snippet = ttsString(firstNonEmpty(item["content"], item["snippet"]))
@@ -196,6 +271,14 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 				metadata["author"] = strings.Join(names, ", ")
 			}
 		}
+		if provider == "xquik" {
+			if label := ttsString(item["_xquikAuthor"]); label != "" {
+				metadata["author"] = label
+			}
+		}
+		if provider == "glm" {
+			metadata["author"] = item["source"]
+		}
 		if provider == "searchapi" {
 			metadata["author"] = item["source"]
 		}
@@ -235,7 +318,16 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 			total = nil
 		}
 	}
-	return results, total, metadata, nil
+	var pagination map[string]any
+	if provider == "xquik" {
+		cursor := ttsString(data["next_cursor"])
+		var next any
+		if cursor != "" {
+			next = cursor
+		}
+		pagination = map[string]any{"has_more": data["has_next_page"] == true, "next_cursor": next}
+	}
+	return results, total, metadata, pagination, nil
 }
 
 func buildBasicSearch(provider, base, token, query, kind string, max int, body map[string]any) (string, string, map[string]string, map[string]any, error) {

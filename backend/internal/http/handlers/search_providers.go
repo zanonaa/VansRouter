@@ -138,6 +138,44 @@ func buildAdditionalSearch(provider, base, token, query, kind string, maxResults
 			values.Set("page", fmt.Sprint(offset/10))
 		}
 		headers["X-API-Key"] = token
+	case "xquik":
+		if token == "" {
+			return "", "", nil, nil, fmt.Errorf("Xquik requires an API key")
+		}
+		queryType := searchSetting(body, "queryType")
+		if queryType != "" && queryType != "Latest" && queryType != "Top" {
+			return "", "", nil, nil, fmt.Errorf("Xquik queryType must be Latest or Top")
+		}
+		values = url.Values{"q": {query}, "limit": {fmt.Sprint(maxResults)}}
+		if cursor := searchSetting(body, "cursor"); cursor != "" {
+			values.Set("cursor", cursor)
+		}
+		if queryType != "" {
+			values.Set("queryType", queryType)
+		}
+		if language != "" {
+			values.Set("language", language)
+		}
+		headers["x-api-key"] = token
+	case "ollama-search":
+		payload := map[string]any{"query": query, "max_results": maxResults}
+		if country != "" {
+			payload["country"] = country
+		}
+		if language != "" {
+			payload["language"] = language
+		}
+		headers = map[string]string{"Content-Type": "application/json"}
+		if token != "" {
+			headers["Authorization"] = "Bearer " + token
+		}
+		return "POST", base, headers, payload, nil
+	case "glm":
+		headers = map[string]string{"Content-Type": "application/json"}
+		if token != "" {
+			headers["Authorization"] = "Bearer " + token
+		}
+		return "POST", base, headers, map[string]any{"jsonrpc": "2.0", "id": "9r-search", "method": "tools/call", "params": map[string]any{"name": "web_search_prime", "arguments": map[string]any{"search_query": query, "count": maxResults}}}, nil
 	case "linkup":
 		if token == "" {
 			return "", "", nil, nil, fmt.Errorf("Linkup Search requires an API key")

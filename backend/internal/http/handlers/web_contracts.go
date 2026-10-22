@@ -163,7 +163,7 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 		g.webError(w, 502, id+" returned invalid JSON")
 		return
 	}
-	results, total, metadata, err := normalizeSearch(id, kind, parsed, max, time.Now())
+	results, total, metadata, pagination, err := normalizeSearch(id, kind, parsed, max, time.Now())
 	if err != nil {
 		g.webError(w, 502, err.Error())
 		return
@@ -178,6 +178,12 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 	response := map[string]any{"provider": id, "query": query, "results": results, "answer": nil, "usage": map[string]any{"queries_used": 1, "search_cost_usd": cost}, "metrics": map[string]any{"response_time_ms": duration, "upstream_latency_ms": duration, "total_results_available": total}, "errors": []any{}}
 	if id == "exa" {
 		response["exa"] = metadata
+	}
+	if pagination != nil {
+		response["pagination"] = pagination
+	}
+	if credits := pxpipeNum(config.Search["creditsPerResult"]); credits > 0 {
+		response["usage"].(map[string]any)["provider_credits_used"] = float64(len(results)) * credits
 	}
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	nodeReply(w, 200, response)

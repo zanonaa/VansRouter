@@ -30,7 +30,7 @@ func TestExaSearchBuildsValidatedPayload(t *testing.T) {
 func TestExaSearchNormalizesCostAndResult(t *testing.T) {
 	var data map[string]any
 	json.Unmarshal([]byte(`{"requestId":"req","resolvedSearchType":"deep","costDollars":{"total":0.021},"results":[{"title":"Title","url":"https://www.example.com/path?q=1","highlights":["first"],"text":"`+strings.Repeat("a", 400)+`","score":1.4,"author":"Author","publishedDate":"2026-10-22"}]}`), &data)
-	results, total, metadata, err := normalizeSearch("exa", "web", data, 5, time.Date(2026, 10, 22, 0, 0, 0, 0, time.UTC))
+	results, total, metadata, _, err := normalizeSearch("exa", "web", data, 5, time.Date(2026, 10, 22, 0, 0, 0, 0, time.UTC))
 	if err != nil || total != 1 || metadata["requestId"] != "req" || metadata["costDollars"].(map[string]any)["total"] != 0.021 {
 		t.Fatal(results, total, metadata, err)
 	}
