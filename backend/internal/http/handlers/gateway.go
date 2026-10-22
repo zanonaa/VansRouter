@@ -124,7 +124,8 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	}
 	provider, model := splitTranslatorModel(ttsString(body["model"]))
 	body = filterToOpenAI(body)
-	if provider == "" || providers.TargetFormat(provider) != "openai" {
+	format := providers.TargetFormat(provider)
+	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
 		g.NotPorted(w, r)
 		return
 	}

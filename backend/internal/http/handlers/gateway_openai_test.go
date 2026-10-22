@@ -39,7 +39,7 @@ func TestOpenAIChatUsesResolvedProvider(t *testing.T) {
 	request.Header.Set("Authorization", "Bearer secret")
 	w = httptest.NewRecorder()
 	gateway.OpenAIChat(w, request)
-	if w.Code != 501 {
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "No active connection") {
 		t.Fatalf("non-openai %d", w.Code)
 	}
 }

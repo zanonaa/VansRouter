@@ -102,7 +102,8 @@ func (t *TranslatorTranslate) Post(w http.ResponseWriter, r *http.Request) {
 		provider, model := splitTranslatorModel(ttsString(clientBody["model"]))
 		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"provider": provider, "model": model, "sourceFormat": detectRequestFormat(clientBody), "targetFormat": providers.TargetFormat(provider)}})
 	case "2":
-		if detectRequestFormat(clientBody) != "openai" {
+		source := detectRequestFormat(clientBody)
+		if source != "openai" && source != "claude" && source != "gemini" {
 			fail(501, "Translator conversion not ported for step 2")
 			return
 		}
@@ -114,18 +115,32 @@ func (t *TranslatorTranslate) Post(w http.ResponseWriter, r *http.Request) {
 			fail(400, "provider and model required")
 			return
 		}
-		if providers.TargetFormat(provider) != "openai" {
+		format := providers.TargetFormat(provider)
+		if format != "openai" && format != "claude" && format != "gemini" {
 			fail(501, "Translator conversion not ported for step 3")
 			return
 		}
 		config := providers.OpenAITransport(provider)
-		if config == nil {
+		target := ""
+		headers := map[string]string{}
+		if config != nil {
+			target = config.BaseURL
+			headers = config.Headers
+		}
+		switch format {
+		case "claude":
+			target = "https://api.anthropic.com/v1/messages"
+			headers = map[string]string{"x-api-key": "", "anthropic-version": "2023-06-01"}
+		case "gemini":
+			target = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent"
+		}
+		if target == "" {
 			fail(501, "Translator executor not ported for provider: "+provider)
 			return
 		}
 		body := filterToOpenAI(clientBody)
 		body["model"] = model
-		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"url": config.BaseURL, "headers": config.Headers, "body": body}})
+		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"url": target, "headers": headers, "body": body}})
 	default:
 		fail(400, "Invalid step (1-3)")
 	}
