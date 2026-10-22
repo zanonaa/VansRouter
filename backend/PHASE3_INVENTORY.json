@@ -881,7 +881,7 @@
       "method": "POST",
       "path": "/api/v1/api/chat",
       "source": "src/app/api/v1/api/chat/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -893,7 +893,7 @@
       "method": "POST",
       "path": "/api/v1/audio/speech",
       "source": "src/app/api/v1/audio/speech/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -905,7 +905,7 @@
       "method": "POST",
       "path": "/api/v1/audio/transcriptions",
       "source": "src/app/api/v1/audio/transcriptions/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -977,7 +977,7 @@
       "method": "POST",
       "path": "/api/v1/messages",
       "source": "src/app/api/v1/messages/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1025,7 +1025,7 @@
       "method": "POST",
       "path": "/api/v1/responses/compact",
       "source": "src/app/api/v1/responses/compact/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1037,7 +1037,7 @@
       "method": "POST",
       "path": "/api/v1/responses",
       "source": "src/app/api/v1/responses/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1049,7 +1049,7 @@
       "method": "POST",
       "path": "/api/v1/search",
       "source": "src/app/api/v1/search/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1061,7 +1061,7 @@
       "method": "GET",
       "path": "/api/v1/videos/{id}",
       "source": "src/app/api/v1/videos/[id]/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1073,7 +1073,7 @@
       "method": "POST",
       "path": "/api/v1/videos/edits",
       "source": "src/app/api/v1/videos/edits/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1085,7 +1085,7 @@
       "method": "POST",
       "path": "/api/v1/videos/extensions",
       "source": "src/app/api/v1/videos/extensions/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1097,7 +1097,7 @@
       "method": "POST",
       "path": "/api/v1/videos/generations",
       "source": "src/app/api/v1/videos/generations/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1109,7 +1109,7 @@
       "method": "POST",
       "path": "/api/v1/web/fetch",
       "source": "src/app/api/v1/web/fetch/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
@@ -1121,7 +1121,7 @@
       "method": "POST",
       "path": "/api/v1beta/models/{...path}",
       "source": "src/app/api/v1beta/models/[...path]/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
