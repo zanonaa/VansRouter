@@ -47,3 +47,24 @@ func TestSearchAndFetchContracts(t *testing.T) {
 		t.Fatalf("ssrf %d %s", w.Code, w.Body.String())
 	}
 }
+
+func TestJinaFetchUsesJSONBody(t *testing.T) {
+	gateway := webGateway(t, kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		raw, _ := io.ReadAll(r.Body)
+		if r.Method != "POST" || r.URL.String() != "https://r.jina.ai" || string(raw) != `{"url":"https://8.8.8.8/page"}` || r.Header.Get("Authorization") != "Bearer upstream" {
+			t.Fatalf("request %s %s %s", r.Method, r.URL, raw)
+		}
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader("Title: Page\nbody"))}, nil
+	}))
+	_, err := gateway.DB.Exec(`INSERT INTO providerConnections VALUES('jina','jina-reader','apikey','Jina',NULL,1,1,'{"apiKey":"upstream"}','now','now')`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest("POST", "/api/v1/web/fetch", strings.NewReader(`{"provider":"jina-reader","url":"https://8.8.8.8/page"}`))
+	request.Header.Set("Authorization", "Bearer secret")
+	w := httptest.NewRecorder()
+	gateway.Fetch(w, request)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"title":"Page"`) || !strings.Contains(w.Body.String(), `"text":"Title: Page\nbody"`) {
+		t.Fatalf("%d %s", w.Code, w.Body.String())
+	}
+}
