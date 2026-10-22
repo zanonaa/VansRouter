@@ -115,6 +115,7 @@ func (g *Gateway) Search(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		token = ttsString(firstNonEmpty(connection["apiKey"], connection["accessToken"]))
+		body["_providerSpecificData"] = connection["providerSpecificData"]
 		if token == "" {
 			g.webError(w, 401, "No credentials for provider: "+id)
 			return

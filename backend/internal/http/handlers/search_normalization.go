@@ -32,8 +32,35 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 		}
 		items, _ = container["results"].([]any)
 		total = container["totalCount"]
-	case "tavily", "searxng":
+	case "tavily", "searxng", "linkup":
 		items, _ = data["results"].([]any)
+		total = len(items)
+	case "tinyfish":
+		items, _ = data["results"].([]any)
+		total = data["total_results"]
+	case "google-pse":
+		items, _ = data["items"].([]any)
+		info, _ := data["searchInformation"].(map[string]any)
+		if info["totalResults"] != nil {
+			total = usageNumber(info["totalResults"])
+		}
+	case "searchapi":
+		items, _ = data["organic_results"].([]any)
+		if items == nil {
+			items, _ = data["top_stories"].([]any)
+		}
+		info, _ := data["search_information"].(map[string]any)
+		total = len(items)
+		if info["total_results"] != nil {
+			total = usageNumber(info["total_results"])
+		}
+	case "youcom":
+		container, _ := data["results"].(map[string]any)
+		field := "web"
+		if kind == "news" {
+			field = "news"
+		}
+		items, _ = container[field].([]any)
 		total = len(items)
 	default:
 		return nil, nil, fmt.Errorf("Search normalizer not implemented for provider: %s", provider)
@@ -61,6 +88,39 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 			snippet = ttsString(item["content"])
 			published = item["published_date"]
 			fullText = ttsString(item["raw_content"])
+		case "google-pse", "searchapi":
+			target = ttsString(item["link"])
+			snippet = ttsString(firstNonEmpty(item["snippet"], item["description"]))
+			published = firstNonEmpty(item["date"], item["published_at"])
+			favicon = item["favicon"]
+			image = item["thumbnail"]
+		case "linkup":
+			target = ttsString(item["url"])
+			snippet = ttsString(firstNonEmpty(item["content"], item["snippet"]))
+			fullText = ttsString(item["content"])
+			source = firstNonEmpty(item["type"], "web")
+			image = firstNonEmpty(item["image_url"], item["imageUrl"])
+		case "tinyfish":
+			target = ttsString(item["url"])
+			snippet = ttsString(item["snippet"])
+			published = item["date"]
+			source = item["publisher"]
+		case "youcom":
+			target = ttsString(item["url"])
+			snippet = ttsString(item["description"])
+			if snippets, ok := item["snippets"].([]any); ok {
+				for _, raw := range snippets {
+					if value, ok := raw.(string); ok {
+						snippet = value
+						break
+					}
+				}
+			}
+			fullText = ttsString(firstNonEmpty(item["markdown"], item["html"]))
+			published = item["page_age"]
+			favicon = item["favicon_url"]
+			image = item["thumbnail_url"]
+			source = kind
 		case "searxng":
 			target = ttsString(item["url"])
 			snippet = ttsString(firstNonEmpty(item["content"], item["snippet"]))
@@ -87,9 +147,50 @@ func normalizeSearch(provider, kind string, data map[string]any, max int, now ti
 		}
 		var content any
 		if fullText != "" {
-			content = map[string]any{"format": "text", "text": fullText, "length": jsTextLength(fullText)}
+			format := "text"
+			if provider == "youcom" {
+				format = "html"
+				if _, ok := item["markdown"].(string); ok {
+					format = "markdown"
+				}
+			}
+			content = map[string]any{"format": format, "text": fullText, "length": jsTextLength(fullText)}
 		}
-		result := map[string]any{"title": ttsString(item["title"]), "url": target, "snippet": snippet, "position": index + 1, "score": score, "published_at": published, "favicon_url": favicon, "content": content, "metadata": map[string]any{"author": nil, "language": nil, "source_type": source, "image_url": image}, "citation": map[string]any{"provider": provider, "retrieved_at": now.UTC().Format("2006-01-02T15:04:05.000Z"), "rank": index + 1}, "provider_raw": nil}
+		title := ttsString(item["title"])
+		if provider == "linkup" {
+			title = ttsString(firstNonEmpty(item["name"], item["title"]))
+		}
+		result := map[string]any{"title": title, "url": target, "snippet": snippet, "position": index + 1, "score": score, "published_at": published, "favicon_url": favicon, "content": content, "metadata": map[string]any{"author": nil, "language": nil, "source_type": source, "image_url": image}, "citation": map[string]any{"provider": provider, "retrieved_at": now.UTC().Format("2006-01-02T15:04:05.000Z"), "rank": index + 1}, "provider_raw": nil}
+		metadata := result["metadata"].(map[string]any)
+		if provider == "tinyfish" {
+			if authors, ok := item["authors"].([]any); ok {
+				names := []string{}
+				for _, name := range authors {
+					names = append(names, ttsString(name))
+				}
+				metadata["author"] = strings.Join(names, ", ")
+			}
+		}
+		if provider == "searchapi" {
+			metadata["author"] = item["source"]
+		}
+		if provider == "google-pse" {
+			pagemap, _ := item["pagemap"].(map[string]any)
+			for _, key := range []string{"cse_image", "cse_thumbnail", "metatags"} {
+				entries, _ := pagemap[key].([]any)
+				if len(entries) > 0 {
+					entry, _ := entries[0].(map[string]any)
+					value := entry["src"]
+					if key == "metatags" {
+						value = entry["og:image"]
+					}
+					if nodeTruthy(value) {
+						metadata["image_url"] = value
+						break
+					}
+				}
+			}
+		}
 		if target != "" {
 			display := strings.TrimPrefix(strings.TrimPrefix(target, "https://"), "http://")
 			display = strings.TrimPrefix(display, "www.")
@@ -166,6 +267,6 @@ func buildBasicSearch(provider, base, token, query, kind string, max int, body m
 		values := url.Values{"q": {query}, "format": {"json"}}
 		return "GET", base + "?" + values.Encode(), map[string]string{}, nil, nil
 	default:
-		return "", "", nil, nil, fmt.Errorf("Search request builder not implemented for provider: %s", provider)
+		return buildAdditionalSearch(provider, base, token, query, kind, max, body)
 	}
 }
