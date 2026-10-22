@@ -206,3 +206,20 @@ func TestProxyPoolExtrasRoutesRegistered(t *testing.T) {
 		t.Fatalf("sem wiring %d", w.Code)
 	}
 }
+
+func TestPoolDeployRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{Deploys: handlers.NewRelayDeploys(nil)})
+	for _, probe := range []string{"/api/proxy-pools/cloudflare-deploy", "/api/proxy-pools/deno-deploy", "/api/proxy-pools/vercel-deploy"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("POST", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s OPTIONS não registrada", probe)
+		}
+	}
+}

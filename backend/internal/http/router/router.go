@@ -335,6 +335,15 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Post("/api/proxy-pools/import-public", importPublic.Post)
 			r.Options("/api/proxy-pools/import-public", options("POST, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Deploys != nil {
+			deploys := providerAPI[0].Deploys
+			r.Post("/api/proxy-pools/cloudflare-deploy", deploys.CloudflareDeploy)
+			r.Options("/api/proxy-pools/cloudflare-deploy", options("POST, OPTIONS"))
+			r.Post("/api/proxy-pools/deno-deploy", deploys.DenoDeploy)
+			r.Options("/api/proxy-pools/deno-deploy", options("POST, OPTIONS"))
+			r.Post("/api/proxy-pools/vercel-deploy", deploys.VercelDeploy)
+			r.Options("/api/proxy-pools/vercel-deploy", options("POST, OPTIONS"))
+		}
 		r.Post("/api/providers", providerAPI[0].Create)
 		if providerAPI[0].CreateBulk != nil {
 			r.Post("/api/providers/bulk", providerAPI[0].Bulk)
