@@ -11,7 +11,6 @@
 !.yarn/versions
 package-lock.json
 !cli/package-lock.json
-!docker/native-deps/package-lock.json
 !gitbook/package-lock.json
 
 # =============================================================================

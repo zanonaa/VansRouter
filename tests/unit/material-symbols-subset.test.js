@@ -13,17 +13,17 @@ import path from "path";
  * expand_less and computer silently broke once).
  */
 describe("Material Symbols self-hosted subset", () => {
-  const layout = fs.readFileSync(path.resolve("src/app/layout.js"), "utf8");
+  const layout = fs.readFileSync(path.resolve("src/spa/fonts.css"), "utf8");
   const globals = fs.readFileSync(path.resolve("src/app/globals.css"), "utf8");
   const fontFile = path.resolve("src/app/fonts/material-symbols-outlined-subset.woff2");
   const manifestFile = path.resolve("src/app/fonts/material-symbols-icons.json");
   const subsetScript = path.resolve("scripts/subset-material-symbols.cjs");
   const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
 
-  it("loads the subset through next/font/local", () => {
-    expect(layout).toContain('from "next/font/local"');
+  it("loads the subset through a local @font-face", () => {
     expect(layout).toContain("material-symbols-outlined-subset.woff2");
     expect(layout).toContain("--font-material-symbols");
+    expect(layout).toMatch(/@font-face/);
   });
 
   it("does not import the full package stylesheet or a runtime CDN stylesheet", () => {

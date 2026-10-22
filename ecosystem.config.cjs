@@ -6,7 +6,9 @@ const root = __dirname;
 // Keep PM2, the deployer, and the application on the same persistent data root.
 // An explicit DATA_DIR remains authoritative; the default preserves ~/.9router.
 const { dataDir, releaseRoot, currentLink } = resolveRuntimePaths();
-const defaultReleaseServer = path.join(currentLink, "server.js");
+// Fase 4B: o servidor de produção é o binário Go do release (com a SPA em
+// SPA_DIR); custom-server.js/Next foram removidos.
+const defaultReleaseServer = path.join(currentLink, "vansrouter");
 const configuredReleaseServer = process.env.RELEASE_SERVER;
 const releaseServer = process.env.CURRENT_LINK
   ? defaultReleaseServer
@@ -18,14 +20,15 @@ module.exports = {
   apps: [{
     name: process.env.PM2_APP_NAME || "9router",
     cwd: root,
-    script: path.join(root, "custom-server.js"),
+    script: releaseServer,
+    interpreter: "none",
     exec_mode: "fork",
     instances: 1,
     env: {
       NODE_ENV: process.env.NODE_ENV || "production",
-      NODE_PATH: "",
-      PORT: process.env.PORT || "3003",
+      PORT: process.env.PORT || "20128",
       DATA_DIR: dataDir,
+      SPA_DIR: process.env.SPA_DIR || path.join(currentLink, "spa"),
       RELEASE_ROOT: releaseRoot,
       CURRENT_LINK: currentLink,
       RELEASE_SERVER: releaseServer,
