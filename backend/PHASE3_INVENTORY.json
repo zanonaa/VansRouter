@@ -461,7 +461,7 @@
       "method": "GET",
       "path": "/api/providers/{id}/gcp-projects",
       "source": "src/app/api/providers/[id]/gcp-projects/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
