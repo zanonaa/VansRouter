@@ -146,7 +146,7 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if source != format {
-		if stream && !(source == "openai" && (format == "claude" || format == "gemini") || source == "claude" && format == "openai") {
+		if stream && !(source == "openai" && (format == "claude" || format == "gemini") || (source == "claude" || source == "openai-responses") && format == "openai") {
 			g.webError(w, 501, "Streaming conversion not implemented for this format pair")
 			return
 		}
