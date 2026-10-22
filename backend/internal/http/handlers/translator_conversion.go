@@ -148,7 +148,12 @@ func translateTarget(body map[string]any, format, model string) (map[string]any,
 	}
 	if choice, ok := source["tool_choice"]; ok {
 		if format == "gemini" {
-			return nil, fmt.Errorf("Gemini tool_choice mapping is not implemented")
+			config, err := geminiToolConfig(choice)
+			if err != nil {
+				return nil, err
+			}
+			result["toolConfig"] = config
+			return result, nil
 		}
 		switch value := choice.(type) {
 		case string:
@@ -168,6 +173,39 @@ func translateTarget(body map[string]any, format, model string) (map[string]any,
 		}
 	}
 	return result, nil
+}
+
+func geminiToolConfig(choice any) (map[string]any, error) {
+	mode := ""
+	allowed := []any{}
+	switch value := choice.(type) {
+	case string:
+		switch value {
+		case "auto":
+			mode = "AUTO"
+		case "none":
+			mode = "NONE"
+		case "required":
+			mode = "ANY"
+		default:
+			return nil, fmt.Errorf("Unsupported tool_choice: %s", value)
+		}
+	case map[string]any:
+		function, _ := value["function"].(map[string]any)
+		name := ttsString(function["name"])
+		if value["type"] != "function" || name == "" {
+			return nil, fmt.Errorf("Invalid tool_choice")
+		}
+		mode = "ANY"
+		allowed = []any{name}
+	default:
+		return nil, fmt.Errorf("Invalid tool_choice")
+	}
+	config := map[string]any{"mode": mode}
+	if len(allowed) > 0 {
+		config["allowedFunctionNames"] = allowed
+	}
+	return map[string]any{"functionCallingConfig": config}, nil
 }
 
 func targetContent(content any, format string) ([]any, error) {
