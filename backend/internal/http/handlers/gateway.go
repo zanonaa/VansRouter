@@ -8,15 +8,19 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/zanonaa/VansRouter/backend/internal/database"
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 type Gateway struct {
-	DB     *sql.DB
-	Client *http.Client
-	Send   *TranslatorSend
+	DB                *sql.DB
+	Client            *http.Client
+	Send              *TranslatorSend
+	googleSpeechMu    sync.Mutex
+	googleSpeechCache googleSpeechToken
+	googleSpeechIndex uint64
 }
 
 func (g *Gateway) key(r *http.Request) bool {
