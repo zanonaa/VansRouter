@@ -93,6 +93,10 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		nodeReply(w, 200, normalizeVercelUsage(data))
+	case "kiro":
+		nodeReply(w, 200, u.kiroUsage(r, ttsString(connection["accessToken"]), connection))
+	case "freebuff":
+		nodeReply(w, 200, u.freebuffUsage(r, ttsString(firstNonEmpty(connection["accessToken"], connection["apiKey"]))))
 	case "glm", "glm-cn":
 		nodeReply(w, 200, u.glmUsage(r, provider, token))
 	case "minimax", "minimax-cn":
