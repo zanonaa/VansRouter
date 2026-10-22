@@ -209,10 +209,11 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 			for _, raw := range parts {
 				part, _ := raw.(map[string]any)
 				if text, ok := part["text"].(string); ok {
+					delta := map[string]any{"content": text}
 					if part["thought"] == true {
-						return fmt.Errorf("Gemini reasoning stream mapping not implemented")
+						delta = map[string]any{"reasoning_content": text}
 					}
-					if err := s.openAIChunk(map[string]any{"content": text}, nil); err != nil {
+					if err := s.openAIChunk(delta, nil); err != nil {
 						return err
 					}
 				} else if function, ok := part["functionCall"].(map[string]any); ok {

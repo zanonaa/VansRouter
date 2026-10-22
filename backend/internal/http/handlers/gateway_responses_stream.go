@@ -12,14 +12,15 @@ type responseItem struct {
 	done                         bool
 }
 type responsesStream struct {
-	sequence int
-	created  int64
-	items    []*responseItem
-	tools    map[int]*responseItem
-	message  *responseItem
-	usage    map[string]any
-	finish   string
-	size     int
+	sequence  int
+	created   int64
+	items     []*responseItem
+	tools     map[int]*responseItem
+	message   *responseItem
+	reasoning *responseItem
+	usage     map[string]any
+	finish    string
+	size      int
 }
 
 func (s *streamConversion) responseEvent(kind string, payload map[string]any) error {
@@ -51,8 +52,33 @@ func (s *streamConversion) toResponses(event map[string]any) error {
 			return fmt.Errorf("Responses conversion supports one completion choice")
 		}
 		delta, _ := choice["delta"].(map[string]any)
-		if delta["reasoning_content"] != nil || delta["reasoning"] != nil {
-			return fmt.Errorf("Responses reasoning stream conversion not implemented")
+		reasoning := ttsString(firstNonEmpty(delta["reasoning_content"], delta["reasoning"]))
+		if reasoning != "" {
+			state.size += len(reasoning)
+			if state.size > 16<<20 {
+				return fmt.Errorf("Responses output exceeds conversion limit")
+			}
+			if state.reasoning == nil {
+				item := &responseItem{index: len(state.items), id: fmt.Sprintf("rs_%v_0", s.id), kind: "reasoning"}
+				state.reasoning = item
+				state.items = append(state.items, item)
+				if err := s.responseEvent("response.output_item.added", map[string]any{"output_index": item.index, "item": map[string]any{"id": item.id, "type": "reasoning", "summary": []any{}}}); err != nil {
+					return err
+				}
+				if err := s.responseEvent("response.reasoning_summary_part.added", map[string]any{"item_id": item.id, "output_index": item.index, "summary_index": 0, "part": map[string]any{"type": "summary_text", "text": ""}}); err != nil {
+					return err
+				}
+			}
+			item := state.reasoning
+			item.text += reasoning
+			if err := s.responseEvent("response.reasoning_summary_text.delta", map[string]any{"item_id": item.id, "output_index": item.index, "summary_index": 0, "delta": reasoning}); err != nil {
+				return err
+			}
+		}
+		if (delta["content"] != nil || delta["tool_calls"] != nil) && state.reasoning != nil {
+			if err := s.closeResponseItem(state.reasoning); err != nil {
+				return err
+			}
 		}
 		if text, ok := delta["content"].(string); ok && text != "" {
 			state.size += len(text)
@@ -117,6 +143,9 @@ func (s *streamConversion) toResponses(event map[string]any) error {
 	return nil
 }
 func (s *streamConversion) responseItemValue(item *responseItem) map[string]any {
+	if item.kind == "reasoning" {
+		return map[string]any{"id": item.id, "type": "reasoning", "summary": []any{map[string]any{"type": "summary_text", "text": item.text}}}
+	}
 	if item.kind == "function_call" {
 		return map[string]any{"id": item.id, "type": "function_call", "call_id": item.callID, "name": item.name, "arguments": item.text, "status": "completed"}
 	}
@@ -127,7 +156,14 @@ func (s *streamConversion) closeResponseItem(item *responseItem) error {
 		return nil
 	}
 	item.done = true
-	if item.kind == "message" {
+	if item.kind == "reasoning" {
+		if err := s.responseEvent("response.reasoning_summary_text.done", map[string]any{"item_id": item.id, "output_index": item.index, "summary_index": 0, "text": item.text}); err != nil {
+			return err
+		}
+		if err := s.responseEvent("response.reasoning_summary_part.done", map[string]any{"item_id": item.id, "output_index": item.index, "summary_index": 0, "part": map[string]any{"type": "summary_text", "text": item.text}}); err != nil {
+			return err
+		}
+	} else if item.kind == "message" {
 		if err := s.responseEvent("response.output_text.done", map[string]any{"item_id": item.id, "output_index": item.index, "content_index": 0, "text": item.text}); err != nil {
 			return err
 		}
