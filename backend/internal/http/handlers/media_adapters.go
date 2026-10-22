@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -72,36 +71,7 @@ func (g *Gateway) Speech(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	voice := "alloy"
-	if strings.Contains(model, "/") {
-		parts := strings.SplitN(model, "/", 2)
-		model, voice = parts[0], parts[1]
-	}
-	var request *http.Request
-	switch config.Format {
-	case "openai", "openai-tts", "groq":
-		encoded, _ := json.Marshal(map[string]any{"model": model, "voice": voice, "input": body["input"]})
-		request, err = http.NewRequestWithContext(r.Context(), "POST", config.BaseURL, bytes.NewReader(encoded))
-		if err == nil {
-			request.Header.Set("Authorization", "Bearer "+token)
-			request.Header.Set("Content-Type", "application/json")
-		}
-	case "deepgram":
-		request, err = http.NewRequestWithContext(r.Context(), "POST", config.BaseURL+"?model="+url.QueryEscape(model), strings.NewReader(ttsString(body["input"])))
-		if err == nil {
-			name, value := mediaAuth(config, token)
-			request.Header.Set(name, value)
-			request.Header.Set("Content-Type", "text/plain")
-		}
-	default:
-		g.webError(w, 501, "TTS adapter not implemented: "+config.Format)
-		return
-	}
-	if err != nil {
-		g.webError(w, 500, err.Error())
-		return
-	}
-	g.copyMedia(w, request)
+	g.synthesizeNative(w, r, provider, model, token, config, body)
 }
 
 func (g *Gateway) Transcriptions(w http.ResponseWriter, r *http.Request) {
@@ -179,8 +149,26 @@ func (g *Gateway) Transcriptions(w http.ResponseWriter, r *http.Request) {
 		}
 		name, value := mediaAuth(config, token)
 		request.Header.Set(name, value)
-		request.Header.Set("Content-Type", header.Header.Get("Content-Type"))
-		g.copyMedia(w, request)
+		request.Header.Set("Content-Type", audioContentType(header))
+		g.transcriptionResult(w, request, "deepgram")
+	case "assemblyai":
+		g.transcribeAssemblyAI(w, r, config, file, model, token, waitTranscriptionPoll)
+	case "gemini-stt":
+		g.transcribeGemini(w, r, config, file, header, model, token)
+	case "huggingface-asr":
+		if strings.Contains(model, "..") || strings.Contains(model, "//") {
+			g.webError(w, 400, "Invalid model ID")
+			return
+		}
+		request, err := http.NewRequestWithContext(r.Context(), "POST", strings.TrimRight(config.BaseURL, "/")+"/"+model, file)
+		if err != nil {
+			g.webError(w, 500, err.Error())
+			return
+		}
+		name, value := mediaAuth(config, token)
+		request.Header.Set(name, value)
+		request.Header.Set("Content-Type", audioContentType(header))
+		g.transcriptionResult(w, request, "huggingface-asr")
 	default:
 		g.webError(w, 501, "STT adapter not implemented: "+config.Format)
 	}
