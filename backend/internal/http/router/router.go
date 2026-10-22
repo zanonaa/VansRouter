@@ -89,6 +89,20 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Put("/{id}", authentication.APIKeyPut)
 			r.Delete("/{id}", authentication.APIKeyDelete)
 		})
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Circuits != nil {
+			circuits := providerAPI[0].Circuits
+			r.Get("/api/providers/circuit-breakers", circuits.GetHTTP)
+			r.Head("/api/providers/circuit-breakers", withoutBody(circuits.GetHTTP))
+			r.Options("/api/providers/circuit-breakers", options("GET, HEAD, OPTIONS"))
+			r.Post("/api/providers/circuit-breakers/{name}/reset", authentication.SettingsGuard(circuits.ResetHTTP))
+			r.Options("/api/providers/circuit-breakers/{name}/reset", options("POST, OPTIONS"))
+		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].ClientList != nil {
+			clientList := providerAPI[0].ClientList
+			r.Get("/api/providers/client", clientList.Get)
+			r.Head("/api/providers/client", withoutBody(clientList.Get))
+			r.Options("/api/providers/client", options("GET, HEAD, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].KiloFree != nil {
 			kilo := providerAPI[0].KiloFree
 			r.Get("/api/providers/kilo/free-models", kilo.Get)
@@ -266,18 +280,15 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			if zedAuto == nil {
 				zedAuto = handlers.NewZedAutoImport()
 			}
-			for _, entry := range []struct {
-				path string
-				get  http.HandlerFunc
-			}{
-				{"/api/oauth/cursor/auto-import", cursorAuto.Get},
-				{"/api/oauth/kiro/auto-import", kiroAuto.Get},
-				{"/api/oauth/zed/auto-import", zedAuto.Get},
-			} {
-				r.Get(entry.path, entry.get)
-				r.Head(entry.path, withoutBody(entry.get))
-				r.Options(entry.path, options("GET, HEAD, OPTIONS"))
-			}
+			r.Get("/api/oauth/cursor/auto-import", cursorAuto.Get)
+			r.Head("/api/oauth/cursor/auto-import", withoutBody(cursorAuto.Get))
+			r.Options("/api/oauth/cursor/auto-import", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/oauth/kiro/auto-import", kiroAuto.Get)
+			r.Head("/api/oauth/kiro/auto-import", withoutBody(kiroAuto.Get))
+			r.Options("/api/oauth/kiro/auto-import", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/oauth/zed/auto-import", zedAuto.Get)
+			r.Head("/api/oauth/zed/auto-import", withoutBody(zedAuto.Get))
+			r.Options("/api/oauth/zed/auto-import", options("GET, HEAD, OPTIONS"))
 			r.Post("/api/oauth/iflow/cookie", oauthAPI.IflowCookie)
 			r.Options("/api/oauth/iflow/cookie", options("OPTIONS, POST"))
 			r.Post("/api/oauth/zed/import", oauthAPI.ZedImport)
