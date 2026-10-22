@@ -143,6 +143,10 @@ func run() error {
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
 	catalogSync.StartTimer()
+	quotaAutoPing := handlers.NewQuotaAutoPing(db, nil)
+	quotaPingDone := make(chan struct{})
+	go func() { defer close(quotaPingDone); quotaAutoPing.Run(ctx) }()
+	defer func() { stop(); <-quotaPingDone }()
 	slog.Info("servidor Go iniciado", "endereco", listener.Addr().String())
 	go func() {
 		select {
