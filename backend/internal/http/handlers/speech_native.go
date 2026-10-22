@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -73,6 +74,36 @@ func speechPlan(provider, model, text, token string, cfg *providers.MediaConfig)
 		}
 		headers["Authorization"] = "Basic " + token
 		payload = map[string]any{"text": text, "voiceId": voice, "modelId": modelID, "audioConfig": map[string]any{"audioEncoding": "MP3"}}
+	case "minimax-tts":
+		if modelID == "" {
+			modelID = model
+			voice = "English_expressive_narrator"
+		}
+		if modelID == "" {
+			modelID = "speech-2.8-hd"
+		}
+		headers["Authorization"] = "Bearer " + token
+		payload = map[string]any{"model": modelID, "text": text, "stream": false, "language_boost": "auto", "output_format": "hex", "voice_setting": map[string]any{"voice_id": voice, "speed": 1, "vol": 1, "pitch": 0}, "audio_setting": map[string]any{"sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 1}}
+	case "playht":
+		parts := strings.Split(token, ":")
+		user, key := "", token
+		if len(parts) > 1 {
+			user, key = parts[0], parts[1]
+		}
+		if modelID == "" {
+			modelID = model
+			voice = ""
+		}
+		if modelID == "" {
+			modelID = "PlayDialog"
+		}
+		if voice == "" {
+			voice = "s3://voice-cloning-zero-shot/d9ff78ba-d016-47f6-b0ef-dd630f59414e/female-cs/manifest.json"
+		}
+		headers["Accept"] = "audio/mpeg"
+		headers["X-USER-ID"] = user
+		headers["Authorization"] = "Bearer " + key
+		payload = map[string]any{"text": text, "voice": voice, "voice_engine": modelID, "output_format": "mp3", "speed": 1}
 	case "coqui":
 		payload = map[string]any{"text": text}
 		if voice != "" {
@@ -150,11 +181,38 @@ func (g *Gateway) synthesizeNative(w http.ResponseWriter, r *http.Request, provi
 			return
 		}
 	}
+	if config.Format == "minimax-tts" {
+		var payload map[string]any
+		if json.Unmarshal(audio, &payload) != nil {
+			g.webError(w, 502, "MiniMax TTS returned no audio")
+			return
+		}
+		base, _ := firstNonEmpty(payload["base_resp"], payload["baseResp"]).(map[string]any)
+		if usageNumber(firstNonEmpty(base["status_code"], base["statusCode"])) != 0 {
+			g.webError(w, 502, ttsString(firstNonEmpty(base["status_msg"], base["statusMsg"], payload["message"], "MiniMax TTS upstream error")))
+			return
+		}
+		data, _ := payload["data"].(map[string]any)
+		encoded := strings.TrimSpace(ttsString(data["audio"]))
+		if encoded == "" {
+			g.webError(w, 502, "MiniMax TTS returned no audio")
+			return
+		}
+		audio, err = hex.DecodeString(encoded)
+		if err != nil {
+			g.webError(w, 502, "MiniMax TTS returned invalid audio")
+			return
+		}
+		extra, _ := firstNonEmpty(payload["extra_info"], payload["extraInfo"]).(map[string]any)
+		if returned := ttsString(firstNonEmpty(extra["audio_format"], extra["audioFormat"])); returned != "" {
+			format = returned
+		}
+	}
 	if config.Format == "elevenlabs" && len(audio) < 1024 {
 		g.webError(w, 502, "ElevenLabs TTS returned empty audio")
 		return
 	}
-	if config.Format != "openai" && config.Format != "inworld" && config.Format != "elevenlabs" && len(audio) < 100 {
+	if config.Format != "openai" && config.Format != "inworld" && config.Format != "elevenlabs" && config.Format != "minimax-tts" && len(audio) < 100 {
 		g.webError(w, 502, "Upstream returned empty audio")
 		return
 	}
