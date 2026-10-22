@@ -46,6 +46,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Nota (4A): respostas SSE ficam presas no proxy do dev server do Vite
+      // (buffering do middleware; flush em proxyRes não resolveu). O smoke
+      // valida SSE direto na origem Go; a mesma-origem final com streaming é
+      // resolvida na Fase 4B (proxy/servidor estático definitivo).
       "/api": { target: backendTarget, changeOrigin: true, ws: true },
     },
   },
@@ -54,7 +58,12 @@ export default defineConfig({
   },
   // Módulos compartilhados open-sse leem process.env em nível de módulo
   // (ex.: config/grokCli.js). No navegador essas leituras devem ser vazias.
+  // Exceção deliberada: apenas as duas variáveis públicas do app, sem expor
+  // segredos (auditoria 4A: nenhum componente client as lê hoje; defines
+  // mantêm override de dev/build disponível quando passarem a ler).
   define: {
     "process.env": {},
+    "process.env.NEXT_PUBLIC_BASE_URL": JSON.stringify(process.env.NEXT_PUBLIC_BASE_URL ?? ""),
+    "process.env.NEXT_PUBLIC_CLOUD_URL": JSON.stringify(process.env.NEXT_PUBLIC_CLOUD_URL ?? ""),
   },
 });

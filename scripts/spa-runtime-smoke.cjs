@@ -59,6 +59,68 @@ function fail(step, message) {
   if (!/404|could not be found/.test(missing)) fail("spa-404", "sem 404 para rota inexistente");
   console.log("OK 404 da SPA para rota inexistente");
 
+  // 7. CRUD de escrita no contexto autenticado da SPA (mesma origem/cookies).
+  const crud = await page.evaluate(async () => {
+    const json = (r) => r.json().catch(() => ({}));
+    const created = await fetch("/api/keys", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "smoke-spa" }),
+    });
+    const key = await json(created);
+    if (!created.ok) return { step: "create", status: created.status, body: key };
+    const id = key.id || key.apiKey?.id || key.key?.id;
+    const list = await fetch("/api/keys").then(json);
+    const found = JSON.stringify(list).includes("smoke-spa");
+    const removed = id
+      ? await fetch(`/api/keys/${id}`, { method: "DELETE" })
+      : new Response(null, { status: 500 });
+    const after = await fetch("/api/keys").then(json);
+    const gone = !JSON.stringify(after).includes("smoke-spa");
+    return { created: created.status, found, removed: removed.status, gone };
+  });
+  if (crud.created !== 200 && crud.created !== 201) fail("keys-crud", JSON.stringify(crud));
+  if (!crud.found || !crud.gone || (crud.removed !== 200 && crud.removed !== 204)) fail("keys-crud", JSON.stringify(crud));
+  console.log("OK CRUD /api/keys via SPA:", JSON.stringify(crud));
+
+  // 8. Contrato de leitura grande da SPA.
+  const modelsStatus = await page.evaluate(() => fetch("/api/models").then((r) => r.status));
+  if (modelsStatus !== 200) fail("models", `GET /api/models -> ${modelsStatus}`);
+  console.log("OK GET /api/models 200");
+
+  // 9. SSE na origem Go com o cookie real da sessão do navegador.
+  // (O proxy do dev server Vite prende respostas SSE — ver nota no vite.config;
+  // a mesma-origem com streaming é escopo da Fase 4B.)
+  const cookies = await page.context().cookies(BASE);
+  const token = cookies.find((c) => c.name === "auth_token")?.value;
+  if (!token) fail("sse", "cookie auth_token ausente após login");
+  const sse = await new Promise((resolve) => {
+    const req = require("http").request(
+      new URL("/api/translator/console-logs/stream", BASE.replace("20129", "20128")),
+      { headers: { Cookie: `auth_token=${token}`, Accept: "text/event-stream" }, timeout: 8000 },
+      (res) => {
+        if (res.statusCode !== 200 || !String(res.headers["content-type"] || "").includes("text/event-stream")) {
+          resolve({ ok: false, status: res.statusCode, ct: res.headers["content-type"] });
+          res.resume();
+          return;
+        }
+        // Buffer de logs vazio não emite chunk; headers de evento + conexão
+        // mantida já comprovam o stream autenticado na origem.
+        resolve({ ok: true, status: res.statusCode, ct: res.headers["content-type"] });
+        setTimeout(() => req.destroy(), 500);
+        res.resume();
+      }
+    );
+    req.on("timeout", () => {
+      resolve({ ok: false, timeout: true });
+      req.destroy();
+    });
+    req.on("error", () => {});
+    req.end();
+  });
+  if (!sse.ok) fail("sse", JSON.stringify(sse));
+  console.log("OK SSE na origem Go:", JSON.stringify(sse));
+
   console.log("--- chamadas /api via proxy ---");
   console.log(requests.slice(0, 20).join("\n"));
   await browser.close();
