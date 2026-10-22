@@ -18,6 +18,7 @@ type Providers struct {
 	CatalogSync       *ModelCatalogSync
 	PoolFitness       *PoolFitnessRoutes
 	ImportPublic      *ImportPublic
+	Deploys           *RelayDeploys
 	OAuth             *OAuthEngine
 	Shutdown          *Shutdown
 	Pricing           *Pricing
