@@ -21,6 +21,8 @@ type Gateway struct {
 	googleSpeechMu    sync.Mutex
 	googleSpeechCache googleSpeechToken
 	googleSpeechIndex uint64
+	edgeSpeechMu      sync.Mutex
+	edgeSpeechCache   edgeSpeechToken
 }
 
 func (g *Gateway) key(r *http.Request) bool {
