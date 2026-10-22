@@ -54,6 +54,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Saída do build Vite da SPA (Fase 4A).
+    "dist/**",
   ]),
 ]);
 
