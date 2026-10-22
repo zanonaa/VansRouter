@@ -38,6 +38,7 @@ type Providers struct {
 	Usage             *UsageEndpoints
 	LiveUsage         *UsageLive
 	UsageContracts    *UsageContracts
+	Gateway           *Gateway
 	Combos            *Combos
 	CreateBulk        func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools             *ProxyPools
