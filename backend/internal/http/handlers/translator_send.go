@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
@@ -51,6 +52,15 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 	}
 	config := providers.OpenAITransport(provider)
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
+	if providers.TargetFormat(provider) == "claude" {
+		config = &providers.Transport{BaseURL: "https://api.anthropic.com/v1/messages", Format: "claude", Auth: &struct {
+			Header string `json:"header"`
+			Scheme string `json:"scheme"`
+		}{Header: "x-api-key", Scheme: ""}}
+	}
+	if providers.TargetFormat(provider) == "gemini" {
+		config = &providers.Transport{BaseURL: "https://generativelanguage.googleapis.com/v1beta/models/" + url.PathEscape(model) + ":generateContent", Format: "gemini"}
+	}
 	if strings.HasPrefix(provider, "openai-compatible-") {
 		base := strings.TrimRight(ttsString(metadata["baseUrl"]), "/")
 		if base != "" {
@@ -71,6 +81,16 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		outbound[key] = value
 	}
 	outbound["model"] = model
+	if config.Format == "claude" {
+		outbound = map[string]any{"model": model, "max_tokens": 1024, "messages": outbound["messages"]}
+	}
+	if config.Format == "gemini" {
+		outbound = map[string]any{"contents": []any{map[string]any{"role": "user", "parts": []any{map[string]any{"text": "hi"}}}}}
+		if messages, ok := body["messages"].([]any); ok && len(messages) > 0 {
+			last, _ := messages[len(messages)-1].(map[string]any)
+			outbound = map[string]any{"contents": []any{map[string]any{"role": "user", "parts": []any{map[string]any{"text": ttsString(last["content"])}}}}}
+		}
+	}
 	encoded, err := json.Marshal(outbound)
 	if err != nil {
 		fail(500, err.Error())
@@ -86,7 +106,9 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		request.Header.Set(key, value)
 	}
 	token := ttsString(firstNonEmpty(connection["apiKey"], connection["accessToken"]))
-	if !config.NoAuth {
+	if config.Format == "gemini" {
+		request.URL.RawQuery = "key=" + url.QueryEscape(token)
+	} else if !config.NoAuth {
 		header, prefix := "Authorization", "Bearer "
 		if config.Auth != nil && config.Auth.Header != "" {
 			header = config.Auth.Header
