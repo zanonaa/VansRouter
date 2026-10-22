@@ -132,3 +132,6 @@ graphify-out/*
 
 # CLI package smoke scratch dir (CI + local `npm pack` verification)
 .ci-cli-smoke/
+
+# Saída do build Vite da SPA (Fase 4A)
+dist/
