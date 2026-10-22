@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -57,21 +56,6 @@ func sanitizeSearchQuery(query string) (string, string) {
 		return "", "Query is empty after normalization"
 	}
 	return clean, ""
-}
-
-func publicURL(raw string) error {
-	parsed, err := url.Parse(raw)
-	if err != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
-		return fmt.Errorf("Invalid URL format")
-	}
-	host := parsed.Hostname()
-	if strings.EqualFold(host, "localhost") || strings.HasSuffix(strings.ToLower(host), ".local") {
-		return fmt.Errorf("URL target is not public")
-	}
-	if ip := net.ParseIP(host); ip != nil && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()) {
-		return fmt.Errorf("URL target is not public")
-	}
-	return nil
 }
 
 func (g *Gateway) doJSON(ctx context.Context, method, target string, headers map[string]string, payload any, timeout time.Duration) (int, []byte, error) {
