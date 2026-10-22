@@ -14,7 +14,7 @@ func TestSearchNormalizesSerperAndTavily(t *testing.T) {
 	now := time.Date(2026, 10, 22, 0, 0, 0, 0, time.UTC)
 	var payload map[string]any
 	json.Unmarshal([]byte(`{"organic":[{"title":"Result","link":"https://www.example.com/path?x=1","snippet":"text","date":"today"}],"searchParameters":{"totalResults":9}}`), &payload)
-	results, total, _, err := normalizeSearch("serper", "web", payload, 10, now)
+	results, total, _, _, err := normalizeSearch("serper", "web", payload, 10, now)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,7 +22,7 @@ func TestSearchNormalizesSerperAndTavily(t *testing.T) {
 		t.Fatal(results)
 	}
 	json.Unmarshal([]byte(`{"results":[{"title":"T","url":"https://example.com","content":"snippet","raw_content":"full","score":2}]}`), &payload)
-	results, total, _, err = normalizeSearch("tavily", "web", payload, 10, now)
+	results, total, _, _, err = normalizeSearch("tavily", "web", payload, 10, now)
 	if err != nil {
 		t.Fatal(err)
 	}
