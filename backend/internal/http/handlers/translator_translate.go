@@ -103,11 +103,12 @@ func (t *TranslatorTranslate) Post(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"provider": provider, "model": model, "sourceFormat": detectRequestFormat(clientBody), "targetFormat": providers.TargetFormat(provider)}})
 	case "2":
 		source := detectRequestFormat(clientBody)
-		if source != "openai" && source != "claude" && source != "gemini" {
-			fail(501, "Translator conversion not ported for step 2")
+		converted, err := translateSource(clientBody, source)
+		if err != nil {
+			fail(501, err.Error())
 			return
 		}
-		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"body": filterToOpenAI(clientBody)}})
+		nodeReply(w, 200, map[string]any{"success": true, "result": map[string]any{"body": converted}})
 	case "3":
 		provider := ttsString(firstNonEmpty(payload["provider"], clientBody["provider"]))
 		model := ttsString(firstNonEmpty(payload["model"], clientBody["model"]))
