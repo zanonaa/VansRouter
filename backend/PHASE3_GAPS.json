@@ -1,0 +1,14 @@
+{
+  "warning": "Known gaps are not exhaustive; a registered route is never evidence of functional parity.",
+  "gaps": [
+    {"id":"gateway-formats", "paths":["/api/v1/api/chat","/api/v1/messages","/api/v1/chat/completions","/api/v1/responses","/api/v1/responses/compact","/api/v1beta/models/{...path}"], "reason":"Missing provider protocols, remaining response/SSE pairs, reasoning and compact semantics; Ollama response conversion incomplete."},
+    {"id":"gateway-models", "paths":["/api/v1/models","/api/v1/models/{kind}","/api/v1/models/info"], "reason":"Dynamic/custom/disabled/aliases/combos and model allowlist are not fully integrated."},
+    {"id":"media-executors", "paths":["/api/v1/audio/speech","/api/v1/audio/transcriptions","/api/v1/images/generations","/api/v1/embeddings","/api/v1/audio/voices"], "reason":"Remaining provider adapters, auth/ACL, output shaping and local voice cache parity."},
+    {"id":"video-adapters", "paths":["/api/v1/videos/{id}","/api/v1/videos/edits","/api/v1/videos/extensions","/api/v1/videos/generations"], "reason":"Provider-specific adapters, refresh, allowlist, cooldown/fallback and sanitized errors remain incomplete."},
+    {"id":"web-normalization", "paths":["/api/v1/search","/api/v1/web/fetch"], "reason":"Provider-specific builders and normalized response shapes, options, ACL and fallback remain incomplete."},
+    {"id":"translator", "paths":["/api/translator/send","/api/translator/translate"], "reason":"Remaining formats/blocks, refresh protocols, permanent error classification and differential fixtures."},
+    {"id":"provider-discovery", "paths":["/api/providers/{id}/models","/api/providers/{id}/test","/api/providers/test-batch","/api/providers/{id}/test-models","/api/providers/{id}/gcp-projects","/api/providers/validate"], "reason":"Special OAuth resolvers, overrides, probes, dynamic models, refresh and proxy strategies remain incomplete."},
+    {"id":"usage", "paths":["/api/usage/{connectionId}","/api/usage/stats","/api/usage/{connectionId}/claude-reset","/api/usage/{connectionId}/codex-reset-credits"], "reason":"Remaining usage adapters, exact response normalization, refresh and proxy/cache integration."},
+    {"id":"settings-runtime", "paths":["/api/settings","/api/combos/{id}"], "reason":"Quota auto-ping scheduler, dynamic outbound transport and advanced combo strategies/queue/deadlines incomplete."}
+  ]
+}
