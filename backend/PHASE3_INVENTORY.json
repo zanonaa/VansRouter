@@ -791,7 +791,7 @@
       "method": "POST",
       "path": "/api/translator/translate",
       "source": "src/app/api/translator/translate/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -917,13 +917,13 @@
       "method": "GET",
       "path": "/api/v1/audio/voices",
       "source": "src/app/api/v1/audio/voices/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",
       "path": "/api/v1/chat/completions",
       "source": "src/app/api/v1/chat/completions/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -935,7 +935,7 @@
       "method": "OPTIONS",
       "path": "/api/v1/embeddings",
       "source": "src/app/api/v1/embeddings/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -947,7 +947,7 @@
       "method": "OPTIONS",
       "path": "/api/v1/images/generations",
       "source": "src/app/api/v1/images/generations/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
@@ -965,7 +965,7 @@
       "method": "POST",
       "path": "/api/v1/messages/count_tokens",
       "source": "src/app/api/v1/messages/count_tokens/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "OPTIONS",

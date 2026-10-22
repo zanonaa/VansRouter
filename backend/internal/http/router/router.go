@@ -473,8 +473,10 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Post("/api/translator/send", providerAPI[0].TranslatorSend.Send)
 		r.Options("/api/translator/send", options("POST, OPTIONS"))
 	}
-	r.Post("/api/translator/translate", handlers.Pending)
-	r.Options("/api/translator/translate", options("POST, OPTIONS"))
+	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Translator != nil {
+		r.Post("/api/translator/translate", providerAPI[0].Translator.Post)
+		r.Options("/api/translator/translate", options("POST, OPTIONS"))
+	}
 	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].UsageContracts != nil {
 		usageContracts := providerAPI[0].UsageContracts
 		r.Post("/api/usage/{connectionId}/claude-reset", usageContracts.ClaudeReset)
@@ -486,18 +488,36 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Get("/api/usage/stats", usageContracts.Stats)
 		r.Head("/api/usage/stats", withoutBody(usageContracts.Stats))
 	}
-	r.Post("/api/v1/api/chat", handlers.Pending)
 	r.Options("/api/v1/api/chat", options("POST, OPTIONS"))
-	r.Post("/api/v1/audio/speech", handlers.Pending)
 	r.Options("/api/v1/audio/speech", options("POST, OPTIONS"))
-	r.Post("/api/v1/audio/transcriptions", handlers.Pending)
 	r.Options("/api/v1/audio/transcriptions", options("POST, OPTIONS"))
-	r.Get("/api/v1/audio/voices", handlers.Pending)
-	r.Head("/api/v1/audio/voices", withoutBody(handlers.Pending))
-	r.Options("/api/v1/audio/voices", options("GET, HEAD, OPTIONS"))
+	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].AudioVoices != nil {
+		voices := providerAPI[0].AudioVoices
+		r.Get("/api/v1/audio/voices", voices.Get)
+		r.Head("/api/v1/audio/voices", withoutBody(voices.Get))
+		r.Options("/api/v1/audio/voices", handlers.AudioVoicesOptions)
+	}
 	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Gateway != nil {
 		gateway := providerAPI[0].Gateway
+		r.Options("/api/v1/chat/completions", handlers.GatewayModelsOptions)
+		r.Options("/api/v1/embeddings", handlers.GatewayModelsOptions)
+		r.Options("/api/v1/images/generations", handlers.GatewayModelsOptions)
+		r.Post("/api/v1/api/chat", gateway.NotPorted)
+		r.Post("/api/v1/audio/speech", gateway.NotPorted)
+		r.Post("/api/v1/audio/transcriptions", gateway.NotPorted)
 		r.Post("/api/v1/chat/completions", gateway.Chat)
+		r.Post("/api/v1/messages/count_tokens", gateway.CountTokens)
+		r.Post("/api/v1/messages", gateway.NotPorted)
+		r.Post("/api/v1/responses/compact", gateway.NotPorted)
+		r.Post("/api/v1/responses", gateway.NotPorted)
+		r.Post("/api/v1/search", gateway.NotPorted)
+		r.Get("/api/v1/videos/{id}", gateway.NotPorted)
+		r.Head("/api/v1/videos/{id}", withoutBody(gateway.NotPorted))
+		r.Post("/api/v1/videos/edits", gateway.NotPorted)
+		r.Post("/api/v1/videos/extensions", gateway.NotPorted)
+		r.Post("/api/v1/videos/generations", gateway.NotPorted)
+		r.Post("/api/v1/web/fetch", gateway.NotPorted)
+		r.Post("/api/v1beta/models/{...path}", gateway.NotPorted)
 		r.Post("/api/v1/embeddings", gateway.Embeddings)
 		r.Post("/api/v1/images/generations", gateway.Images)
 		r.Get("/api/v1/models", gateway.Models)
@@ -510,28 +530,16 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Head("/api/v1/models/{kind}", withoutBody(gateway.ModelsByKind))
 		r.Options("/api/v1/models/{kind}", handlers.GatewayModelsOptions)
 	}
-	r.Post("/api/v1/messages/count_tokens", handlers.Pending)
 	r.Options("/api/v1/messages/count_tokens", options("POST, OPTIONS"))
-	r.Post("/api/v1/messages", handlers.Pending)
 	r.Options("/api/v1/messages", options("POST, OPTIONS"))
-	r.Post("/api/v1/responses/compact", handlers.Pending)
 	r.Options("/api/v1/responses/compact", options("POST, OPTIONS"))
-	r.Post("/api/v1/responses", handlers.Pending)
 	r.Options("/api/v1/responses", options("POST, OPTIONS"))
-	r.Post("/api/v1/search", handlers.Pending)
 	r.Options("/api/v1/search", options("POST, OPTIONS"))
-	r.Get("/api/v1/videos/{id}", handlers.Pending)
-	r.Head("/api/v1/videos/{id}", withoutBody(handlers.Pending))
 	r.Options("/api/v1/videos/{id}", options("GET, HEAD, OPTIONS"))
-	r.Post("/api/v1/videos/edits", handlers.Pending)
 	r.Options("/api/v1/videos/edits", options("POST, OPTIONS"))
-	r.Post("/api/v1/videos/extensions", handlers.Pending)
 	r.Options("/api/v1/videos/extensions", options("POST, OPTIONS"))
-	r.Post("/api/v1/videos/generations", handlers.Pending)
 	r.Options("/api/v1/videos/generations", options("POST, OPTIONS"))
-	r.Post("/api/v1/web/fetch", handlers.Pending)
 	r.Options("/api/v1/web/fetch", options("POST, OPTIONS"))
-	r.Post("/api/v1beta/models/{...path}", handlers.Pending)
 	r.Options("/api/v1beta/models/{...path}", options("POST, OPTIONS"))
 	return r
 }
