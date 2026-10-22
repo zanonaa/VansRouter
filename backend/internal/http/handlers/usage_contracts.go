@@ -21,6 +21,7 @@ type UsageContracts struct {
 	claudeMu       sync.Mutex
 	claudeCache    map[[32]byte]*claudeUsageCacheEntry
 	claudeCooldown map[[32]byte]time.Time
+	weeklyUsage    map[[32]byte]*weeklyUsageEntry
 }
 
 func (u *UsageContracts) Stats(w http.ResponseWriter, r *http.Request) {

@@ -93,6 +93,10 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		nodeReply(w, 200, normalizeVercelUsage(data))
+	case "gemini-cli":
+		nodeReply(w, 200, u.geminiUsage(r, ttsString(connection["accessToken"]), connection))
+	case "antigravity":
+		nodeReply(w, 200, u.antigravityUsage(r, ttsString(connection["accessToken"])))
 	case "opencode-zen", "opencode-go":
 		nodeReply(w, 200, u.openCodeUsage(r, provider, token))
 	case "github":
