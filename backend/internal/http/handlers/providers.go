@@ -16,6 +16,8 @@ type Providers struct {
 	Pxpipe            *Pxpipe
 	ModelAvailability *ModelAvailability
 	CatalogSync       *ModelCatalogSync
+	PoolFitness       *PoolFitnessRoutes
+	ImportPublic      *ImportPublic
 	OAuth             *OAuthEngine
 	Shutdown          *Shutdown
 	Pricing           *Pricing

@@ -320,6 +320,21 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Delete("/api/proxy-pools/{id}", pools.Delete)
 			r.Options("/api/proxy-pools/{id}", options("DELETE, GET, HEAD, OPTIONS, PUT"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].PoolFitness != nil {
+			poolFitness := providerAPI[0].PoolFitness
+			r.Get("/api/proxy-pools/fitness", poolFitness.Get)
+			r.Head("/api/proxy-pools/fitness", withoutBody(poolFitness.Get))
+			r.Options("/api/proxy-pools/fitness", options("GET, HEAD, OPTIONS"))
+			r.Post("/api/proxy-pools/fitness/clear-all", poolFitness.ClearAll)
+			r.Options("/api/proxy-pools/fitness/clear-all", options("POST, OPTIONS"))
+			r.Post("/api/proxy-pools/{id}/fitness/clear", poolFitness.ClearByID)
+			r.Options("/api/proxy-pools/{id}/fitness/clear", options("POST, OPTIONS"))
+		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].ImportPublic != nil {
+			importPublic := providerAPI[0].ImportPublic
+			r.Post("/api/proxy-pools/import-public", importPublic.Post)
+			r.Options("/api/proxy-pools/import-public", options("POST, OPTIONS"))
+		}
 		r.Post("/api/providers", providerAPI[0].Create)
 		if providerAPI[0].CreateBulk != nil {
 			r.Post("/api/providers/bulk", providerAPI[0].Bulk)
