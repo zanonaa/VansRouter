@@ -12,6 +12,7 @@ type Providers struct {
 	Overrides        *Overrides
 	Database         *DatabaseExport
 	Media            *MediaVoices
+	TTSVoices        *TTSVoices
 	OAuth            *OAuthEngine
 	Shutdown         *Shutdown
 	Pricing          *Pricing

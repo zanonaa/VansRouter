@@ -77,3 +77,22 @@ func TestMediaVoices(t *testing.T) {
 		t.Fatal("unguarded")
 	}
 }
+
+func TestTTSProviderVoiceRoutesRegistered(t *testing.T) {
+	authentication, _ := wiredAuth(t)
+	paths := []string{"deepgram", "elevenlabs", "inworld", "minimax"}
+	r := NewWithNodes(nil, authentication, nil, &handlers.Providers{TTSVoices: &handlers.TTSVoices{}})
+	for _, provider := range paths {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("GET", "/api/media-providers/tts/"+provider+"/voices", nil))
+		// Sem conexões o handler responde 400; sem a rota registrada seria 404.
+		if w.Code == 404 {
+			t.Fatalf("%s rota não registrada: %d %s", provider, w.Code, w.Body.String())
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", "/api/media-providers/tts/"+provider+"/voices", nil))
+		if w.Code == 404 {
+			t.Fatalf("%s options não registrada: %d", provider, w.Code)
+		}
+	}
+}

@@ -183,6 +183,21 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Head("/api/media-providers/tts/voices", withoutBody(media.Get))
 			r.Options("/api/media-providers/tts/voices", options("GET, HEAD, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].TTSVoices != nil {
+			ttsVoices := providerAPI[0].TTSVoices
+			r.Get("/api/media-providers/tts/deepgram/voices", ttsVoices.Deepgram)
+			r.Head("/api/media-providers/tts/deepgram/voices", withoutBody(ttsVoices.Deepgram))
+			r.Options("/api/media-providers/tts/deepgram/voices", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/media-providers/tts/elevenlabs/voices", ttsVoices.ElevenLabs)
+			r.Head("/api/media-providers/tts/elevenlabs/voices", withoutBody(ttsVoices.ElevenLabs))
+			r.Options("/api/media-providers/tts/elevenlabs/voices", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/media-providers/tts/inworld/voices", ttsVoices.Inworld)
+			r.Head("/api/media-providers/tts/inworld/voices", withoutBody(ttsVoices.Inworld))
+			r.Options("/api/media-providers/tts/inworld/voices", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/media-providers/tts/minimax/voices", ttsVoices.MiniMax)
+			r.Head("/api/media-providers/tts/minimax/voices", withoutBody(ttsVoices.MiniMax))
+			r.Options("/api/media-providers/tts/minimax/voices", options("GET, HEAD, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].OAuth != nil {
 			oauthAPI := providerAPI[0].OAuth
 			r.Post("/api/oauth/iflow/cookie", oauthAPI.IflowCookie)

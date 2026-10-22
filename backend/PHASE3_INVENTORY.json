@@ -179,25 +179,25 @@
       "method": "GET",
       "path": "/api/media-providers/tts/deepgram/voices",
       "source": "src/app/api/media-providers/tts/deepgram/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/media-providers/tts/elevenlabs/voices",
       "source": "src/app/api/media-providers/tts/elevenlabs/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/media-providers/tts/inworld/voices",
       "source": "src/app/api/media-providers/tts/inworld/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/media-providers/tts/minimax/voices",
       "source": "src/app/api/media-providers/tts/minimax/voices/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
