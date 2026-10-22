@@ -179,3 +179,30 @@ func TestModelsExtrasRoutesRegistered(t *testing.T) {
 		}
 	}
 }
+
+func TestProxyPoolExtrasRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{
+		PoolFitness:  &handlers.PoolFitnessRoutes{Service: &handlers.PoolFitnessService{}},
+		ImportPublic: &handlers.ImportPublic{},
+	})
+	for _, probe := range []string{"/api/proxy-pools/fitness", "/api/proxy-pools/fitness/clear-all", "/api/proxy-pools/p1/fitness/clear", "/api/proxy-pools/import-public"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("POST", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s POST não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s OPTIONS não registrada", probe)
+		}
+	}
+	// Sem wiring: rotas ausentes.
+	r2 := NewWithNodes(nil, auth, nil, &handlers.Providers{})
+	w := httptest.NewRecorder()
+	r2.ServeHTTP(w, httptest.NewRequest("GET", "/api/proxy-pools/fitness", nil))
+	if w.Code != 404 {
+		t.Fatalf("sem wiring %d", w.Code)
+	}
+}

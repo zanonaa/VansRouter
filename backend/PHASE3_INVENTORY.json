@@ -575,7 +575,7 @@
       "method": "POST",
       "path": "/api/proxy-pools/{id}/fitness/clear",
       "source": "src/app/api/proxy-pools/[id]/fitness/clear/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -617,19 +617,19 @@
       "method": "POST",
       "path": "/api/proxy-pools/fitness/clear-all",
       "source": "src/app/api/proxy-pools/fitness/clear-all/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/proxy-pools/fitness",
       "source": "src/app/api/proxy-pools/fitness/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/proxy-pools/import-public",
       "source": "src/app/api/proxy-pools/import-public/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
