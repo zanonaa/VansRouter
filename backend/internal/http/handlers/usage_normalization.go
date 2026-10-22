@@ -49,6 +49,17 @@ func normalizeDeepSeekUsage(data map[string]any) map[string]any {
 	return map[string]any{"plan": plan, "quotas": quotas}
 }
 
+func normalizeVercelUsage(data map[string]any) map[string]any {
+	balance, used := usageNumber(data["balance"]), usageNumber(data["total_used"])
+	if balance <= 0 && used <= 0 {
+		return map[string]any{"plan": "Pay-as-you-go", "message": "Vercel AI Gateway connected. No credit allocation found (BYOK or unfunded account).", "quotas": map[string]any{}}
+	}
+	return map[string]any{"plan": "Pay-as-you-go", "quotas": map[string]any{
+		"Used (USD)":      map[string]any{"used": used, "total": 0, "remaining": 0, "remainingPercentage": 100, "unlimited": true},
+		"Remaining (USD)": map[string]any{"used": balance, "total": 5, "remaining": balance, "remainingPercentage": balance / 5 * 100, "unlimited": false},
+	}}
+}
+
 func addUsageMonths(value time.Time, months int) time.Time {
 	year, month := value.Year(), int(value.Month())+months
 	year += (month - 1) / 12

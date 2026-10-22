@@ -56,7 +56,30 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			nodeReply(w, 200, map[string]any{"message": fmt.Sprintf("Ollama Cloud usage API error (%d).", status)})
 			return
 		}
-		nodeReply(w, 200, normalizeOllamaUsage(data, nil))
+		profileStatus, profile, profileErr := u.resetJSON(r.Context(), "POST", "https://ollama.com/api/me", map[string]string{"Authorization": "Bearer " + token, "Accept": "application/json", "Content-Length": "0"}, nil)
+		if profileErr != nil || profileStatus < 200 || profileStatus >= 300 {
+			profile = nil
+		}
+		nodeReply(w, 200, normalizeOllamaUsage(data, profile))
+	case "vercel-ai-gateway":
+		if token == "" {
+			nodeReply(w, 200, map[string]any{"message": "Vercel AI Gateway API key not available."})
+			return
+		}
+		status, data, err := u.resetJSON(r.Context(), "GET", "https://ai-gateway.vercel.sh/v1/credits", map[string]string{"Authorization": "Bearer " + token, "Accept": "application/json"}, nil)
+		if err != nil {
+			nodeReply(w, 200, map[string]any{"message": "Vercel AI Gateway error: " + err.Error()})
+			return
+		}
+		if status == 401 || status == 403 {
+			nodeReply(w, 200, map[string]any{"message": "Vercel AI Gateway API key invalid or expired."})
+			return
+		}
+		if status < 200 || status >= 300 {
+			nodeReply(w, 200, map[string]any{"message": fmt.Sprintf("Vercel AI Gateway credits API error (%d)", status)})
+			return
+		}
+		nodeReply(w, 200, normalizeVercelUsage(data))
 	default:
 		nodeReply(w, 200, map[string]any{"message": "Usage API not implemented for " + provider})
 	}
