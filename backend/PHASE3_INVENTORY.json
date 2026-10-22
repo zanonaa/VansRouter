@@ -299,7 +299,7 @@
       "method": "POST",
       "path": "/api/models/test",
       "source": "src/app/api/models/test/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
