@@ -71,6 +71,10 @@ func (g *Gateway) Speech(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	if config.Format == "gemini-tts" {
+		g.synthesizeGemini(w, r, model, token, config, body)
+		return
+	}
 	g.synthesizeNative(w, r, provider, model, token, config, body)
 }
 
