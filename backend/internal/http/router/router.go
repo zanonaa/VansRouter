@@ -131,6 +131,30 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Delete("/api/headroom/extras", authentication.LocalOnlyGuard(headroom.ExtrasDelete))
 			r.Options("/api/headroom/extras", authentication.LocalOnlyGuard(options("GET, HEAD, DELETE, OPTIONS, POST")))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Pxpipe != nil {
+			pxpipe := providerAPI[0].Pxpipe
+			r.Post("/api/pxpipe/health", pxpipe.Health)
+			r.Get("/api/pxpipe/health", pxpipe.Health)
+			r.Head("/api/pxpipe/health", withoutBody(pxpipe.Health))
+			r.Options("/api/pxpipe/health", options("GET, HEAD, OPTIONS, POST"))
+			r.Post("/api/pxpipe/install", pxpipe.Install)
+			r.Options("/api/pxpipe/install", options("POST, OPTIONS"))
+			r.Get("/api/pxpipe/status", pxpipe.Status)
+			r.Head("/api/pxpipe/status", withoutBody(pxpipe.Status))
+			r.Options("/api/pxpipe/status", options("GET, HEAD, OPTIONS"))
+			r.Post("/api/pxpipe/start", pxpipe.Start)
+			r.Options("/api/pxpipe/start", options("POST, OPTIONS"))
+			r.Post("/api/pxpipe/stop", pxpipe.Stop)
+			r.Options("/api/pxpipe/stop", options("POST, OPTIONS"))
+			r.Post("/api/pxpipe/restart", pxpipe.Restart)
+			r.Options("/api/pxpipe/restart", options("POST, OPTIONS"))
+			r.Get("/api/pxpipe/logs", pxpipe.Logs)
+			r.Head("/api/pxpipe/logs", withoutBody(pxpipe.Logs))
+			r.Options("/api/pxpipe/logs", options("GET, HEAD, OPTIONS"))
+			r.Get("/api/pxpipe/stats", pxpipe.Stats)
+			r.Head("/api/pxpipe/stats", withoutBody(pxpipe.Stats))
+			r.Options("/api/pxpipe/stats", options("GET, HEAD, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Usage != nil {
 			usage := providerAPI[0].Usage
 			r.Get("/api/usage/history", usage.History)

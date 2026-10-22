@@ -128,3 +128,29 @@ func TestV1BetaModelsRoutePublic(t *testing.T) {
 		t.Fatalf("prefixo sem api %d", w.Code)
 	}
 }
+
+func TestPxpipeRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{Pxpipe: &handlers.Pxpipe{Loader: &handlers.PxpipeLoader{}}})
+	// wiredAuth usa requireLogin=false: anônimo acessa rotas comuns do /api/*.
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/pxpipe/status", nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"mode":"library"`) {
+		t.Fatalf("status anon %d %s", w.Code, w.Body.String())
+	}
+	// Sem sessão autenticada não é possível acionar; testar registro por OPTIONS.
+	for _, probe := range []string{"/api/pxpipe/health", "/api/pxpipe/install", "/api/pxpipe/start", "/api/pxpipe/stop", "/api/pxpipe/restart", "/api/pxpipe/logs", "/api/pxpipe/stats"} {
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s options não registrada", probe)
+		}
+	}
+	// Sem Pxpipe no wiring: rotas não existem (nil-safe).
+	r2 := NewWithNodes(nil, auth, nil, &handlers.Providers{})
+	w = httptest.NewRecorder()
+	r2.ServeHTTP(w, httptest.NewRequest("GET", "/api/pxpipe/status", nil))
+	if w.Code != 404 {
+		t.Fatalf("sem wiring %d", w.Code)
+	}
+}
