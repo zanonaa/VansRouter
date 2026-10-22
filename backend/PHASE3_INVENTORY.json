@@ -53,19 +53,28 @@
       "method": "GET",
       "path": "/api/combos/{id}",
       "source": "src/app/api/combos/[id]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "settings-runtime"
+      ]
     },
     {
       "method": "PUT",
       "path": "/api/combos/{id}",
       "source": "src/app/api/combos/[id]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "settings-runtime"
+      ]
     },
     {
       "method": "DELETE",
       "path": "/api/combos/{id}",
       "source": "src/app/api/combos/[id]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "settings-runtime"
+      ]
     },
     {
       "method": "GET",
@@ -461,13 +470,19 @@
       "method": "GET",
       "path": "/api/providers/{id}/gcp-projects",
       "source": "src/app/api/providers/[id]/gcp-projects/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "provider-discovery"
+      ]
     },
     {
       "method": "GET",
       "path": "/api/providers/{id}/models",
       "source": "src/app/api/providers/[id]/models/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "provider-discovery"
+      ]
     },
     {
       "method": "GET",
@@ -503,13 +518,19 @@
       "method": "POST",
       "path": "/api/providers/{id}/test",
       "source": "src/app/api/providers/[id]/test/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "provider-discovery"
+      ]
     },
     {
       "method": "POST",
       "path": "/api/providers/{id}/test-models",
       "source": "src/app/api/providers/[id]/test-models/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "provider-discovery"
+      ]
     },
     {
       "method": "POST",
@@ -563,13 +584,19 @@
       "method": "POST",
       "path": "/api/providers/test-batch",
       "source": "src/app/api/providers/test-batch/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "provider-discovery"
+      ]
     },
     {
       "method": "POST",
       "path": "/api/providers/validate",
       "source": "src/app/api/providers/validate/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "provider-discovery"
+      ]
     },
     {
       "method": "POST",
@@ -725,13 +752,19 @@
       "method": "GET",
       "path": "/api/settings",
       "source": "src/app/api/settings/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "settings-runtime"
+      ]
     },
     {
       "method": "PATCH",
       "path": "/api/settings",
       "source": "src/app/api/settings/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "settings-runtime"
+      ]
     },
     {
       "method": "POST",
@@ -785,37 +818,55 @@
       "method": "POST",
       "path": "/api/translator/send",
       "source": "src/app/api/translator/send/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "translator"
+      ]
     },
     {
       "method": "POST",
       "path": "/api/translator/translate",
       "source": "src/app/api/translator/translate/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "translator"
+      ]
     },
     {
       "method": "POST",
       "path": "/api/usage/{connectionId}/claude-reset",
       "source": "src/app/api/usage/[connectionId]/claude-reset/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "usage"
+      ]
     },
     {
       "method": "GET",
       "path": "/api/usage/{connectionId}/codex-reset-credits",
       "source": "src/app/api/usage/[connectionId]/codex-reset-credits/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "usage"
+      ]
     },
     {
       "method": "POST",
       "path": "/api/usage/{connectionId}/codex-reset-credits",
       "source": "src/app/api/usage/[connectionId]/codex-reset-credits/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "usage"
+      ]
     },
     {
       "method": "GET",
       "path": "/api/usage/{connectionId}",
       "source": "src/app/api/usage/[connectionId]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "usage"
+      ]
     },
     {
       "method": "GET",
@@ -863,7 +914,10 @@
       "method": "GET",
       "path": "/api/usage/stats",
       "source": "src/app/api/usage/stats/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "usage"
+      ]
     },
     {
       "method": "GET",
@@ -881,7 +935,10 @@
       "method": "POST",
       "path": "/api/v1/api/chat",
       "source": "src/app/api/v1/api/chat/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-formats"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -893,7 +950,10 @@
       "method": "POST",
       "path": "/api/v1/audio/speech",
       "source": "src/app/api/v1/audio/speech/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "media-executors"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -905,7 +965,10 @@
       "method": "POST",
       "path": "/api/v1/audio/transcriptions",
       "source": "src/app/api/v1/audio/transcriptions/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "media-executors"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -917,7 +980,10 @@
       "method": "GET",
       "path": "/api/v1/audio/voices",
       "source": "src/app/api/v1/audio/voices/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "media-executors"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -929,7 +995,10 @@
       "method": "POST",
       "path": "/api/v1/chat/completions",
       "source": "src/app/api/v1/chat/completions/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-formats"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -941,7 +1010,10 @@
       "method": "POST",
       "path": "/api/v1/embeddings",
       "source": "src/app/api/v1/embeddings/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "media-executors"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -953,7 +1025,10 @@
       "method": "POST",
       "path": "/api/v1/images/generations",
       "source": "src/app/api/v1/images/generations/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "media-executors"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -977,7 +1052,10 @@
       "method": "POST",
       "path": "/api/v1/messages",
       "source": "src/app/api/v1/messages/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-formats"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -989,7 +1067,10 @@
       "method": "GET",
       "path": "/api/v1/models/{kind}",
       "source": "src/app/api/v1/models/[kind]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-models"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1001,7 +1082,10 @@
       "method": "GET",
       "path": "/api/v1/models/info",
       "source": "src/app/api/v1/models/info/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-models"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1013,7 +1097,10 @@
       "method": "GET",
       "path": "/api/v1/models",
       "source": "src/app/api/v1/models/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-models"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1025,7 +1112,10 @@
       "method": "POST",
       "path": "/api/v1/responses/compact",
       "source": "src/app/api/v1/responses/compact/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-formats"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1037,7 +1127,10 @@
       "method": "POST",
       "path": "/api/v1/responses",
       "source": "src/app/api/v1/responses/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-formats"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1049,7 +1142,10 @@
       "method": "POST",
       "path": "/api/v1/search",
       "source": "src/app/api/v1/search/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "web-normalization"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1061,7 +1157,10 @@
       "method": "GET",
       "path": "/api/v1/videos/{id}",
       "source": "src/app/api/v1/videos/[id]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "video-adapters"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1073,7 +1172,10 @@
       "method": "POST",
       "path": "/api/v1/videos/edits",
       "source": "src/app/api/v1/videos/edits/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "video-adapters"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1085,7 +1187,10 @@
       "method": "POST",
       "path": "/api/v1/videos/extensions",
       "source": "src/app/api/v1/videos/extensions/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "video-adapters"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1097,7 +1202,10 @@
       "method": "POST",
       "path": "/api/v1/videos/generations",
       "source": "src/app/api/v1/videos/generations/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "video-adapters"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1109,7 +1217,10 @@
       "method": "POST",
       "path": "/api/v1/web/fetch",
       "source": "src/app/api/v1/web/fetch/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "web-normalization"
+      ]
     },
     {
       "method": "OPTIONS",
@@ -1121,7 +1232,10 @@
       "method": "POST",
       "path": "/api/v1beta/models/{...path}",
       "source": "src/app/api/v1beta/models/[...path]/route.js",
-      "status": "registered-needs-contract-review"
+      "status": "partial-known-gaps",
+      "knownGaps": [
+        "gateway-formats"
+      ]
     },
     {
       "method": "OPTIONS",
