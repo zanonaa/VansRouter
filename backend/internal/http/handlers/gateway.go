@@ -4,16 +4,19 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
 
 	"github.com/zanonaa/VansRouter/backend/internal/database"
+	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
 type Gateway struct {
 	DB     *sql.DB
 	Client *http.Client
+	Send   *TranslatorSend
 }
 
 func (g *Gateway) key(r *http.Request) bool {
@@ -104,6 +107,30 @@ func (g *Gateway) Images(w http.ResponseWriter, r *http.Request) {
 }
 func (g *Gateway) Models(w http.ResponseWriter, r *http.Request) {
 	g.catalogModels(w, r)
+}
+func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
+	if !g.key(r) {
+		nodeReply(w, 401, map[string]any{"error": "API key required"})
+		return
+	}
+	if g.Send == nil {
+		g.NotPorted(w, r)
+		return
+	}
+	body, err := poolInput(r)
+	if err != nil {
+		nodeReply(w, 400, map[string]any{"error": "Invalid JSON body"})
+		return
+	}
+	provider, model := splitTranslatorModel(ttsString(body["model"]))
+	if provider == "" || providers.TargetFormat(provider) != "openai" || detectRequestFormat(body) != "openai" {
+		g.NotPorted(w, r)
+		return
+	}
+	encoded, _ := json.Marshal(map[string]any{"provider": provider, "model": model, "body": body})
+	clone := r.Clone(r.Context())
+	clone.Body = io.NopCloser(bytes.NewReader(encoded))
+	g.Send.Send(w, clone)
 }
 func (g *Gateway) NotPorted(w http.ResponseWriter, r *http.Request) {
 	if !g.key(r) {

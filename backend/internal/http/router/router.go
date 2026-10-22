@@ -505,7 +505,7 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 		r.Post("/api/v1/api/chat", gateway.NotPorted)
 		r.Post("/api/v1/audio/speech", gateway.NotPorted)
 		r.Post("/api/v1/audio/transcriptions", gateway.NotPorted)
-		r.Post("/api/v1/chat/completions", gateway.Chat)
+		r.Post("/api/v1/chat/completions", gateway.OpenAIChat)
 		r.Post("/api/v1/messages/count_tokens", gateway.CountTokens)
 		r.Post("/api/v1/messages", gateway.NotPorted)
 		r.Post("/api/v1/responses/compact", gateway.NotPorted)
