@@ -1127,13 +1127,13 @@
       "method": "OPTIONS",
       "path": "/api/v1beta/models",
       "source": "src/app/api/v1beta/models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/v1beta/models",
       "source": "src/app/api/v1beta/models/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
@@ -1145,7 +1145,7 @@
       "method": "POST",
       "path": "/api/version/shutdown",
       "source": "src/app/api/version/shutdown/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
