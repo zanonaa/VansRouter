@@ -22,6 +22,8 @@ import (
 // OAuthEngine porta o roteador dinâmico [provider]/[action].
 type OAuthEngine struct {
 	CreateConnection func(context.Context, map[string]any) (map[string]any, error)
+	ListConnections  func(context.Context, string, *bool) ([]map[string]any, error)
+	UpdateConnection func(context.Context, string, map[string]any) (map[string]any, error)
 	Client           *http.Client
 	Config           func(string) *providers.OAuthConfig
 	RetryWait        func(context.Context, time.Duration) error
