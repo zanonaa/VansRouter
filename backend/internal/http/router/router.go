@@ -89,6 +89,12 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Put("/{id}", authentication.APIKeyPut)
 			r.Delete("/{id}", authentication.APIKeyDelete)
 		})
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].KiloFree != nil {
+			kilo := providerAPI[0].KiloFree
+			r.Get("/api/providers/kilo/free-models", kilo.Get)
+			r.Head("/api/providers/kilo/free-models", withoutBody(kilo.Get))
+			r.Options("/api/providers/kilo/free-models", options("GET, HEAD, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Models != nil {
 			models := providerAPI[0].Models
 			r.Get("/api/models", models.List)

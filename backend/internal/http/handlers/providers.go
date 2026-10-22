@@ -19,6 +19,7 @@ type Providers struct {
 	PoolFitness       *PoolFitnessRoutes
 	ImportPublic      *ImportPublic
 	Deploys           *RelayDeploys
+	KiloFree          *KiloFreeModels
 	OAuth             *OAuthEngine
 	CursorAutoImport  *CursorAutoImport
 	KiroAutoImport    *KiroAutoImport
