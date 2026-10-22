@@ -93,6 +93,8 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 			return
 		}
 		nodeReply(w, 200, normalizeVercelUsage(data))
+	case "grok-cli":
+		nodeReply(w, 200, u.grokUsage(r, connection))
 	case "zed":
 		nodeReply(w, 200, u.zedUsage(r, connection))
 	case "codebuddy-cn", "codebuddy-intl":
