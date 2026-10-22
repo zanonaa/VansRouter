@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -239,123 +238,6 @@ func (g *Gateway) Fetch(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	nodeReply(w, 200, normalized)
-}
-
-func (g *Gateway) Speech(w http.ResponseWriter, r *http.Request) {
-	body, err := poolInput(r)
-	if err != nil {
-		g.webError(w, 400, "Invalid JSON body")
-		return
-	}
-	if !g.key(r) {
-		g.webError(w, 401, "API key required")
-		return
-	}
-	provider, model := splitTranslatorModel(ttsString(body["model"]))
-	if provider != "openai" || ttsString(body["input"]) == "" {
-		g.webError(w, 400, "Missing OpenAI model or input")
-		return
-	}
-	connection, err := g.connection(r.Context(), provider)
-	if err != nil {
-		g.webError(w, 400, "No credentials for provider: openai")
-		return
-	}
-	voice := "alloy"
-	if strings.Contains(model, "/") {
-		parts := strings.SplitN(model, "/", 2)
-		model, voice = parts[0], parts[1]
-	}
-	status, upstream, err := g.doJSON(r.Context(), "POST", "https://api.openai.com/v1/audio/speech", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"}, map[string]any{"model": model, "voice": voice, "input": body["input"]}, 60*time.Second)
-	if err != nil {
-		g.webError(w, status, err.Error())
-		return
-	}
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "audio/mpeg")
-	w.WriteHeader(status)
-	w.Write(upstream)
-}
-
-func (g *Gateway) Transcriptions(w http.ResponseWriter, r *http.Request) {
-	if !g.key(r) {
-		g.webError(w, 401, "API key required")
-		return
-	}
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		if r.MultipartForm != nil {
-			r.MultipartForm.RemoveAll()
-		}
-		g.webError(w, 400, "Invalid multipart form data")
-		return
-	}
-	defer r.MultipartForm.RemoveAll()
-	provider, model := splitTranslatorModel(r.FormValue("model"))
-	file, header, err := r.FormFile("file")
-	if provider != "openai" || model == "" || err != nil {
-		g.webError(w, 400, "Missing OpenAI model or file")
-		return
-	}
-	defer file.Close()
-	connection, connErr := g.connection(r.Context(), provider)
-	if connErr != nil {
-		g.webError(w, 400, "No credentials for provider: openai")
-		return
-	}
-	var payload bytes.Buffer
-	form := multipart.NewWriter(&payload)
-	part, err := form.CreateFormFile("file", header.Filename)
-	if err != nil {
-		g.webError(w, 500, err.Error())
-		return
-	}
-	if _, err := io.Copy(part, file); err != nil {
-		g.webError(w, 400, err.Error())
-		return
-	}
-	if err := form.WriteField("model", model); err != nil {
-		g.webError(w, 500, err.Error())
-		return
-	}
-	for _, name := range []string{"language", "prompt", "response_format", "temperature"} {
-		if value := r.FormValue(name); value != "" {
-			if err := form.WriteField(name, value); err != nil {
-				g.webError(w, 500, err.Error())
-				return
-			}
-		}
-	}
-	if err := form.Close(); err != nil {
-		g.webError(w, 500, err.Error())
-		return
-	}
-	ctx, cancel := context.WithTimeout(r.Context(), 300*time.Second)
-	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/audio/transcriptions", &payload)
-	if err != nil {
-		g.webError(w, 500, err.Error())
-		return
-	}
-	request.Header.Set("Authorization", "Bearer "+ttsString(connection["apiKey"]))
-	request.Header.Set("Content-Type", form.FormDataContentType())
-	client := g.Client
-	if client == nil {
-		client = http.DefaultClient
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		g.webError(w, 502, err.Error())
-		return
-	}
-	defer response.Body.Close()
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	contentType := response.Header.Get("Content-Type")
-	if contentType == "" {
-		contentType = "application/json"
-	}
-	w.Header().Set("Content-Type", contentType)
-	w.WriteHeader(response.StatusCode)
-	io.Copy(w, response.Body)
 }
 
 func (g *Gateway) GeminiNative(w http.ResponseWriter, r *http.Request) {
