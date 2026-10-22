@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -14,9 +15,12 @@ type usageConnectionStore interface {
 	Update(context.Context, string, map[string]any) (map[string]any, error)
 }
 type UsageContracts struct {
-	Connections usageConnectionStore
-	DB          *sql.DB
-	Client      *http.Client
+	Connections    usageConnectionStore
+	DB             *sql.DB
+	Client         *http.Client
+	claudeMu       sync.Mutex
+	claudeCache    map[[32]byte]*claudeUsageCacheEntry
+	claudeCooldown map[[32]byte]time.Time
 }
 
 func (u *UsageContracts) Stats(w http.ResponseWriter, r *http.Request) {

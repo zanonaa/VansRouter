@@ -11,6 +11,8 @@ func (u *UsageContracts) providerUsage(w http.ResponseWriter, r *http.Request, c
 	token := ttsString(firstNonEmpty(connection["apiKey"], connection["accessToken"]))
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
 	switch provider {
+	case "claude":
+		nodeReply(w, 200, u.claudeUsage(r, ttsString(connection["accessToken"])))
 	case "codex":
 		status, data, err := u.resetJSON(r.Context(), "GET", "https://chatgpt.com/backend-api/wham/usage", map[string]string{"Authorization": "Bearer " + ttsString(connection["accessToken"]), "Accept": "application/json"}, nil)
 		if err != nil {
