@@ -17,6 +17,7 @@ type streamConversion struct {
 	pending               []byte
 	source, target, model string
 	started, stopped      bool
+	terminal              bool
 	id                    any
 	usage                 map[string]any
 	tools                 map[int]int
@@ -112,6 +113,7 @@ func (s *streamConversion) frame(frame []byte) error {
 	}
 	payload := strings.Join(data, "\n")
 	if payload == "[DONE]" {
+		s.terminal = true
 		return s.stop()
 	}
 	var event map[string]any
@@ -119,7 +121,8 @@ func (s *streamConversion) frame(frame []byte) error {
 		return fmt.Errorf("Invalid provider SSE JSON: %w", err)
 	}
 	if event["error"] != nil {
-		return s.emit("error", map[string]any{"error": event["error"]})
+		s.err = fmt.Errorf("Provider stream returned an error")
+		return s.err
 	}
 	if s.source == "openai" {
 		return s.toOpenAI(event)
@@ -146,7 +149,12 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 			block, _ := event["content_block"].(map[string]any)
 			index := int(pxpipeNum(event["index"]))
 			if block["type"] == "tool_use" {
-				return s.openAIChunk(map[string]any{"tool_calls": []any{map[string]any{"index": index, "id": block["id"], "type": "function", "function": map[string]any{"name": block["name"], "arguments": ""}}}}, nil)
+				if s.tools == nil {
+					s.tools = map[int]int{}
+				}
+				toolIndex := len(s.tools)
+				s.tools[index] = toolIndex
+				return s.openAIChunk(map[string]any{"tool_calls": []any{map[string]any{"index": toolIndex, "id": block["id"], "type": "function", "function": map[string]any{"name": block["name"], "arguments": ""}}}}, nil)
 			}
 			if block["type"] != "text" {
 				return fmt.Errorf("Unsupported Claude streaming block: %v", block["type"])
@@ -157,7 +165,11 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 			case "text_delta":
 				return s.openAIChunk(map[string]any{"content": delta["text"]}, nil)
 			case "input_json_delta":
-				return s.openAIChunk(map[string]any{"tool_calls": []any{map[string]any{"index": event["index"], "function": map[string]any{"arguments": delta["partial_json"]}}}}, nil)
+				index, ok := s.tools[int(pxpipeNum(event["index"]))]
+				if !ok {
+					return fmt.Errorf("Tool delta has no preceding tool block")
+				}
+				return s.openAIChunk(map[string]any{"tool_calls": []any{map[string]any{"index": index, "function": map[string]any{"arguments": delta["partial_json"]}}}}, nil)
 			default:
 				return fmt.Errorf("Unsupported Claude streaming delta: %v", delta["type"])
 			}
@@ -172,6 +184,7 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 			}
 			return s.openAIChunk(map[string]any{}, finish)
 		case "message_stop":
+			s.terminal = true
 			return s.stop()
 		}
 	case "gemini":
@@ -209,6 +222,7 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 				}
 			}
 			if reason := ttsString(candidate["finishReason"]); reason != "" {
+				s.terminal = true
 				finish := "stop"
 				if reason == "MAX_TOKENS" {
 					finish = "length"
@@ -314,6 +328,9 @@ func (s *streamConversion) finish() {
 	if s.err == nil && len(bytes.TrimSpace(s.pending)) > 0 {
 		s.err = s.frame(s.pending)
 		s.pending = nil
+	}
+	if s.err == nil && !s.terminal {
+		s.err = fmt.Errorf("Provider stream closed before completion")
 	}
 	if s.err != nil {
 		s.emit("error", map[string]any{"error": map[string]any{"message": s.err.Error(), "type": "stream_conversion_error"}})
