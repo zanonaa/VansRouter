@@ -50,7 +50,7 @@ func TestAdditionalSearchNormalization(t *testing.T) {
 	for _, test := range []struct{ provider, payload string }{{"google-pse", `{"items":[{"title":"title","link":"https://example.com","snippet":"snippet"}],"searchInformation":{"totalResults":"10"}}`}, {"searchapi", `{"organic_results":[{"title":"title","link":"https://example.com","snippet":"snippet"}]}`}, {"linkup", `{"results":[{"name":"title","url":"https://example.com","content":"snippet"}]}`}, {"youcom", `{"results":{"web":[{"title":"title","url":"https://example.com","snippets":["snippet"]}]}}`}, {"tinyfish", `{"results":[{"title":"title","url":"https://example.com","snippet":"snippet"}],"total_results":9}`}} {
 		var data map[string]any
 		json.Unmarshal([]byte(test.payload), &data)
-		results, _, err := normalizeSearch(test.provider, "web", data, 5, time.Now())
+		results, _, _, err := normalizeSearch(test.provider, "web", data, 5, time.Now())
 		if err != nil || len(results) != 1 || results[0]["title"] != "title" || results[0]["snippet"] != "snippet" {
 			t.Fatalf("%s %v %v", test.provider, results, err)
 		}
