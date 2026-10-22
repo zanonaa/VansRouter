@@ -42,6 +42,7 @@ type Providers struct {
 	GCPProjects       *GCPProjects
 	Discovery         *ProviderDiscovery
 	ConnectionProbe   *ConnectionProbe
+	ModelPing         *ModelPing
 	Combos            *Combos
 	CreateBulk        func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools             *ProxyPools
