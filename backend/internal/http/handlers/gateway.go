@@ -109,8 +109,13 @@ func (g *Gateway) Models(w http.ResponseWriter, r *http.Request) {
 	g.catalogModels(w, r)
 }
 func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
-	if !g.key(r) {
-		nodeReply(w, 401, map[string]any{"error": "API key required"})
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	key, ok := g.modelAuth(w, r)
+	if !ok {
+		return
+	}
+	if !gatewayPermission(key, "allowedKinds", "llm") {
+		g.webError(w, 403, "Chat/LLM requests are not allowed for this API key")
 		return
 	}
 	if g.Send == nil {
@@ -123,6 +128,10 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	provider, model := splitTranslatorModel(ttsString(body["model"]))
+	if provider != "" && !gatewayPermission(key, "allowedProviders", provider) {
+		g.webError(w, 403, `Provider "`+provider+`" is not allowed for this API key`)
+		return
+	}
 	body = filterToOpenAI(body)
 	format := providers.TargetFormat(provider)
 	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
