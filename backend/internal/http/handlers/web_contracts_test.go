@@ -43,7 +43,7 @@ func TestSearchAndFetchContracts(t *testing.T) {
 	request.Header.Set("Authorization", "Bearer secret")
 	w = httptest.NewRecorder()
 	gateway.Fetch(w, request)
-	if w.Code != 400 || !strings.Contains(w.Body.String(), "not public") {
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "private IP") {
 		t.Fatalf("ssrf %d %s", w.Code, w.Body.String())
 	}
 }
