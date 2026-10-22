@@ -293,9 +293,13 @@ func (g *Gateway) Transcriptions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		if r.MultipartForm != nil {
+			r.MultipartForm.RemoveAll()
+		}
 		g.webError(w, 400, "Invalid multipart form data")
 		return
 	}
+	defer r.MultipartForm.RemoveAll()
 	provider, model := splitTranslatorModel(r.FormValue("model"))
 	file, header, err := r.FormFile("file")
 	if provider != "openai" || model == "" || err != nil {
@@ -310,11 +314,38 @@ func (g *Gateway) Transcriptions(w http.ResponseWriter, r *http.Request) {
 	}
 	var payload bytes.Buffer
 	form := multipart.NewWriter(&payload)
-	part, _ := form.CreateFormFile("file", header.Filename)
-	io.Copy(part, file)
-	form.WriteField("model", model)
-	form.Close()
-	request, err := http.NewRequestWithContext(r.Context(), "POST", "https://api.openai.com/v1/audio/transcriptions", &payload)
+	part, err := form.CreateFormFile("file", header.Filename)
+	if err != nil {
+		g.webError(w, 500, err.Error())
+		return
+	}
+	if _, err := io.Copy(part, file); err != nil {
+		g.webError(w, 400, err.Error())
+		return
+	}
+	if err := form.WriteField("model", model); err != nil {
+		g.webError(w, 500, err.Error())
+		return
+	}
+	for _, name := range []string{"language", "prompt", "response_format", "temperature"} {
+		if value := r.FormValue(name); value != "" {
+			if err := form.WriteField(name, value); err != nil {
+				g.webError(w, 500, err.Error())
+				return
+			}
+		}
+	}
+	if err := form.Close(); err != nil {
+		g.webError(w, 500, err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 300*time.Second)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/audio/transcriptions", &payload)
+	if err != nil {
+		g.webError(w, 500, err.Error())
+		return
+	}
 	request.Header.Set("Authorization", "Bearer "+ttsString(connection["apiKey"]))
 	request.Header.Set("Content-Type", form.FormDataContentType())
 	client := g.Client
@@ -328,7 +359,11 @@ func (g *Gateway) Transcriptions(w http.ResponseWriter, r *http.Request) {
 	}
 	defer response.Body.Close()
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
+	contentType := response.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "application/json"
+	}
+	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(response.StatusCode)
 	io.Copy(w, response.Body)
 }
