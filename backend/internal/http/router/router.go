@@ -89,6 +89,14 @@ func NewWithNodes(ready handlers.Readiness, authentication *auth.HTTP, nodes *ha
 			r.Put("/{id}", authentication.APIKeyPut)
 			r.Delete("/{id}", authentication.APIKeyDelete)
 		})
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].TranslatorFiles != nil {
+			files := providerAPI[0].TranslatorFiles
+			r.Get("/api/translator/load", files.Load)
+			r.Head("/api/translator/load", withoutBody(files.Load))
+			r.Options("/api/translator/load", options("GET, HEAD, OPTIONS"))
+			r.Post("/api/translator/save", files.Save)
+			r.Options("/api/translator/save", options("POST, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Circuits != nil {
 			circuits := providerAPI[0].Circuits
 			r.Get("/api/providers/circuit-breakers", circuits.GetHTTP)

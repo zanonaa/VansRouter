@@ -22,6 +22,7 @@ type Providers struct {
 	KiloFree          *KiloFreeModels
 	ClientList        *ProviderClient
 	Circuits          *CircuitRegistry
+	TranslatorFiles   *TranslatorFiles
 	OAuth             *OAuthEngine
 	CursorAutoImport  *CursorAutoImport
 	KiroAutoImport    *KiroAutoImport

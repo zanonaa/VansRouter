@@ -773,13 +773,13 @@
       "method": "GET",
       "path": "/api/translator/load",
       "source": "src/app/api/translator/load/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/translator/save",
       "source": "src/app/api/translator/save/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
