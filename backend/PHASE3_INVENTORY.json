@@ -785,7 +785,7 @@
       "method": "POST",
       "path": "/api/translator/send",
       "source": "src/app/api/translator/send/route.js",
-      "status": "pending-implementation"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
