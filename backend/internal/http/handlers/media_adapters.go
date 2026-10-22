@@ -71,6 +71,10 @@ func (g *Gateway) Speech(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	if config.Format == "xiaomi-mimo-tts" {
+		g.synthesizeXiaomi(w, r, model, token, body)
+		return
+	}
 	if config.Format == "local-device" {
 		g.synthesizeLocal(w, r, model, body)
 		return
