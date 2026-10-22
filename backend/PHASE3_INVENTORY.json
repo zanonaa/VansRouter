@@ -653,49 +653,49 @@
       "method": "POST",
       "path": "/api/pxpipe/health",
       "source": "src/app/api/pxpipe/health/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/pxpipe/install",
       "source": "src/app/api/pxpipe/install/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/pxpipe/logs",
       "source": "src/app/api/pxpipe/logs/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/pxpipe/restart",
       "source": "src/app/api/pxpipe/restart/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/pxpipe/start",
       "source": "src/app/api/pxpipe/start/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/pxpipe/stats",
       "source": "src/app/api/pxpipe/stats/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",
       "path": "/api/pxpipe/status",
       "source": "src/app/api/pxpipe/status/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "POST",
       "path": "/api/pxpipe/stop",
       "source": "src/app/api/pxpipe/stop/route.js",
-      "status": "not-proven"
+      "status": "registered-needs-contract-review"
     },
     {
       "method": "GET",

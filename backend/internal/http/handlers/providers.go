@@ -13,6 +13,7 @@ type Providers struct {
 	Database         *DatabaseExport
 	Media            *MediaVoices
 	TTSVoices        *TTSVoices
+	Pxpipe           *Pxpipe
 	OAuth            *OAuthEngine
 	Shutdown         *Shutdown
 	Pricing          *Pricing
