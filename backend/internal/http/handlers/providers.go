@@ -40,6 +40,7 @@ type Providers struct {
 	UsageContracts    *UsageContracts
 	Gateway           *Gateway
 	GCPProjects       *GCPProjects
+	Discovery         *ProviderDiscovery
 	Combos            *Combos
 	CreateBulk        func(context.Context, []map[string]any) ([]map[string]any, error)
 	Pools             *ProxyPools
