@@ -24,6 +24,7 @@ type streamConversion struct {
 	nextBlock             int
 	textBlock             int
 	err                   error
+	responses             *responsesStream
 }
 
 func (s *streamConversion) Header() http.Header {
@@ -129,6 +130,9 @@ func (s *streamConversion) frame(frame []byte) error {
 	}
 	if s.source == "claude" && s.target == "openai" {
 		return s.toClaude(event)
+	}
+	if s.source == "openai-responses" && s.target == "openai" {
+		return s.toResponses(event)
 	}
 	return fmt.Errorf("Unsupported streaming conversion: %s to %s", s.target, s.source)
 }
@@ -311,6 +315,9 @@ func (s *streamConversion) stop() error {
 		return nil
 	}
 	s.stopped = true
+	if s.source == "openai-responses" {
+		return s.completeResponses()
+	}
 	if s.source == "openai" {
 		_, err := s.destination.Write([]byte("data: [DONE]\n\n"))
 		s.Flush()

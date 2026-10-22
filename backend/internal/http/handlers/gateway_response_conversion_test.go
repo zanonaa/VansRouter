@@ -53,7 +53,7 @@ func TestCrossFormatStreamIsExplicitUntilImplemented(t *testing.T) {
 	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
 	g.Send = &TranslatorSend{}
 	w := httptest.NewRecorder()
-	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/responses", strings.NewReader(`{"model":"openai/gpt-4o","stream":true,"input":"hello"}`)))
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/responses", strings.NewReader(`{"model":"gemini/gemini-model","stream":true,"input":"hello"}`)))
 	if w.Code != 501 || !strings.Contains(w.Body.String(), "Streaming conversion") {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
