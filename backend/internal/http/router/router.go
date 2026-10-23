@@ -33,6 +33,7 @@ func NewWithSPA(ready handlers.Readiness, authentication *auth.HTTP, nodes *hand
 	h := handlers.Bootstrap{}
 	h.Ready = ready
 	r := chi.NewRouter()
+	r.Use(legacyRewrites)
 	r.Use(middleware.Recoverer)
 	if authentication != nil {
 		r.Use(authentication.Middleware)
