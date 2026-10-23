@@ -67,6 +67,13 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		fail(500, "Invalid request body")
 		return
 	}
+	// Free tier do OpenCode Zen: contrato de cliente próprio (fingerprint,
+	// IDs de sessão, stream forçado); sem isso o upstream responde 403
+	// FreeTierError. Executor dedicado com fold do stream para clientes JSON.
+	if provider == "opencode" && providers.TargetFormat(provider) == "openai" {
+		t.sendOpenCodeFree(w, r, provider, model, body, connection)
+		return
+	}
 	outbound := map[string]any{}
 	for key, value := range body {
 		outbound[key] = value
