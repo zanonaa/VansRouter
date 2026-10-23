@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -75,6 +76,83 @@ func (c *comboAttempt) finalError() {
 	c.destination.Write(c.failure.Bytes())
 }
 
+// expandComboEntries expande as entradas de um combo. Entradas sem "/" são
+// referência a outro combo (combos aninhados, como a origem resolve em
+// getComboModelsFromData); entradas sem barra que não são combo passam
+// adiante para falharem como model downstream. Ciclos são rejeitados.
+// comboShouldFallback reproduz a política essencial de
+// open-sse/services/accountFallback.js (ERROR_RULES): erros de conta
+// (401/402/403/404/429) e de servidor (5xx) seguem para o próximo model do
+// combo; erros do pedido (400/422/499) e bloqueios de conteúdo param no
+// primeiro — a origem devolve esses últimos ao cliente.
+var comboNoFallbackTexts = []string{
+	"content-blocked", "content_blocked", "content exists risk",
+	"sensitive words detected", "sensitive content", "unapproved channel",
+	"illegal api invocation",
+}
+
+func comboShouldFallback(status int, errorText string) bool {
+	lower := strings.ToLower(errorText)
+	for _, text := range comboNoFallbackTexts {
+		if strings.Contains(lower, text) {
+			return false
+		}
+	}
+	switch status {
+	case 400, 422, 499:
+		return false
+	}
+	return true
+}
+
+func (g *Gateway) expandComboEntries(r *http.Request, name string, entries []any) ([]string, error) {
+	models := []string{}
+	var expand func(entry string, depth int, visited map[string]bool) error
+	expand = func(entry string, depth int, visited map[string]bool) error {
+		if visited[entry] || depth > 8 {
+			return fmt.Errorf("Circular or too-deep combo reference: %s", entry)
+		}
+		nested, err := (database.Combos{DB: g.DB}).ByName(r.Context(), entry)
+		if err != nil {
+			return err
+		}
+		if nested == nil {
+			models = append(models, entry)
+			return nil
+		}
+		visited[entry] = true
+		nestedEntries, _ := nested["models"].([]any)
+		for _, raw := range nestedEntries {
+			model, ok := raw.(string)
+			if !ok || model == "" {
+				return fmt.Errorf("Invalid combo model entry")
+			}
+			if strings.Contains(model, "/") {
+				models = append(models, model)
+				continue
+			}
+			if err := expand(model, depth+1, visited); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for _, raw := range entries {
+		model, ok := raw.(string)
+		if !ok || model == "" {
+			return nil, fmt.Errorf("Invalid combo model entry")
+		}
+		if strings.Contains(model, "/") {
+			models = append(models, model)
+			continue
+		}
+		if err := expand(model, 0, map[string]bool{name: true}); err != nil {
+			return nil, err
+		}
+	}
+	return models, nil
+}
+
 func (g *Gateway) chatCombo(w http.ResponseWriter, r *http.Request, key, body map[string]any) bool {
 	name := ttsString(body["model"])
 	var exists int
@@ -98,14 +176,13 @@ func (g *Gateway) chatCombo(w http.ResponseWriter, r *http.Request, key, body ma
 		return true
 	}
 	entries, _ := combo["models"].([]any)
-	models := []string{}
-	for _, entry := range entries {
-		model, ok := entry.(string)
-		if !ok || !strings.Contains(model, "/") {
-			g.webError(w, 400, "Invalid combo model entry")
-			return true
-		}
-		models = append(models, model)
+	// A origem resolve entradas sem "/" como referência a outro combo
+	// (combos aninhados, ex.: zn-glm → zn-gpt); expandimos com proteção de
+	// ciclo — sem isso o combo inteiro era rejeitado com 400.
+	models, err := g.expandComboEntries(r, name, entries)
+	if err != nil {
+		g.webError(w, 400, err.Error())
+		return true
 	}
 	if len(models) == 0 {
 		g.webError(w, 400, "No models configured for combo: "+name)
@@ -160,7 +237,7 @@ func (g *Gateway) chatCombo(w http.ResponseWriter, r *http.Request, key, body ma
 			return true
 		}
 		last = attempt
-		if attempt.status == 400 || attempt.status == 401 || attempt.status == 403 {
+		if !comboShouldFallback(attempt.status, attempt.failure.String()) {
 			break
 		}
 	}

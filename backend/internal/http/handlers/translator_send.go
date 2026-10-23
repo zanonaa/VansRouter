@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
@@ -19,6 +20,10 @@ type TranslatorSend struct {
 	GetPool      connectionPoolLookup
 	refreshMu    sync.Mutex
 	refreshCalls map[[32]byte]*refreshCall
+}
+
+func isHTMLContentType(contentType string) bool {
+	return strings.Contains(strings.ToLower(contentType), "text/html")
 }
 
 func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
@@ -134,12 +139,27 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	defer response.Body.Close()
+	// Upstream 2xx com HTML é landing/erro de rota, nunca uma resposta de
+	// chat válida — sem esta barreira o HTML era repassado como "sucesso"
+	// e o combo não fazia fallback (achado no teste real dos combos).
+	if contentType := response.Header.Get("Content-Type"); response.StatusCode >= 200 && response.StatusCode < 300 && isHTMLContentType(contentType) {
+		response.Body.Close()
+		nodeReply(w, 502, map[string]any{"success": false, "error": fmt.Sprintf("Provider %s returned HTML instead of a chat response (content-type: %s)", provider, contentType)})
+		return
+	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		details, _ := io.ReadAll(response.Body)
 		nodeReply(w, response.StatusCode, map[string]any{"success": false, "error": fmt.Sprintf("Provider error: %d", response.StatusCode), "details": string(details)})
 		return
 	}
-	w.Header().Set("Content-Type", "text/event-stream")
+	// CT do upstream é preservado: com stream:false a resposta é JSON e o
+	// content-type fixo em SSE quebrava clientes JSON (achado no teste real
+	// dos combos — zn-mimo via tokenharbor). Sem CT do upstream, mantém SSE.
+	if upstreamType := response.Header.Get("Content-Type"); upstreamType != "" {
+		w.Header().Set("Content-Type", upstreamType)
+	} else {
+		w.Header().Set("Content-Type", "text/event-stream")
+	}
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	buffer := make([]byte, 32*1024)

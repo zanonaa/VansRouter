@@ -85,11 +85,25 @@ func convertChatResponse(native map[string]any, from, to, model string) (map[str
 		usage, _ = native["usage"].(map[string]any)
 	case "claude":
 		blocks, _ := native["content"].([]any)
-		content, calls, _, err := claudeContent(blocks)
+		// Origem (claude-to-openai): thinking viaja apenas em
+		// reasoning_content, sem marcadores em content.
+		reasoning := ""
+		contentBlocks := []any{}
+		for _, raw := range blocks {
+			if block, ok := raw.(map[string]any); ok && block["type"] == "thinking" {
+				reasoning += ttsString(block["thinking"])
+				continue
+			}
+			contentBlocks = append(contentBlocks, raw)
+		}
+		content, calls, _, err := claudeContent(contentBlocks)
 		if err != nil {
 			return nil, err
 		}
 		message["content"] = collapseSourceText(content)
+		if reasoning != "" {
+			message["reasoning_content"] = reasoning
+		}
 		if len(calls) > 0 {
 			message["tool_calls"] = calls
 		}
