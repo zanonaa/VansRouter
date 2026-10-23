@@ -201,7 +201,7 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	clone.Body = io.NopCloser(bytes.NewReader(encoded))
 	if source != format {
 		if stream {
-			converted := &streamConversion{destination: w, source: source, target: format, model: model, textBlock: -1}
+			converted := &streamConversion{destination: w, source: source, target: format, model: model, textBlock: -1, serverTool: -1}
 			g.Send.Send(converted, clone)
 			converted.finish()
 			return
