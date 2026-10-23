@@ -150,7 +150,10 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.URL.Path, "/v1/responses") {
 		source = "openai-responses"
 	}
-	stream := body["stream"] != false
+	// Default do OpenAI: sem "stream" explícito, resposta JSON. O bug anterior
+	// (stream=true quando omitido) fazia o gateway devolver SSE a clientes
+	// que pediram JSON — achado no teste real dos combos.
+	stream := body["stream"] == true
 	format := providers.TargetFormat(provider)
 	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
 		g.NotPorted(w, r)

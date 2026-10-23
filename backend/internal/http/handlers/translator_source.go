@@ -199,6 +199,8 @@ func claudeContent(content any) ([]any, []any, []any, error) {
 		switch block["type"] {
 		case "text":
 			blocks = append(blocks, map[string]any{"type": "text", "text": block["text"]})
+		case "thinking":
+			// Extraído pelo chamador quando relevante; nunca rejeita a resposta.
 		case "image":
 			source, _ := block["source"].(map[string]any)
 			imageURL := ""
