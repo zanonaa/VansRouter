@@ -46,6 +46,16 @@ describe("release hardening contracts", () => {
     expect(dockerfile).toContain("COPY backend/go.mod backend/go.sum ./");
   });
 
+  it("keeps the Tailwind PostCSS pipeline inside the SPA build stage", () => {
+    // Regressão real (Dev 2026-10-23): sem postcss.config.mjs no contexto do
+    // estágio Vite, o @import "tailwindcss" vira CSS estático e a UI sobe sem
+    // utilitárias. O build precisa copiar o config e provar que gerou classes.
+    const dockerfile = read("Dockerfile");
+    expect(dockerfile).toContain("COPY index.html vite.config.js postcss.config.mjs ./");
+    expect(dockerfile).toContain("grep -q '\\.flex{'");
+    expect(dockerfile).toContain("grep -q '\\.grid{'");
+  });
+
   it("requires an explicit VansRouter version while preserving 9router storage", () => {
     const compose = read("docker-compose.yml");
     expect(compose).toContain("VANSROUTER_VERSION");
