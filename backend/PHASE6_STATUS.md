@@ -18,5 +18,9 @@ Estado: **composição integrada e validada**; falta apenas a decisão de tag RC
 
 ## Pendência final
 
-- **Tag RC** — o plano exige estado integrado e aprovado; tecnicamente atingido (imagem, composição, smoke, regressão e gates verdes). A tag `v1.2.0-rc1` fica aguardando decisão explícita, sem ser criada por presunção.
+- ~~**Tag RC**~~ — **criada por decisão explícita do usuário em 2026-10-22**: `v1.2.0-rc1` (anotada) aponta para `ff001cc5`, o commit da composição validada (PR #159). Publicada no fork.
 - Opcional: fixar baseline pixel-a-pixel a partir dos screenshots atuais; revisão de README/docs com fluxo Docker novo.
+
+## Encerramento da migração
+
+Com a tag RC, as seis fases do plano revisado (seção 14 do MIGRATION_PLAN.md) estão implementadas: backend Go integral (Fase 3), SPA React/Vite sem Next.js nem SSR (4A/4B), regressão visual/navegação com substituições de testes documentadas (5) e composição final integrada em Docker com runner sem Node (6). A imagem multi-arch é construída e publicada pelo CI em pushes para `main` (`ghcr.io/zanonaa/vansrouter`); o compose continua apontando para a imagem oficial (`VANSROUTER_VERSION`).
