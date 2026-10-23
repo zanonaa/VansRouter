@@ -105,6 +105,62 @@ func comboShouldFallback(status int, errorText string) bool {
 	return true
 }
 
+// comboFailureMessage reproduz a extração de lastError em
+// open-sse/services/combo.js: error.message, error (string) ou message do
+// corpo do último candidato. Os executores do port embrulham o corpo do
+// upstream em "details" atrás de um "Provider error: <status>" genérico; nesse
+// caso a mensagem específica é a que deve chegar ao cliente.
+func comboFailureMessage(body []byte, status int) string {
+	trimmed := bytes.TrimSpace(body)
+	if len(trimmed) > 0 {
+		var payload map[string]any
+		if json.Unmarshal(trimmed, &payload) == nil {
+			if details, ok := payload["details"].(string); ok && strings.TrimSpace(details) != "" {
+				if message := comboMessageFromJSON([]byte(details)); message != "" {
+					return message
+				}
+			}
+			if message := comboMessageFromJSON(trimmed); message != "" {
+				return message
+			}
+		} else if !bytes.HasPrefix(trimmed, []byte("data:")) {
+			return string(trimmed)
+		}
+	}
+	return fmt.Sprintf("Provider error: %d", status)
+}
+
+func comboMessageFromJSON(raw []byte) string {
+	var payload map[string]any
+	if json.Unmarshal(raw, &payload) != nil {
+		return ""
+	}
+	switch value := payload["error"].(type) {
+	case string:
+		if message := strings.TrimSpace(value); message != "" && !comboGenericProviderError(message) {
+			return message
+		}
+	case map[string]any:
+		if message := strings.TrimSpace(ttsString(value["message"])); message != "" {
+			return message
+		}
+	}
+	if message := strings.TrimSpace(ttsString(payload["message"])); message != "" {
+		return message
+	}
+	if message, ok := payload["error"].(string); ok {
+		message = strings.TrimSpace(message)
+		if message != "" && !comboGenericProviderError(message) {
+			return message
+		}
+	}
+	return ""
+}
+
+func comboGenericProviderError(message string) bool {
+	return strings.HasPrefix(message, "Provider error: ")
+}
+
 func (g *Gateway) expandComboEntries(r *http.Request, name string, entries []any) ([]string, error) {
 	models := []string{}
 	var expand func(entry string, depth int, visited map[string]bool) error
@@ -211,7 +267,7 @@ func (g *Gateway) chatCombo(w http.ResponseWriter, r *http.Request, key, body ma
 		return true
 	}
 	models = providers.RotateCombo(models, name, strategy, int(pxpipeNum(settings["comboStickyRoundRobinLimit"])))
-	var last *comboAttempt
+	var last, firstFailure *comboAttempt
 	for _, model := range models {
 		if r.Context().Err() != nil {
 			return true
@@ -236,13 +292,27 @@ func (g *Gateway) chatCombo(w http.ResponseWriter, r *http.Request, key, body ma
 			}
 			return true
 		}
+		if firstFailure == nil {
+			firstFailure = attempt
+		}
 		last = attempt
 		if !comboShouldFallback(attempt.status, attempt.failure.String()) {
-			break
+			// A origem devolve a resposta do candidato que bloqueou o fallback
+			// (400/422/499 ou conteúdo bloqueado), não a de um anterior.
+			last.finalError()
+			return true
 		}
 	}
 	if last != nil {
-		last.finalError()
+		// Todos falharam: a origem mantém o status do PRIMEIRO candidato que
+		// falhou e a mensagem do ÚLTIMO (lastStatus/lastError em combo.js).
+		// Sem isso, um fallback terminal (ex.: 402 do Grok) sobrescrevia o
+		// 429 real do modelo primário do combo.
+		status := 502
+		if firstFailure != nil && firstFailure.status != 0 {
+			status = firstFailure.status
+		}
+		g.webError(w, status, comboFailureMessage(last.failure.Bytes(), last.status))
 	} else {
 		g.webError(w, 503, "All accounts unavailable")
 	}
