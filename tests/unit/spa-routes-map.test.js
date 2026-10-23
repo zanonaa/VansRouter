@@ -60,8 +60,30 @@ describe("mapa de rotas da SPA", () => {
     expect(broken, `imports quebrados: ${broken.join(", ")}`).toEqual([]);
   });
 
-  it("/dashboard/settings/pricing fica fora do DashboardLayout, como no App Router", () => {
-    const pricingIndex = routesFile.indexOf('"dashboard/settings/pricing"');
+  // Regressão real (Dev 2026-10-23): <dashboardHome /> com minúscula no JSX vira
+  // a tag HTML <dashboardhome>, que o React não monta — todas as telas do
+  // dashboard exibiam só o header. O nome do componente precisa ser PascalCase.
+  it("elementos de rota usam componentes capitalizados (não tags HTML)", () => {
+    const tags = [...routesFile.matchAll(/element:\s*<([A-Za-z][\w]*)/g)].map((m) => m[1]);
+    const lowercase = tags.filter((tag) => /^[a-z]/.test(tag));
+    expect(lowercase, `elementos minúsculos viram tags HTML: ${lowercase.join(", ")}`).toEqual([]);
+  });
+
+  it("DashboardLayout recebe <Outlet/> e as páginas lazy têm Suspense", () => {
+    // DashboardLayout é o layout do App Router e renderiza {children}; sem o
+    // Outlet explícito o miolo de todas as rotas fica vazio.
+    expect(routesFile).toMatch(/<DashboardLayout>[\s\S]{0,240}<Outlet \/>/);
+    expect(routesFile).toMatch(/<Suspense fallback=\{null\}>/);
+  });
+
+  it("compat de next/navigation devolve useSearchParams no formato do Next", () => {
+    // react-router devolve [params, setter]; o código migrado chama .get()
+    // direto (Usage quebrava com "searchParams.get is not a function").
+    const navigation = readFileSync(path.join(root, "src/compat/navigation.js"), "utf8");
+    expect(navigation).toContain("useRouterSearchParams()[0]");
+  });
+
+  it("/dashboard/settings/pricing fica fora do DashboardLayout, como no App Router", () => {    const pricingIndex = routesFile.indexOf('"dashboard/settings/pricing"');
     const dashboardIndex = routesFile.indexOf('path: "dashboard"');
     expect(pricingIndex).toBeGreaterThan(-1);
     expect(dashboardIndex).toBeGreaterThan(-1);
