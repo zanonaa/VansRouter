@@ -77,3 +77,20 @@ func TestComboPermissionBlocksBeforeCandidate(t *testing.T) {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
 }
+
+func TestComboListedIdIsRoutable(t *testing.T) {
+	g := gatewayModelsFixture(t)
+	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
+	if _, err := g.DB.Exec(`INSERT INTO combos VALUES('c','bundle','llm','["openai/model"]',NULL,'now','now');`); err != nil {
+		t.Fatal(err)
+	}
+	g.Send = &TranslatorSend{Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader("data: ok\n\n"))}, nil
+	})}}
+	// "combo/bundle" é o id publicado pelo /v1/models e precisa rotear.
+	w := httptest.NewRecorder()
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/chat/completions", strings.NewReader(`{"model":"combo/bundle","messages":[{"role":"user","content":"hi"}]}`)))
+	if w.Code != 200 {
+		t.Fatalf("id listado não roteia: %d %s", w.Code, w.Body.String())
+	}
+}
