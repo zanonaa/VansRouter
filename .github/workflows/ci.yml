@@ -2,7 +2,7 @@ name: Gateway CI
 
 on:
   push:
-    branches: [main, master, dev]
+    branches: [main, master, dev, migration/go-backend]
   pull_request:
     branches: [main, master, dev]
   workflow_dispatch:
