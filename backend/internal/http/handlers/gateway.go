@@ -181,6 +181,12 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		g.Send.SendGrokCLI(w, r, provider, model, body, source, stream)
 		return
 	}
+	// Codex usa o mesmo transporte Responses, com transform/headers próprios
+	// (instruções embutidas, prefixo lite, sessão e retry SSE).
+	if provider == "codex" && format == "openai-responses" {
+		g.Send.SendCodex(w, r, provider, model, body, source, stream)
+		return
+	}
 	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
 		g.NotPorted(w, r)
 		return
@@ -265,6 +271,9 @@ func (g *Gateway) Responses(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, exists := body["stream"]; !exists {
 		body["stream"] = false
+	}
+	if strings.HasSuffix(strings.TrimRight(r.URL.Path, "/"), "/responses/compact") {
+		body["_compact"] = true
 	}
 	encoded, _ := json.Marshal(body)
 	clone := r.Clone(r.Context())
