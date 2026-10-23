@@ -23,6 +23,7 @@ type streamConversion struct {
 	tools                 map[int]int
 	nextBlock             int
 	textBlock             int
+	thinkingBlock         int
 	serverTool            int
 	toolIDs               map[string]int
 	toolCount             int
@@ -134,8 +135,14 @@ func (s *streamConversion) frame(frame []byte) error {
 	if s.source == "claude" && s.target == "openai" {
 		return s.toClaude(event)
 	}
+	if s.source == "claude" && s.target == "gemini" {
+		return s.toClaudeFromGemini(event)
+	}
 	if s.source == "openai-responses" && s.target == "openai" {
 		return s.toResponses(event)
+	}
+	if s.source == "openai-responses" && s.target == "gemini" {
+		return s.toResponsesFromGemini(event)
 	}
 	return fmt.Errorf("Unsupported streaming conversion: %s to %s", s.target, s.source)
 }

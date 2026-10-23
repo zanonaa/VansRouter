@@ -117,7 +117,7 @@ func (t *TranslatorTranslate) Post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		format := providers.TargetFormat(provider)
-		if format != "openai" && format != "claude" && format != "gemini" {
+		if format != "openai" && format != "claude" && format != "gemini" && format != "openai-responses" && format != "ollama" && format != "commandcode" {
 			fail(501, "Translator conversion not ported for step 3")
 			return
 		}

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
@@ -61,7 +62,7 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	format := providers.TargetFormat(provider)
-	if format != "openai" && format != "claude" && format != "gemini" {
+	if format != "openai" && format != "claude" && format != "gemini" && format != "openai-responses" && format != "ollama" && format != "commandcode" {
 		fail(501, "Translator executor not ported for provider: "+provider)
 		return
 	}
@@ -93,6 +94,10 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fail(501, err.Error())
 		return
+	}
+	if format == "commandcode" {
+		headers["Accept"] = "text/event-stream"
+		headers["x-session-id"] = uuid.NewString()
 	}
 	encoded, err := json.Marshal(outbound)
 	if err != nil {
