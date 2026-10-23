@@ -83,8 +83,30 @@ function fail(step, message) {
       results.push({ route: route.name, final });
       continue;
     }
-    for (const marker of ERROR_MARKERS) {
-      if (body.includes(marker)) fail(route.name, `renderizou error boundary (${marker}) após navegação direta`);
+    // Rotas com id inexistente (sample-id) devem renderizar o 404 da SPA.
+    const isMissingEntity = route.url.includes("sample-id");
+    if (isMissingEntity) {
+      if (!/404|could not be found/i.test(body)) {
+        fail(route.name, "entidade inexistente deveria renderizar 404");
+      }
+    } else {
+      for (const marker of ERROR_MARKERS) {
+        if (body.includes(marker)) fail(route.name, `renderizou error boundary (${marker}) após navegação direta`);
+      }
+      // Regressão Dev 2026-10-23: layout renderizava, mas o miolo da página não
+      // (DashboardLayout sem Outlet / página lazy minúscula). Exigir conteúdo.
+      // Pricing fica fora do DashboardLayout (sem <main>), então olha o body.
+      if (route.url === "/dashboard/settings/pricing") {
+        if (!/Pricing/i.test(body)) fail(route.name, "página de pricing não montou");
+      } else if (route.url.startsWith("/dashboard")) {
+        const content = await page.evaluate(() => {
+          const area = document.querySelector("main div.overflow-y-auto");
+          return area ? { html: area.innerHTML.length, text: (area.innerText || "").trim() } : null;
+        });
+        if (!content || content.html < 400 || content.text.length < 10) {
+          fail(route.name, "conteúdo da página vazio (layout/página não montou)");
+        }
+      }
     }
     const shot = path.join(shotsDir, `${route.name}.png`);
     await page.screenshot({ path: shot, fullPage: false });
@@ -93,8 +115,12 @@ function fail(step, message) {
     await page.reload({ waitUntil: "load", timeout: 60000 });
     await page.waitForTimeout(1800);
     body = await page.textContent("body");
-    for (const marker of ERROR_MARKERS) {
-      if (body.includes(marker)) fail(route.name, `error boundary (${marker}) após reload`);
+    if (isMissingEntity) {
+      if (!/404|could not be found/i.test(body)) fail(route.name, "404 após reload");
+    } else {
+      for (const marker of ERROR_MARKERS) {
+        if (body.includes(marker)) fail(route.name, `error boundary (${marker}) após reload`);
+      }
     }
     await page.screenshot({ path: shot.replace(".png", "-reload.png"), fullPage: false });
     results.push({ route: route.name, url: page.url().replace(BASE, ""), shot });

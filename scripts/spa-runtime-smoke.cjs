@@ -40,9 +40,16 @@ function fail(step, message) {
   await page.waitForURL("**/dashboard**", { timeout: 30000 });
   console.log("OK login -> " + page.url());
 
-  // 4. Dashboard renderizou o layout (navegação do dashboard).
+  // 4. Dashboard renderizou o layout E o conteúdo da página (não só o header).
   await page.waitForSelector("a[href*='/dashboard/']", { timeout: 30000 });
-  console.log("OK dashboard layout renderizou");
+  const dashboardContent = await page.evaluate(() => {
+    const area = document.querySelector("main div.overflow-y-auto");
+    return area ? { text: (area.innerText || "").trim(), html: area.innerHTML.length } : null;
+  });
+  if (!dashboardContent || dashboardContent.html < 400 || dashboardContent.text.length < 10) {
+    fail("dashboard", "conteúdo da página vazio (layout sem Outlet?)");
+  }
+  console.log("OK dashboard layout e conteúdo renderizaram");
 
   // 5. Deep link + reload em rota aninhada mantém sessão e página.
   await page.goto(BASE + "/dashboard/providers", { waitUntil: "load", timeout: 60000 });
