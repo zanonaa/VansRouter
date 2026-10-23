@@ -6,6 +6,7 @@ import Modal, { ConfirmModal } from "@/shared/components/Modal";
 import LanguageSwitcher from "@/shared/components/LanguageSwitcher";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { cn } from "@/shared/utils/cn";
+import { useAppVersion } from "@/shared/hooks/useAppVersion";
 import { APP_CONFIG } from "@/shared/constants/config";
 import { LOCALE_COOKIE, normalizeLocale } from "@/i18n/config";
 import { LOCALE_FLAGS } from "@/shared/constants/locales";
@@ -20,6 +21,7 @@ function getLocaleFromCookie() {
 }
 
 export default function ProfilePage() {
+  const versionInfo = useAppVersion();
   const { theme, setTheme, isDark } = useTheme();
   const [locale, setLocale] = useState("en");
   const [langOpen, setLangOpen] = useState(false);
@@ -1127,7 +1129,7 @@ export default function ProfilePage() {
 
         {/* App Info */}
         <div className="text-center text-xs sm:text-sm text-text-muted py-4">
-          <p>{APP_CONFIG.name} v{APP_CONFIG.version}</p>
+          <p>{APP_CONFIG.name} {versionInfo ? `v${versionInfo.currentVersion}` : "—"}</p>
           <p className="mt-1">Local Mode - All data stored on your machine</p>
         </div>
       </div>
