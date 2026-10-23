@@ -53,11 +53,12 @@ describe("Database location & fallback path rules", () => {
     expect(service.image).not.toContain(":latest");
 
     const dockerfile = read("Dockerfile");
-    expect(dockerfile).toContain("COPY docker/migrate-legacy-volume.cjs");
     expect(dockerfile).toContain("COPY docker/entrypoint.sh");
     const entrypoint = read("docker/entrypoint.sh");
-    expect(entrypoint).toContain("migrate-legacy-volume.cjs");
-    expect(entrypoint).toContain("exec su-exec node");
+    expect(entrypoint).toContain("exec su-exec app");
+    // Fase 6: a migração do volume legado roda dentro do binário Go no boot.
+    expect(read("backend/internal/database/legacy_migration.go")).toContain("func MigrateLegacyVolume");
+    expect(dockerfile).not.toContain("migrate-legacy-volume.cjs");
     expect(read(".env.example")).toContain("INITIAL_PASSWORD=");
     expect(read(".env.example")).not.toContain("INITIAL_PASSWORD=123456");
   });

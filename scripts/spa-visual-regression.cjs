@@ -7,7 +7,8 @@ const { chromium } = require("playwright-core");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const BASE = process.env.SAME_ORIGIN === "0" ? "http://localhost:20129" : "http://localhost:20128";
+const PORT = process.env.SPA_PORT || "20128";
+const BASE = process.env.SAME_ORIGIN === "0" ? "http://localhost:20129" : `http://localhost:${PORT}`;
 const PASSWORD = "Smoke-Test-2026!Strong";
 const shotsDir = process.argv.includes("--shots")
   ? path.resolve(process.argv[process.argv.indexOf("--shots") + 1])

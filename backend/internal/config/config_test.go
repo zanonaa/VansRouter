@@ -20,6 +20,10 @@ func TestLoad(t *testing.T) {
 		{"configuração explícita", map[string]string{"PORT": "20228", "DATA_DIR": "/dados/router", "SQLITE_SYNCHRONOUS": "full"}, false},
 		{"spa inexistente", map[string]string{"SPA_DIR": "/caminho/que/nao/existe"}, true},
 		{"spa em arquivo", map[string]string{"SPA_DIR": "/etc/hosts"}, true},
+		{"segredo placeholder em produção", map[string]string{"NODE_ENV": "production", "JWT_SECRET": "change-me"}, true},
+		{"segredo placeholder api key em produção", map[string]string{"NODE_ENV": "production", "API_KEY_SECRET": "ChangeMe"}, true},
+		{"segredo forte em produção", map[string]string{"NODE_ENV": "production", "JWT_SECRET": "um-segredo-real-longo"}, false},
+		{"segredo placeholder fora de produção", map[string]string{"JWT_SECRET": "changeme"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
