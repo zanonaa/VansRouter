@@ -48,13 +48,22 @@ func TestConvertClaudeResponsePreservesToolCallsAndUsage(t *testing.T) {
 		}
 	}
 }
-func TestCrossFormatStreamIsExplicitUntilImplemented(t *testing.T) {
+func TestResponsesStreamConvertsGemini(t *testing.T) {
 	g := gatewayModelsFixture(t)
 	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
-	g.Send = &TranslatorSend{}
+	g.Send = &TranslatorSend{
+		Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}},
+		Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 200,
+				Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
+				Body:       io.NopCloser(strings.NewReader("data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"hello\"}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":3,\"candidatesTokenCount\":2,\"totalTokenCount\":5}}\n\n")),
+			}, nil
+		})},
+	}
 	w := httptest.NewRecorder()
 	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/responses", strings.NewReader(`{"model":"gemini/gemini-model","stream":true,"input":"hello"}`)))
-	if w.Code != 501 || !strings.Contains(w.Body.String(), "Streaming conversion") {
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "response.output_text.delta") || !strings.Contains(w.Body.String(), "hello") {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
 }

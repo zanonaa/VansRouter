@@ -187,23 +187,54 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		g.Send.SendCodex(w, r, provider, model, body, source, stream)
 		return
 	}
-	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
+	// Qualquer outro provider Responses (ex.: perplexity-agent) usa o executor
+	// genérico. Antes caía no NotPorted por não ser openai/claude/gemini.
+	if format == "openai-responses" {
+		g.Send.SendResponses(w, r, provider, model, body, source, stream)
+		return
+	}
+	// Ollama fala NDJSON em /api/chat, não SSE; o executor converte as duas
+	// direções (request OpenAI→Ollama e stream/non-stream Ollama→OpenAI).
+	if format == "ollama" {
+		g.Send.SendOllama(w, r, provider, model, body, source, stream)
+		return
+	}
+	// Cloud Code Assist (gemini-cli): corpo Gemini embrulhado e OAuth próprio.
+	if format == "gemini-cli" {
+		g.Send.SendGeminiCLI(w, r, provider, model, body, source, stream)
+		return
+	}
+	// Vertex AI: mesmo corpo Gemini, mas URL/auth por projeto ou API key.
+	if format == "vertex" {
+		g.Send.SendVertex(w, r, provider, model, body, source, stream)
+		return
+	}
+	// CommandCode usa /alpha/generate com NDJSON AI SDK v5.
+	if format == "commandcode" {
+		g.Send.SendCommandCode(w, r, provider, model, body, source, stream)
+		return
+	}
+	if provider == "" {
+		g.webError(w, 400, "Invalid model: use provider/model")
+		return
+	}
+	if format != "openai" && format != "claude" && format != "gemini" {
 		g.NotPorted(w, r)
 		return
 	}
 	if source != format {
-		if stream && !(source == "openai" && (format == "claude" || format == "gemini") || (source == "claude" || source == "openai-responses") && format == "openai") {
-			g.webError(w, 501, "Streaming conversion not implemented for this format pair")
+		if stream && !streamPairSupported(source, format) {
+			g.webError(w, 400, "Streaming conversion not supported for this format pair")
 			return
 		}
 		intermediate, err := translateSource(body, source)
 		if err != nil {
-			g.webError(w, 501, err.Error())
+			g.webError(w, 400, err.Error())
 			return
 		}
 		body, err = translateTarget(intermediate, format, model)
 		if err != nil {
-			g.webError(w, 501, err.Error())
+			g.webError(w, 400, err.Error())
 			return
 		}
 	}
@@ -225,6 +256,22 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	}
 	g.Send.Send(w, clone)
 }
+
+// streamPairSupported reflete a matriz de conversores de stream disponível.
+// OpenAI é o intermediário; Claude e Responses também convertem a partir de
+// respostas Gemini (gemini-cli/vertex) por toClaudeFromGemini/toResponsesFromGemini.
+func streamPairSupported(source, target string) bool {
+	switch source {
+	case "openai":
+		return target == "claude" || target == "gemini" || target == "openai-responses"
+	case "claude":
+		return target == "openai" || target == "gemini"
+	case "openai-responses":
+		return target == "openai" || target == "gemini"
+	}
+	return false
+}
+
 func filterToOpenAI(body map[string]any) map[string]any {
 	messages, ok := body["messages"].([]any)
 	if !ok {

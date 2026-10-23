@@ -24,6 +24,12 @@ func translateTarget(body map[string]any, format, model string) (map[string]any,
 	if format == "openai-responses" {
 		return openAIResponsesTarget(source, model)
 	}
+	if format == "ollama" {
+		return ollamaTarget(source, model, nodeTruthy(source["stream"]))
+	}
+	if format == "commandcode" {
+		return commandCodeTarget(source, model, nodeTruthy(source["stream"]))
+	}
 	messages, ok := source["messages"].([]any)
 	if !ok {
 		return nil, fmt.Errorf("messages must be an array")
