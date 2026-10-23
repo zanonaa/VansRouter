@@ -144,8 +144,22 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	provider, model := splitTranslatorModel(ttsString(body["model"]))
-	if provider != "" && !gatewayPermission(key, "allowedProviders", provider) {
+	modelID := ttsString(body["model"])
+	provider, model := splitTranslatorModel(modelID)
+	prefix := ""
+	if parts := strings.SplitN(modelID, "/", 2); len(parts) == 2 {
+		prefix = parts[0]
+	}
+	// Prefixos de provider-node (ex.: "da") são definidos pelo usuário e não
+	// existem no registry; a origem resolve o node antes de procurar conexão
+	// (src/sse/services/model.js getModelInfo). Sem isso o gateway procurava a
+	// conexão pelo prefixo e devolvia "No active connection for provider: da".
+	if provider != "" && prefix != "" {
+		if nodeID := g.providerNodeID(r.Context(), prefix); nodeID != "" {
+			provider = nodeID
+		}
+	}
+	if provider != "" && !g.providerAllowed(key, provider, prefix) {
 		g.webError(w, 403, `Provider "`+provider+`" is not allowed for this API key`)
 		return
 	}

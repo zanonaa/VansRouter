@@ -544,7 +544,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "gemini-3.8-flash-tiered(high)"
     },
     {
       "provider": "ag",
@@ -558,7 +559,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "gemini-3.8-flash-tiered(medium)"
     },
     {
       "provider": "ag",
@@ -572,7 +574,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "gemini-3.8-flash-tiered(low)"
     },
     {
       "provider": "ag",
@@ -586,7 +589,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "gemini-3.7-flash-tiered(high)"
     },
     {
       "provider": "ag",
@@ -600,7 +604,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "gemini-3.7-flash-tiered(medium)"
     },
     {
       "provider": "ag",
@@ -614,7 +619,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "gemini-3.7-flash-tiered(low)"
     },
     {
       "provider": "ag",
@@ -1048,7 +1054,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/anthropic/claude-fable-5"
     },
     {
       "provider": "blackbox",
@@ -1062,7 +1069,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/anthropic/claude-opus-4.8"
     },
     {
       "provider": "blackbox",
@@ -1076,7 +1084,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/anthropic/claude-sonnet-4.6"
     },
     {
       "provider": "blackbox",
@@ -1090,7 +1099,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/openai/gpt-5.5"
     },
     {
       "provider": "blackbox",
@@ -1104,7 +1114,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/openai/gpt-5.4-pro"
     },
     {
       "provider": "blackbox",
@@ -1118,7 +1129,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/openai/gpt-5.4"
     },
     {
       "provider": "blackbox",
@@ -1132,7 +1144,8 @@
         "reasoning": true,
         "contextWindow": 400000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/openai/gpt-5.3-codex"
     },
     {
       "provider": "blackbox",
@@ -1146,7 +1159,8 @@
         "reasoning": true,
         "contextWindow": 400000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "blackboxai/openai/gpt-5.4-nano"
     },
     {
       "provider": "blackbox",
@@ -1160,7 +1174,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 384000
-      }
+      },
+      "upstreamModelId": "blackboxai/deepseek/deepseek-v4-flash"
     },
     {
       "provider": "blackbox",
@@ -1174,7 +1189,8 @@
         "reasoning": true,
         "contextWindow": 256000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "blackboxai/x-ai/grok-4.3"
     },
     {
       "provider": "byteplus",
@@ -1692,7 +1708,8 @@
         "reasoning": true,
         "contextWindow": 200000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "cline-pass/glm-5.2"
     },
     {
       "provider": "clinepass",
@@ -1706,7 +1723,8 @@
         "reasoning": true,
         "contextWindow": 262144,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "cline-pass/kimi-k2.7-code"
     },
     {
       "provider": "clinepass",
@@ -1720,7 +1738,8 @@
         "reasoning": true,
         "contextWindow": 262144,
         "maxOutput": 262144
-      }
+      },
+      "upstreamModelId": "cline-pass/kimi-k2.6"
     },
     {
       "provider": "clinepass",
@@ -1734,7 +1753,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 50000
-      }
+      },
+      "upstreamModelId": "cline-pass/deepseek-v4-pro"
     },
     {
       "provider": "clinepass",
@@ -1748,7 +1768,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 50000
-      }
+      },
+      "upstreamModelId": "cline-pass/deepseek-v4-flash"
     },
     {
       "provider": "clinepass",
@@ -1762,7 +1783,8 @@
         "reasoning": false,
         "contextWindow": 1048576,
         "maxOutput": 131072
-      }
+      },
+      "upstreamModelId": "cline-pass/mimo-v2.5"
     },
     {
       "provider": "clinepass",
@@ -1776,7 +1798,8 @@
         "reasoning": false,
         "contextWindow": 1048576,
         "maxOutput": 131072
-      }
+      },
+      "upstreamModelId": "cline-pass/mimo-v2.5-pro"
     },
     {
       "provider": "clinepass",
@@ -1790,7 +1813,8 @@
         "reasoning": true,
         "contextWindow": 1048576,
         "maxOutput": 512000
-      }
+      },
+      "upstreamModelId": "cline-pass/minimax-m3"
     },
     {
       "provider": "clinepass",
@@ -1804,7 +1828,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "cline-pass/qwen3.7-max"
     },
     {
       "provider": "clinepass",
@@ -1818,7 +1843,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 65536
-      }
+      },
+      "upstreamModelId": "cline-pass/qwen3.7-plus"
     },
     {
       "provider": "cloudflare-ai",
@@ -2434,7 +2460,8 @@
         "reasoning": true,
         "contextWindow": 872000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-6-astra"
     },
     {
       "provider": "cx",
@@ -2462,7 +2489,8 @@
         "reasoning": true,
         "contextWindow": 872000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-6-sol"
     },
     {
       "provider": "cx",
@@ -2490,7 +2518,8 @@
         "reasoning": true,
         "contextWindow": 872000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-6-luna"
     },
     {
       "provider": "cx",
@@ -2518,7 +2547,8 @@
         "reasoning": true,
         "contextWindow": 872000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-sol"
     },
     {
       "provider": "cx",
@@ -2532,7 +2562,8 @@
         "reasoning": true,
         "contextWindow": 372000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-sol"
     },
     {
       "provider": "cx",
@@ -2560,7 +2591,8 @@
         "reasoning": true,
         "contextWindow": 872000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-terra"
     },
     {
       "provider": "cx",
@@ -2574,7 +2606,8 @@
         "reasoning": true,
         "contextWindow": 272000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-terra"
     },
     {
       "provider": "cx",
@@ -2602,7 +2635,8 @@
         "reasoning": true,
         "contextWindow": 872000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-luna"
     },
     {
       "provider": "cx",
@@ -2616,7 +2650,8 @@
         "reasoning": true,
         "contextWindow": 272000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-luna"
     },
     {
       "provider": "cx",
@@ -2644,7 +2679,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.5"
     },
     {
       "provider": "cx",
@@ -2686,7 +2722,8 @@
         "reasoning": false,
         "contextWindow": 200000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "codex-auto-review"
     },
     {
       "provider": "cx",
@@ -3862,7 +3899,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 384000
-      }
+      },
+      "upstreamModelId": "deepseek-v4-pro"
     },
     {
       "provider": "deepseek",
@@ -3876,7 +3914,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 384000
-      }
+      },
+      "upstreamModelId": "deepseek-v4-pro"
     },
     {
       "provider": "deepseek",
@@ -5290,7 +5329,8 @@
         "reasoning": true,
         "contextWindow": 500000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "grok-4.5"
     },
     {
       "provider": "gcli",
@@ -5304,7 +5344,8 @@
         "reasoning": true,
         "contextWindow": 500000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "grok-4.5"
     },
     {
       "provider": "gcli",
@@ -5318,7 +5359,8 @@
         "reasoning": true,
         "contextWindow": 500000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "grok-4.5"
     },
     {
       "provider": "grok-web",
@@ -7124,7 +7166,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-sol"
     },
     {
       "provider": "kr",
@@ -7138,7 +7181,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-terra"
     },
     {
       "provider": "kr",
@@ -7152,7 +7196,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-luna"
     },
     {
       "provider": "kr",
@@ -7208,7 +7253,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-sol"
     },
     {
       "provider": "kr",
@@ -7222,7 +7268,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-terra"
     },
     {
       "provider": "kr",
@@ -7236,7 +7283,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-luna"
     },
     {
       "provider": "kr",
@@ -7292,7 +7340,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-sol"
     },
     {
       "provider": "kr",
@@ -7306,7 +7355,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-terra"
     },
     {
       "provider": "kr",
@@ -7320,7 +7370,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-luna"
     },
     {
       "provider": "kr",
@@ -7376,7 +7427,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-sol"
     },
     {
       "provider": "kr",
@@ -7390,7 +7442,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-terra"
     },
     {
       "provider": "kr",
@@ -7404,7 +7457,8 @@
         "reasoning": true,
         "contextWindow": 1050000,
         "maxOutput": 128000
-      }
+      },
+      "upstreamModelId": "gpt-5.6-luna"
     },
     {
       "provider": "llamagate",
@@ -12934,7 +12988,8 @@
         "reasoning": false,
         "contextWindow": 262144,
         "maxOutput": 131072
-      }
+      },
+      "upstreamModelId": "xiaomi/mimo-x-pro-preview"
     },
     {
       "provider": "xiaomi-mimo",
@@ -12948,7 +13003,8 @@
         "reasoning": false,
         "contextWindow": 262144,
         "maxOutput": 131072
-      }
+      },
+      "upstreamModelId": "xiaomi/mimo-x-flash-preview"
     },
     {
       "provider": "xiaomi-tokenplan",
@@ -12976,7 +13032,8 @@
         "reasoning": true,
         "contextWindow": 200000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "mimo-v2.5-pro"
     },
     {
       "provider": "xiaomi-tokenplan",
@@ -17316,7 +17373,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "deepseek-ai/deepseek-v4.1-flash"
     },
     {
       "provider": "hive",
@@ -17330,7 +17388,8 @@
         "reasoning": true,
         "contextWindow": 1000000,
         "maxOutput": 64000
-      }
+      },
+      "upstreamModelId": "zai-org/glm-5.3-flash"
     },
     {
       "provider": "dahl",
