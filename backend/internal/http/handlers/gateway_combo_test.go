@@ -15,7 +15,7 @@ import (
 func TestChatComboFallbackAndStickyRotation(t *testing.T) {
 	g := gatewayModelsFixture(t)
 	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
-	_, err := g.DB.Exec(`CREATE TABLE combos(id TEXT PRIMARY KEY,name TEXT,kind TEXT,models TEXT,context_length REAL,createdAt TEXT,updatedAt TEXT);INSERT INTO combos VALUES('combo','bundle','llm','["openai/first","openai/second"]',NULL,'now','now');`)
+	_, err := g.DB.Exec(`CREATE TABLE IF NOT EXISTS combos(id TEXT PRIMARY KEY,name TEXT,kind TEXT,models TEXT,context_length REAL,createdAt TEXT,updatedAt TEXT);INSERT INTO combos VALUES('combo','bundle','llm','["openai/first","openai/second"]',NULL,'now','now');`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestChatComboFallbackAndStickyRotation(t *testing.T) {
 }
 func TestComboPermissionBlocksBeforeCandidate(t *testing.T) {
 	g := gatewayModelsFixture(t)
-	g.DB.Exec(`CREATE TABLE combos(id TEXT PRIMARY KEY,name TEXT,kind TEXT,models TEXT,context_length REAL,createdAt TEXT,updatedAt TEXT);INSERT INTO combos VALUES('c','bundle','llm','["openai/model"]',NULL,'now','now');`)
+	g.DB.Exec(`CREATE TABLE IF NOT EXISTS combos(id TEXT PRIMARY KEY,name TEXT,kind TEXT,models TEXT,context_length REAL,createdAt TEXT,updatedAt TEXT);INSERT INTO combos VALUES('c','bundle','llm','["openai/model"]',NULL,'now','now');`)
 	key, err := database.CreateApiKey(context.Background(), g.DB, "combo", "machine")
 	if err != nil {
 		t.Fatal(err)
