@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main, master, dev]
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Tag da imagem a publicar (ghcr.io/zanonaa/vansrouter:<tag>)"
+        required: false
+        default: "dev-arm64"
+      platforms:
+        description: "Plataformas do build manual"
+        required: false
+        default: "linux/arm64"
 
 permissions:
   contents: read
@@ -94,6 +103,22 @@ jobs:
             ${{ env.GHCR_IMAGE }}:${{ github.sha }}
           build-args: |
             APP_VERSION=${{ steps.version.outputs.version }}
+            VCS_REF=${{ github.sha }}
+          provenance: false
+          sbom: false
+
+      # Publicação manual (workflow_dispatch): imagem de um branch específico
+      # para ambientes de desenvolvimento — por padrão apenas linux/arm64.
+      - name: Publish branch image (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: ${{ inputs.platforms || 'linux/arm64' }}
+          push: true
+          tags: ${{ env.GHCR_IMAGE }}:${{ inputs.image_tag || 'dev-arm64' }}
+          build-args: |
+            APP_VERSION=${{ inputs.image_tag || 'dev-arm64' }}
             VCS_REF=${{ github.sha }}
           provenance: false
           sbom: false

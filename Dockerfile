@@ -22,14 +22,17 @@ COPY public ./public
 COPY open-sse ./open-sse
 RUN pnpm run build && test -f dist/index.html
 
-# Step 2: build do backend Go.
+# Step 2: build do backend Go. Cross-compile nativo: o stage roda na
+# plataforma do builder (BUILDPLATFORM) e GOARCH compila para o alvo — arm64
+# sai sem emulação QEMU.
 # Digest multi-arch do manifest verificado no Docker Hub (Fase 6).
-FROM golang:1.25-alpine@sha256:1ae0735f00daffa3aaf1363a5184c0d2dc55c78e3db4ec70241cdac97bf84b59 AS go-builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine@sha256:1ae0735f00daffa3aaf1363a5184c0d2dc55c78e3db4ec70241cdac97bf84b59 AS go-builder
+ARG TARGETARCH
 WORKDIR /src
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 COPY backend ./
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
+RUN CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
 
 # Step 3: runner alpine puro: binário Go + dist. A migração do volume legado
 # roda dentro do binário no boot (backend/internal/database/legacy_migration.go).
