@@ -4,7 +4,8 @@
 // Nota: waitUntil "load" (networkidle nunca ocorre com o WebSocket do HMR).
 const { chromium } = require("playwright-core");
 
-const BASE = process.env.SAME_ORIGIN === "1" ? "http://localhost:20128" : "http://localhost:20129";
+const PORT = process.env.SPA_PORT || "20128";
+const BASE = process.env.SAME_ORIGIN === "1" ? `http://localhost:${PORT}` : "http://localhost:20129";
 const PASSWORD = "Smoke-Test-2026!Strong";
 
 function fail(step, message) {

@@ -44,6 +44,27 @@ jobs:
       - name: Run JavaScript tests
         run: pnpm test
 
+      # Fase 6: build Vite e verificação de que nenhum segredo vaza no bundle.
+      - name: Build SPA and scan bundle for secrets
+        run: |
+          pnpm exec vite build
+          node scripts/check-spa-secrets.cjs
+
+      # Fase 6: composição Go+SPA pela mesma origem validada sem navegador
+      # (regressão visual completa: scripts/spa-visual-regression.cjs, local).
+      - name: Static integration smoke (Go serves SPA)
+        run: |
+          cd backend && go build -o /tmp/vansrouter-ci ./cmd/api && cd ..
+          SPA_DIR="$PWD/dist" PORT=20131 DATA_DIR="$(mktemp -d)" JWT_SECRET=ci-secret \
+            /tmp/vansrouter-ci & SERVER=$!
+          for i in $(seq 1 20); do curl -sf http://localhost:20131/api/health >/dev/null && break; sleep 1; done
+          curl -sf http://localhost:20131/api/health
+          curl -sf http://localhost:20131/dashboard | grep -q '<div id="root">'
+          ASSET=$(curl -s http://localhost:20131/dashboard | grep -o '/assets/[^"]*\.js' | head -1)
+          curl -sf "http://localhost:20131${ASSET}" >/dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:20131/api/rota-que-nao-existe)" != "200"
+          kill $SERVER
+
       # Dockerfile runs the Vite SPA build; do not build the app a second time here.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -31,6 +32,12 @@ func run() error {
 		return err
 	}
 	startup, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Fase 6: migração do volume legado antes de abrir o banco (porta do
+	// antigo docker/migrate-legacy-volume.cjs). Falha aborta o boot.
+	if _, err := database.MigrateLegacyVolume(cfg.DataDir); err != nil {
+		cancel()
+		return fmt.Errorf("migrar volume legado: %w", err)
+	}
 	db, err := database.Open(startup, cfg.DataDir, cfg.Synchronous)
 	cancel()
 	if err != nil {

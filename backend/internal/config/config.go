@@ -70,5 +70,34 @@ func load(env func(string) string, home func() (string, error), platform string)
 			return Config{}, fmt.Errorf("SPA_DIR deve ser um diretório existente com o build da SPA")
 		}
 	}
+	if err := assertProductionSecrets(env); err != nil {
+		return Config{}, err
+	}
 	return Config{Address: ":" + port, DataDir: dir, Synchronous: mode, SPADir: spaDir}, nil
+}
+
+// placeHolderSecrets replica runtime-secrets.cjs: em produção, segredos com
+// valor de placeholder conhecido abortam o boot em vez de rodar expostos.
+var placeHolderSecrets = map[string]bool{
+	"change-me-to-a-long-random-secret": true,
+	"change-me-in-production":           true,
+	"change-me":                         true,
+	"changeme":                          true,
+	"password":                          true,
+}
+
+func assertProductionSecrets(env func(string) string) error {
+	if env("NODE_ENV") != "production" {
+		return nil
+	}
+	invalid := []string{}
+	for _, name := range []string{"JWT_SECRET", "API_KEY_SECRET"} {
+		if placeHolderSecrets[strings.ToLower(strings.TrimSpace(env(name)))] {
+			invalid = append(invalid, name)
+		}
+	}
+	if len(invalid) > 0 {
+		return fmt.Errorf("[config] Replace placeholder production secret(s): %s", strings.Join(invalid, ", "))
+	}
+	return nil
 }
