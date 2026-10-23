@@ -23,6 +23,7 @@ type streamConversion struct {
 	tools                 map[int]int
 	nextBlock             int
 	textBlock             int
+	serverTool            int
 	err                   error
 	responses             *responsesStream
 }
@@ -148,26 +149,43 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 			message, _ := event["message"].(map[string]any)
 			s.id = message["id"]
 			s.started = true
+			s.serverTool = -1
 			return s.openAIChunk(map[string]any{"role": "assistant", "content": ""}, nil)
 		case "content_block_start":
 			block, _ := event["content_block"].(map[string]any)
 			index := int(pxpipeNum(event["index"]))
-			if block["type"] == "tool_use" {
+			switch block["type"] {
+			case "server_tool_use":
+				// Ferramenta embutida (web search) executada no provider: a
+				// origem guarda o índice e descarta os deltas, sem emitir bloco.
+				s.serverTool = index
+			case "tool_use":
 				if s.tools == nil {
 					s.tools = map[int]int{}
 				}
 				toolIndex := len(s.tools)
 				s.tools[index] = toolIndex
 				return s.openAIChunk(map[string]any{"tool_calls": []any{map[string]any{"index": toolIndex, "id": block["id"], "type": "function", "function": map[string]any{"name": block["name"], "arguments": ""}}}}, nil)
-			}
-			if block["type"] != "text" {
-				return fmt.Errorf("Unsupported Claude streaming block: %v", block["type"])
+			case "text":
+				// O texto chega em text_delta; o bloco em si não gera chunk.
+			default:
+				// thinking/redacted_thinking: o conteúdo vem em thinking_delta e
+				// vira reasoning_content. Antes o gateway abortava o stream com
+				// "Unsupported Claude streaming block: thinking" (GLM emite
+				// thinking e o cliente OpenAI recebia event: error no meio).
 			}
 		case "content_block_delta":
+			if index := int(pxpipeNum(event["index"])); s.serverTool >= 0 && index == s.serverTool {
+				break
+			}
 			delta, _ := event["delta"].(map[string]any)
 			switch delta["type"] {
 			case "text_delta":
 				return s.openAIChunk(map[string]any{"content": delta["text"]}, nil)
+			case "thinking_delta":
+				if text := ttsString(delta["thinking"]); text != "" {
+					return s.openAIChunk(map[string]any{"reasoning_content": text}, nil)
+				}
 			case "input_json_delta":
 				index, ok := s.tools[int(pxpipeNum(event["index"]))]
 				if !ok {
@@ -175,7 +193,12 @@ func (s *streamConversion) toOpenAI(event map[string]any) error {
 				}
 				return s.openAIChunk(map[string]any{"tool_calls": []any{map[string]any{"index": index, "function": map[string]any{"arguments": delta["partial_json"]}}}}, nil)
 			default:
-				return fmt.Errorf("Unsupported Claude streaming delta: %v", delta["type"])
+				// signature_delta e outros metadados de thinking não têm
+				// equivalente OpenAI; a origem os ignora.
+			}
+		case "content_block_stop":
+			if index := int(pxpipeNum(event["index"])); s.serverTool >= 0 && index == s.serverTool {
+				s.serverTool = -1
 			}
 		case "message_delta":
 			delta, _ := event["delta"].(map[string]any)
