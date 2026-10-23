@@ -67,9 +67,20 @@ func (g *Gateway) Speech(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	config := providers.MediaConfigs()[provider].TTS
-	_, token, ok := g.mediaConnection(w, r, provider, config)
+	connection, token, ok := g.mediaConnection(w, r, provider, config)
 	if !ok {
 		return
+	}
+	if config.Format == "aws-polly" {
+		g.synthesizePolly(w, r, model, token, connection, body)
+		return
+	}
+	if config.Format == "openai-speech" {
+		// A conexão aponta a raiz do servidor, sem alterar o catálogo global.
+		copy := *config
+		metadata, _ := connection["providerSpecificData"].(map[string]any)
+		copy.BaseURL = strings.TrimRight(firstNonEmptyString(metadata["baseUrl"], config.BaseURL), "/") + "/v1/audio/speech"
+		config = &copy
 	}
 	if config.Format == "edge-tts" {
 		g.synthesizeEdge(w, r, model, body)
