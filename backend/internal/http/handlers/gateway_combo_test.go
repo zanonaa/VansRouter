@@ -94,3 +94,52 @@ func TestComboListedIdIsRoutable(t *testing.T) {
 		t.Fatalf("id listado não roteia: %d %s", w.Code, w.Body.String())
 	}
 }
+
+// A origem (open-sse/services/combo.js) devolve o status do PRIMEIRO candidato
+// que falhou e a mensagem do ÚLTIMO (lastStatus/lastError). Antes disso, o
+// combo zn-glm respondia 402 do Grok (fallback terminal) em vez do 429 real do
+// GLM, escondendo a quota esgotada do modelo primário.
+func TestComboAllFailedUsesFirstStatusAndLastMessage(t *testing.T) {
+	g := gatewayModelsFixture(t)
+	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
+	if _, err := g.DB.Exec(`INSERT INTO combos VALUES('c','bundle','llm','["openai/primary","openai/fallback"]',NULL,'now','now');`); err != nil {
+		t.Fatal(err)
+	}
+	g.Send = &TranslatorSend{Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		raw, _ := io.ReadAll(r.Body)
+		if strings.Contains(string(raw), `"model":"primary"`) {
+			return &http.Response{StatusCode: 429, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted"}}`))}, nil
+		}
+		return &http.Response{StatusCode: 402, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"error":"Grok Build usage balance exhausted"}`))}, nil
+	})}}
+	w := httptest.NewRecorder()
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/chat/completions", strings.NewReader(`{"model":"bundle","messages":[{"role":"user","content":"hi"}]}`)))
+	if w.Code != 429 {
+		t.Fatalf("status %d, esperado 429: %s", w.Code, w.Body.String())
+	}
+	if !strings.Contains(w.Body.String(), "Grok Build usage balance exhausted") {
+		t.Fatalf("mensagem do último candidato ausente: %s", w.Body.String())
+	}
+}
+
+// Quando um candidato bloqueia o fallback (400/422/499), a origem devolve a
+// resposta DELE, não o status de uma falha anterior que já caiu para o próximo.
+func TestComboBlockedCandidateReturnsItsOwnStatus(t *testing.T) {
+	g := gatewayModelsFixture(t)
+	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
+	if _, err := g.DB.Exec(`INSERT INTO combos VALUES('c','bundle','llm','["openai/primary","openai/blocked"]',NULL,'now','now');`); err != nil {
+		t.Fatal(err)
+	}
+	g.Send = &TranslatorSend{Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		raw, _ := io.ReadAll(r.Body)
+		if strings.Contains(string(raw), `"model":"primary"`) {
+			return &http.Response{StatusCode: 429, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"error":"rate limit"}`))}, nil
+		}
+		return &http.Response{StatusCode: 400, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"error":"context overflow"}`))}, nil
+	})}}
+	w := httptest.NewRecorder()
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/chat/completions", strings.NewReader(`{"model":"bundle","messages":[{"role":"user","content":"hi"}]}`)))
+	if w.Code != 400 {
+		t.Fatalf("status %d, esperado 400: %s", w.Code, w.Body.String())
+	}
+}
