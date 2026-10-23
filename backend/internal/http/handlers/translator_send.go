@@ -40,6 +40,10 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		fail(400, "provider, model, and body required")
 		return
 	}
+	// O cliente (e o /v1/models) usa o id roteado; alguns upstreams exigem outro
+	// id (ex.: ds/deepseek-v4-pro-max → deepseek-v4-pro). Sem esse mapa o seat do
+	// combo era rejeitado pelo provider ("unsupported model name").
+	model = providers.UpstreamModelID(provider, model)
 	connections, err := t.Connections.List(r.Context(), provider, nil)
 	if err != nil {
 		fail(500, err.Error())
