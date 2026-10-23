@@ -175,6 +175,12 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	// que pediram JSON — achado no teste real dos combos.
 	stream := body["stream"] == true
 	format := providers.TargetFormat(provider)
+	// grok-cli fala Responses API com stream forçado e fingerprint próprio;
+	// o executor dedicado cobre request, headers e fold para clientes JSON.
+	if provider == "grok-cli" && format == "openai-responses" {
+		g.Send.SendGrokCLI(w, r, provider, model, body, source, stream)
+		return
+	}
 	if provider == "" || format != "openai" && format != "claude" && format != "gemini" {
 		g.NotPorted(w, r)
 		return

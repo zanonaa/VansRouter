@@ -70,6 +70,67 @@ func convertChatResponse(native map[string]any, from, to, model string) (map[str
 	id := native["id"]
 	usage := map[string]any{}
 	switch from {
+	case "openai-responses":
+		output, _ := native["output"].([]any)
+		reasoning := ""
+		calls := []any{}
+		for _, raw := range output {
+			item, _ := raw.(map[string]any)
+			if item == nil {
+				continue
+			}
+			switch item["type"] {
+			case "reasoning":
+				summary, _ := item["summary"].([]any)
+				for _, rawPart := range summary {
+					part, _ := rawPart.(map[string]any)
+					if part["type"] == "summary_text" {
+						reasoning += ttsString(part["text"])
+					}
+				}
+			case "message":
+				// A resposta final é o último bloco de mensagem não vazio
+				// (reasoning/mensagens intermediárias podem vir antes).
+				text := ""
+				content, _ := item["content"].([]any)
+				for _, rawPart := range content {
+					part, _ := rawPart.(map[string]any)
+					if part["type"] == "output_text" {
+						text += ttsString(part["text"])
+					}
+				}
+				if text != "" {
+					message["content"] = text
+				}
+			case "function_call":
+				arguments := item["arguments"]
+				if text, ok := arguments.(string); ok {
+					arguments = text
+				} else if arguments == nil {
+					arguments = "{}"
+				} else {
+					encoded, _ := json.Marshal(arguments)
+					arguments = string(encoded)
+				}
+				calls = append(calls, map[string]any{
+					"id": item["call_id"], "type": "function",
+					"function": map[string]any{"name": item["name"], "arguments": arguments},
+				})
+			}
+		}
+		if reasoning != "" {
+			message["reasoning_content"] = reasoning
+		}
+		if len(calls) > 0 {
+			message["tool_calls"] = calls
+			finish = "tool_calls"
+		}
+		if ttsString(native["status"]) == "incomplete" {
+			finish = "length"
+		}
+		if usageRaw, ok := native["usage"].(map[string]any); ok {
+			usage = responsesUsageOpenAI(usageRaw)
+		}
 	case "openai":
 		choices, ok := native["choices"].([]any)
 		if !ok || len(choices) == 0 {

@@ -84,7 +84,7 @@ describe("release hardening contracts", () => {
     const getStarted = read("src/app/landing/components/GetStarted.js");
     const navigation = read("src/app/landing/components/Navigation.js");
     expect(getStarted).toContain("docker run");
-    expect(getStarted).toContain("ghcr.io/zanonaa/vansrouter:1.2.0");
+    expect(getStarted).toContain("ghcr.io/zanonaa/vansrouter:2.0.0");
     expect(getStarted).toContain("/masuk");
     expect(navigation).toContain("VansRouter");
   });

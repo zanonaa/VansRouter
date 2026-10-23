@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0
+
+- Go gateway: executor do Grok CLI (gcli) no transporte Responses API, com conversão de stream, fold para clientes JSON e fingerprint de sessão/turno do CLI oficial.
+
 ## 1.2.0
 
 - Remove CLI Tools, MITM, MCP bridge, bundled Tunnel/Tailscale, and generated Cursor/Claude combo presets. Manual combo creation remains.
