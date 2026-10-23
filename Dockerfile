@@ -16,11 +16,16 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,target=/pnpm/store \
   pnpm install --frozen-lockfile --store-dir=/pnpm/store
 
-COPY index.html vite.config.js ./
+# postcss.config.mjs registra o @tailwindcss/postcss: sem ele o Vite só resolve
+# @import "tailwindcss" como CSS estático e o bundle fica sem as utilitárias
+# (a UI sobe "sem estilo"). O config lê o próprio diretório como base do scan.
+COPY index.html vite.config.js postcss.config.mjs ./
 COPY src ./src
 COPY public ./public
 COPY open-sse ./open-sse
-RUN pnpm run build && test -f dist/index.html
+RUN pnpm run build && test -f dist/index.html \
+  && grep -q '\.flex{' dist/assets/*.css \
+  && grep -q '\.grid{' dist/assets/*.css
 
 # Step 2: build do backend Go. Cross-compile nativo: o stage roda na
 # plataforma do builder (BUILDPLATFORM) e GOARCH compila para o alvo — arm64
