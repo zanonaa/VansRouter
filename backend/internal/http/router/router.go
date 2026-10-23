@@ -35,6 +35,9 @@ func NewWithSPA(ready handlers.Readiness, authentication *auth.HTTP, nodes *hand
 	r := chi.NewRouter()
 	r.Use(legacyRewrites)
 	r.Use(middleware.Recoverer)
+	if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Console != nil {
+		r.Use(providerAPI[0].Console.Middleware)
+	}
 	if authentication != nil {
 		r.Use(authentication.Middleware)
 	}
