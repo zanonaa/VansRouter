@@ -111,6 +111,33 @@ func (g *Gateway) catalogModels(w http.ResponseWriter, r *http.Request) {
 	}
 	data := []map[string]any{}
 	seen := map[string]bool{}
+	// Combos primeiro, como na origem (src/sse/services/allowedModels.js): são
+	// modelos virtuais que o cliente OpenAI-compatible precisa enxergar para
+	// selecioná-los. Sem isso o /v1/models só listava o catálogo dos providers.
+	combos, err := (database.Combos{DB: g.DB}).List(r.Context())
+	if err != nil {
+		nodeReply(w, 500, map[string]any{"error": map[string]any{"message": err.Error(), "type": "server_error"}})
+		return
+	}
+	for _, combo := range combos {
+		name, kind := ttsString(combo["name"]), ttsString(combo["kind"])
+		if name == "" || (kind != "" && kind != "llm") {
+			continue
+		}
+		if !gatewayPermission(key, "allowedCombos", name) {
+			continue
+		}
+		id := "combo/" + name
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		entry := map[string]any{"id": id, "object": "model", "owned_by": "combo"}
+		if length, ok := combo["context_length"].(float64); ok {
+			entry["context_length"] = length
+		}
+		data = append(data, entry)
+	}
 	for _, model := range providers.CatalogModels().Models {
 		provider, id := ttsString(model["provider"]), ttsString(model["model"])
 		if !enabled[provider] || id == "" || !gatewayPermission(key, "allowedProviders", provider) || !gatewayPermission(key, "allowedKinds", "llm") {

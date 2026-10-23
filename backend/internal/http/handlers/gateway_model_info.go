@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/zanonaa/VansRouter/backend/internal/database"
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
 )
 
@@ -55,6 +56,29 @@ func (g *Gateway) ModelsByKind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := []map[string]any{}
+	combos, err := (database.Combos{DB: g.DB}).List(r.Context())
+	if err != nil {
+		nodeReply(w, 500, map[string]any{"error": map[string]any{"message": err.Error(), "type": "server_error"}})
+		return
+	}
+	for _, combo := range combos {
+		name, kind := ttsString(combo["name"]), ttsString(combo["kind"])
+		// Combo sem kind é LLM e só aparece em /models; /models/{kind} cobre mídia.
+		if name == "" || kind == "" || !gatewayPermission(key, "allowedCombos", name) {
+			continue
+		}
+		selected := false
+		for _, candidate := range kinds {
+			if candidate == kind {
+				selected = true
+				break
+			}
+		}
+		if !selected {
+			continue
+		}
+		data = append(data, map[string]any{"id": "combo/" + name, "object": "model", "kind": kind, "owned_by": "combo"})
+	}
 	for _, entry := range providers.ModelInfo() {
 		provider, kind := ttsString(entry["provider"]), ttsString(entry["kind"])
 		selected := false
