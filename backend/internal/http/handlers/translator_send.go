@@ -61,6 +61,7 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		fail(400, "No active connection for provider: "+provider)
 		return
 	}
+	usageSelected(r.Context(), connection)
 	format := providers.TargetFormat(provider)
 	if format != "openai" && format != "claude" && format != "gemini" && format != "openai-responses" && format != "ollama" && format != "commandcode" {
 		fail(501, "Translator executor not ported for provider: "+provider)
@@ -84,6 +85,16 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		outbound[key] = value
 	}
 	outbound["model"] = model
+	if _, tracking := r.Context().Value(usageContextKey{}).(*requestUsage); tracking && format == "openai" && body["stream"] == true {
+		options := map[string]any{}
+		if existing, ok := body["stream_options"].(map[string]any); ok {
+			for key, value := range existing {
+				options[key] = value
+			}
+		}
+		options["include_usage"] = true
+		outbound["stream_options"] = options
+	}
 	// This endpoint receives the target-format body produced by translator step
 	// three. Preserve all turns, tools, system instructions and generation options.
 	if format == "gemini" {

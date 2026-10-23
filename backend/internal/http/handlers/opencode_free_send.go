@@ -65,9 +65,16 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 	for key, value := range headers {
 		request.Header.Set(key, value)
 	}
-	client := t.Client
-	if client == nil {
-		client = http.DefaultClient
+	metadata, _ := connection["providerSpecificData"].(map[string]any)
+	client, relay, cleanup, err := connectionHTTP(ctx, metadata, t.GetPool, t.Client)
+	if err != nil {
+		fail(502, err.Error())
+		return
+	}
+	defer cleanup()
+	if err := rewriteConnectionRelay(request, relay); err != nil {
+		fail(502, err.Error())
+		return
 	}
 	response, err := client.Do(request)
 	if err != nil {
