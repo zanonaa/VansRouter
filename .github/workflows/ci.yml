@@ -90,7 +90,14 @@ jobs:
 
       - name: Read version
         id: version
-        run: node -e 'console.log(`version=${require("./package.json").version}`)' >> "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          base="$(node -p "require('./package.json').version")"
+          # 2.0.0 + número da execução => 2.0.<build>. Cada build publica uma
+          # versão estritamente maior (inclusive na branch de migração) sem
+          # precisar commitar bump em package.json.
+          echo "version=${base%.*}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "release=${base}" >> "$GITHUB_OUTPUT"
 
       - name: Build and publish multi-architecture image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -120,7 +127,7 @@ jobs:
           push: true
           tags: ${{ env.GHCR_IMAGE }}:${{ (github.event_name == 'workflow_dispatch' && inputs.image_tag) || 'dev-go-arm64' }}
           build-args: |
-            APP_VERSION=${{ (github.event_name == 'workflow_dispatch' && inputs.image_tag) || 'dev-go-arm64' }}
+            APP_VERSION=${{ steps.version.outputs.version }}
             VCS_REF=${{ github.sha }}
           provenance: false
           sbom: false
