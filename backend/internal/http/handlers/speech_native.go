@@ -27,7 +27,7 @@ func speechPlan(provider, model, text, token string, cfg *providers.MediaConfig)
 		modelID, voice = parts[0], parts[1]
 	}
 	switch cfg.Format {
-	case "openai":
+	case "openai", "openai-speech":
 		if provider == "openai" {
 			if modelID == "" {
 				modelID = "tts-1"
@@ -124,6 +124,17 @@ func (g *Gateway) synthesizeNative(w http.ResponseWriter, r *http.Request, provi
 	if err != nil {
 		g.webError(w, 501, err.Error())
 		return
+	}
+	if config.Format == "openai-speech" {
+		payload["response_format"] = "mp3"
+		payload["speed"] = 1.0
+		if requested := ttsString(body["response_format"]); requested != "" && requested != "json" {
+			payload["response_format"] = requested
+			format = requested
+		}
+		if speed, ok := body["speed"]; ok {
+			payload["speed"] = speed
+		}
 	}
 	encoded, err := json.Marshal(payload)
 	if err != nil {
