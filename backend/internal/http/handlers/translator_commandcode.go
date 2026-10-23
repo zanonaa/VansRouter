@@ -364,6 +364,7 @@ func (t *TranslatorSend) SendCommandCode(w http.ResponseWriter, r *http.Request,
 		fail(400, "No active connection for provider: "+provider)
 		return
 	}
+	usageSelected(r.Context(), connection)
 	intermediate := body
 	if source != "openai" {
 		intermediate, err = translateSource(body, source)

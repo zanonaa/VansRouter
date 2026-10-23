@@ -55,6 +55,13 @@ func connectionHTTP(ctx context.Context, data map[string]any, lookup connectionP
 		client.Transport = transport
 		cleanup = transport.CloseIdleConnections
 	}
+	if usage, ok := ctx.Value(usageContextKey{}).(*requestUsage); ok {
+		transport := client.Transport
+		if transport == nil {
+			transport = http.DefaultTransport
+		}
+		client.Transport = usageTransport{base: transport, usage: usage}
+	}
 	return &client, relay, cleanup, nil
 }
 func connectionNoProxyMatches(host, list string) bool {

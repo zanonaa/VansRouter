@@ -1056,6 +1056,7 @@ func (t *TranslatorSend) SendCodex(w http.ResponseWriter, r *http.Request, provi
 		fail(400, "No active connection for provider: "+provider)
 		return
 	}
+	usageSelected(r.Context(), connection)
 	var intermediate map[string]any
 	if source == "openai" {
 		intermediate, err = translateSource(body, source)

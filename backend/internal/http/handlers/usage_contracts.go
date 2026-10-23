@@ -17,6 +17,7 @@ type usageConnectionStore interface {
 type UsageContracts struct {
 	Connections    usageConnectionStore
 	DB             *sql.DB
+	LiveUsage      *UsageLive
 	Client         *http.Client
 	claudeMu       sync.Mutex
 	claudeCache    map[[32]byte]*claudeUsageCacheEntry
@@ -34,23 +35,12 @@ func (u *UsageContracts) Stats(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 400, map[string]any{"error": "Invalid period"})
 		return
 	}
-	days := map[string]int{"today": 1, "24h": 1, "7d": 7, "30d": 30, "60d": 60}[period]
-	start := time.Time{}
-	if days > 0 {
-		start = time.Now().AddDate(0, 0, -days)
-	}
-	rows, err := u.DB.QueryContext(r.Context(), "SELECT COUNT(*),COALESCE(SUM(promptTokens),0),COALESCE(SUM(completionTokens),0),COALESCE(SUM(cost),0) FROM usageHistory WHERE (?='' OR timestamp>=?)", start.UTC().Format(time.RFC3339Nano), start.UTC().Format(time.RFC3339Nano))
+	stats, err := u.usageStats(r, period)
 	if err != nil {
 		nodeReply(w, 500, map[string]any{"error": "Failed to fetch usage stats"})
 		return
 	}
-	defer rows.Close()
-	var count, prompt, completion int64
-	var cost float64
-	if rows.Next() {
-		rows.Scan(&count, &prompt, &completion, &cost)
-	}
-	nodeReply(w, 200, map[string]any{"period": period, "totalRequests": count, "totalPromptTokens": prompt, "totalCompletionTokens": completion, "totalCost": cost})
+	nodeReply(w, 200, stats)
 }
 func (u *UsageContracts) connection(w http.ResponseWriter, r *http.Request) (map[string]any, bool) {
 	item, err := u.Connections.Get(r.Context(), chi.URLParam(r, "connectionId"))

@@ -547,6 +547,7 @@ func (t *TranslatorSend) SendGrokCLI(w http.ResponseWriter, r *http.Request, pro
 		fail(400, "No active connection for provider: "+provider)
 		return
 	}
+	usageSelected(r.Context(), connection)
 	intermediate, err := translateSource(body, source)
 	if err != nil {
 		fail(501, err.Error())

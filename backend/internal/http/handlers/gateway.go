@@ -18,6 +18,7 @@ type Gateway struct {
 	DB                *sql.DB
 	Client            *http.Client
 	Send              *TranslatorSend
+	LiveUsage         *UsageLive
 	googleSpeechMu    sync.Mutex
 	googleSpeechCache googleSpeechToken
 	googleSpeechIndex uint64
@@ -162,6 +163,14 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	if provider != "" && !g.providerAllowed(key, provider, prefix) {
 		g.webError(w, 403, `Provider "`+provider+`" is not allowed for this API key`)
 		return
+	}
+	if provider != "" {
+		usage := &requestUsage{provider: provider, model: model, live: g.LiveUsage}
+		if usage.live != nil {
+			usage.live.Track(model, provider, "", true, false)
+		}
+		r = r.WithContext(context.WithValue(r.Context(), usageContextKey{}, usage))
+		defer g.finishUsage(r, usage)
 	}
 	source := detectRequestFormat(body)
 	if strings.Contains(r.URL.Path, "/v1/messages") {

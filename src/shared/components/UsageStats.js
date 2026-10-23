@@ -397,7 +397,7 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
     }
 
     const controller = new AbortController();
-    fetch(`/api/usage/stats?period=${period}`, { signal: controller.signal })
+    const refreshStats = () => fetch(`/api/usage/stats?period=${period}`, { signal: controller.signal, cache: "no-store" })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (controller.signal.aborted) return;
@@ -410,7 +410,10 @@ export default function UsageStats({ period: periodProp, setPeriod: setPeriodPro
       .finally(() => {
         if (!controller.signal.aborted) setLoadState({ loading: false, fetching: false });
       });
-    return () => controller.abort();
+    refreshStats();
+    // SSE updates active/recent requests; refresh aggregate totals separately.
+    const timer = setInterval(refreshStats, 10000);
+    return () => { controller.abort(); clearInterval(timer); };
   }, [period]);
   // SSE connection - real-time updates for activeRequests + recentRequests only
   useEffect(() => {
