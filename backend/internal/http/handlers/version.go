@@ -14,7 +14,15 @@ import (
 //go:embed app-version.txt
 var appVersion string
 
-func NewVersion() *Version { return &Version{Current: strings.TrimSpace(appVersion)} }
+func NewVersion() *Version {
+	current := strings.TrimSpace(appVersion)
+	// Permite que o compose/dev sobrescreva a versão embutida sem rebuild
+	// (ex.: VANSROUTER_VERSION=2.0.123 em um container de teste).
+	if override := strings.TrimSpace(os.Getenv("VANSROUTER_VERSION")); override != "" {
+		current = override
+	}
+	return &Version{Current: current}
+}
 
 // Version mantém cache/backoff e cliente injetável para testes sem rede externa.
 type Version struct {

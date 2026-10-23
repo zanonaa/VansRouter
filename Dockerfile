@@ -33,11 +33,16 @@ RUN pnpm run build && test -f dist/index.html \
 # Digest multi-arch do manifest verificado no Docker Hub (Fase 6).
 FROM --platform=$BUILDPLATFORM golang:1.25-alpine@sha256:1ae0735f00daffa3aaf1363a5184c0d2dc55c78e3db4ec70241cdac97bf84b59 AS go-builder
 ARG TARGETARCH
+# A versão calculada no CI precisa entrar no arquivo embutido por
+# //go:embed. Sem isso o binário sempre reportava 2.0.0 e o /api/version não
+# acompanhava o build publicado.
+ARG APP_VERSION=unknown
 WORKDIR /src
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 COPY backend ./
-RUN CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
+RUN if [ "$APP_VERSION" != "unknown" ]; then printf '%s\n' "$APP_VERSION" > internal/http/handlers/app-version.txt; fi \
+  && CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
 
 # Step 3: runner alpine puro: binário Go + dist. A migração do volume legado
 # roda dentro do binário no boot (backend/internal/database/legacy_migration.go).
@@ -59,7 +64,8 @@ RUN chmod +x /entrypoint.sh /app/vansrouter
 
 ENV PORT=20128 \
     DATA_DIR=/app/data \
-    SPA_DIR=/app/spa
+    SPA_DIR=/app/spa \
+    RELEASE_BUILD_ID=${VCS_REF}
 
 EXPOSE 20128
 ENTRYPOINT ["/entrypoint.sh"]
