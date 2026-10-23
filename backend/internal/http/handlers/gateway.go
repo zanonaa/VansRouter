@@ -133,6 +133,12 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 400, map[string]any{"error": "Invalid JSON body"})
 		return
 	}
+	// O /v1/models publica combo como "combo/<nome>" (paridade com a origem);
+	// o prefixo é só de listagem e precisa sair antes de resolver o combo —
+	// senão o provider "combo" não existe e a chamada falha com 404.
+	if model := ttsString(body["model"]); strings.HasPrefix(model, "combo/") {
+		body["model"] = strings.TrimPrefix(model, "combo/")
+	}
 	if !strings.Contains(ttsString(body["model"]), "/") {
 		if g.chatCombo(w, r, key, body) {
 			return
