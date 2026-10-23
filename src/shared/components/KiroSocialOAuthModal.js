@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal, Button } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
-import { getNextKiroSocialPollInterval } from "@/lib/oauth/kiroSocialPoll";
+import { getNextKiroSocialPollInterval } from "@/shared/oauth/kiroSocialPoll";
 
 /**
  * Kiro Social OAuth Modal (Google/GitHub Device Code Flow)
