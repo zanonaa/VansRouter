@@ -18,7 +18,7 @@ func TestVersionPublicSkip(t *testing.T) {
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/version", nil))
 	var value map[string]any
 	_ = json.Unmarshal(w.Body.Bytes(), &value)
-	if w.Code != 200 || value["currentVersion"] != "1.2.0" || value["latestVersion"] != nil || value["hasUpdate"] != false {
+	if w.Code != 200 || value["currentVersion"] != "2.0.0" || value["latestVersion"] != nil || value["hasUpdate"] != false {
 		t.Fatal(w.Code, value)
 	}
 	for _, method := range []string{"HEAD", "OPTIONS"} {

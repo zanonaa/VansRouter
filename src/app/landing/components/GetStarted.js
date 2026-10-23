@@ -17,7 +17,7 @@ export default function GetStarted() {
   -p 20128:20128 \\
   -v vansrouter-data:/app/data \\
   -e INITIAL_PASSWORD='replace-with-a-strong-password' \\
-  ghcr.io/zanonaa/vansrouter:1.2.0`}
+  ghcr.io/zanonaa/vansrouter:2.0.0`}
         </pre>
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <Button component={Link} href="/masuk">Open Dashboard</Button>

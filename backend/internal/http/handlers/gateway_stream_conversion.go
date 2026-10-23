@@ -24,6 +24,8 @@ type streamConversion struct {
 	nextBlock             int
 	textBlock             int
 	serverTool            int
+	toolIDs               map[string]int
+	toolCount             int
 	err                   error
 	responses             *responsesStream
 }
@@ -138,11 +140,19 @@ func (s *streamConversion) frame(frame []byte) error {
 	return fmt.Errorf("Unsupported streaming conversion: %s to %s", s.target, s.source)
 }
 func (s *streamConversion) openAIChunk(delta map[string]any, finish any) error {
+	return s.openAIChunkWithUsage(delta, finish, nil)
+}
+func (s *streamConversion) openAIChunkWithUsage(delta map[string]any, finish any, usage map[string]any) error {
 	value := map[string]any{"id": s.id, "object": "chat.completion.chunk", "model": s.model, "choices": []any{map[string]any{"index": 0, "delta": delta, "finish_reason": finish}}}
+	if usage != nil {
+		value["usage"] = usage
+	}
 	return s.emit("", value)
 }
 func (s *streamConversion) toOpenAI(event map[string]any) error {
 	switch s.target {
+	case "openai-responses":
+		return s.toOpenAIFromResponses(event)
 	case "claude":
 		switch event["type"] {
 		case "message_start":
