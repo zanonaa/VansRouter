@@ -110,6 +110,23 @@ func (u *UsageContracts) grokUsage(r *http.Request, connection map[string]any) m
 		return map[string]any{"message": "Grok CLI usage error: " + err.Error()}
 	}
 	if status == 401 || status == 403 {
+		// O access token expira em 6h; a origem renova no próprio endpoint de
+		// usage antes de repetir. Sem isso a tela ficava presa em
+		// "authentication expired" mesmo com refresh token válido.
+		if patch, refreshErr := oauthRefreshPatch(r.Context(), u.Client, "grok-cli", connection, nil); refreshErr == nil && patch != nil {
+			if refreshed := ttsString(patch["accessToken"]); refreshed != "" {
+				if _, updateErr := u.Connections.Update(r.Context(), ttsString(connection["id"]), patch); updateErr == nil {
+					token = refreshed
+					headers["Authorization"] = "Bearer " + token
+					status, billing, err = u.resetJSON(r.Context(), "GET", "https://cli-chat-proxy.grok.com/v1/billing?format=credits", headers, nil)
+					if err != nil {
+						return map[string]any{"message": "Grok CLI usage error: " + err.Error()}
+					}
+				}
+			}
+		}
+	}
+	if status == 401 || status == 403 {
 		return map[string]any{"message": "Grok CLI authentication expired. Please re-authorize."}
 	}
 	if status < 200 || status >= 300 {

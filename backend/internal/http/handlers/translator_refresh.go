@@ -74,16 +74,36 @@ func copyRefreshPatch(patch map[string]any) map[string]any {
 }
 
 func (t *TranslatorSend) refreshConnectionOnce(ctx context.Context, provider string, connection map[string]any) (map[string]any, error) {
+	patch, err := oauthRefreshPatch(ctx, t.Client, provider, connection, t.GetPool)
+	if err != nil || patch == nil {
+		return nil, err
+	}
+	if _, err := t.Connections.Update(ctx, ttsString(connection["id"]), patch); err != nil {
+		return nil, fmt.Errorf("persist refreshed credentials: %w", err)
+	}
+	return patch, nil
+}
+
+// oauthRefreshPatch executa o protocolo de refresh do provider e devolve o
+// patch de credenciais, sem persistir. Compartilhado entre o envio do gateway e
+// as telas de usage, que na origem também renovam antes de consultar a API.
+func oauthRefreshPatch(ctx context.Context, base *http.Client, provider string, connection map[string]any, lookup connectionPoolLookup) (map[string]any, error) {
 	refresh := ttsString(connection["refreshToken"])
 	if refresh == "" {
 		return nil, nil
 	}
 	switch provider {
-	case "claude", "codex", "gemini-cli", "antigravity", "qwen":
+	case "claude", "codex", "gemini-cli", "antigravity", "qwen", "grok-cli", "gcli", "xai":
 	default:
 		return nil, nil
 	}
-	config := providers.GetOAuthConfig(provider)
+	// Grok CLI compartilha o cliente OAuth do xAI; os aliases usam o mesmo
+	// endpoint/cliente da origem (tokenRefresh.js refreshXaiToken).
+	configProvider := provider
+	if provider == "gcli" || provider == "xai" {
+		configProvider = "grok-cli"
+	}
+	config := providers.GetOAuthConfig(configProvider)
 	if config == nil || config.TokenURL == "" {
 		return nil, nil
 	}
@@ -103,16 +123,16 @@ func (t *TranslatorSend) refreshConnectionOnce(ctx context.Context, provider str
 		}
 		encoded = []byte(form.Encode())
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	requestCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, "POST", config.TokenURL, bytes.NewReader(encoded))
+	request, err := http.NewRequestWithContext(requestCtx, "POST", config.TokenURL, bytes.NewReader(encoded))
 	if err != nil {
 		return nil, err
 	}
 	request.Header.Set("Content-Type", contentType)
 	request.Header.Set("Accept", "application/json")
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
-	client, relay, cleanup, err := connectionHTTP(ctx, metadata, t.GetPool, t.Client)
+	client, relay, cleanup, err := connectionHTTP(requestCtx, metadata, lookup, base)
 	if err != nil {
 		return nil, err
 	}
@@ -155,9 +175,6 @@ func (t *TranslatorSend) refreshConnectionOnce(ctx context.Context, provider str
 		}
 		metadata["resourceUrl"] = resource
 		patch["providerSpecificData"] = metadata
-	}
-	if _, err := t.Connections.Update(ctx, ttsString(connection["id"]), patch); err != nil {
-		return nil, fmt.Errorf("persist refreshed credentials: %w", err)
 	}
 	return patch, nil
 }
