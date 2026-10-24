@@ -14,17 +14,10 @@ export default function Navigation() {
           type="button"
           className="flex items-center gap-3 cursor-pointer bg-transparent border-none p-0"
           onClick={() => router.push("/")}
-          aria-label="VansRouter Home"
+          aria-label="VansGo Home"
         >
-          <div className="size-8 rounded bg-linear-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center text-white">
-            <svg viewBox="0 0 32 32" className="w-5 h-5" fill="none">
-              <path d="M16 5L22 14L16 27L10 14L16 5Z" fill="white" opacity="0.9"/>
-              <path d="M10 14L16 27L10 20L6 14H10Z" fill="white" opacity="0.6"/>
-              <path d="M22 14L16 27L22 20L26 14H22Z" fill="white" opacity="0.6"/>
-              <circle cx="16" cy="9" r="2" fill="white"/>
-            </svg>
-          </div>
-          <span className="text-white text-xl font-bold tracking-tight">VansRouter</span>
+          <img src="/vansgo-logo.webp" alt="" width="40" height="40" className="size-10 rounded-xl object-contain" />
+          <span className="text-white text-xl font-bold tracking-tight">VansGo</span>
         </button>
 
         {/* Desktop menu */}
@@ -41,7 +34,7 @@ export default function Navigation() {
         <div className="flex items-center gap-4">
           <button type="button" 
             onClick={() => router.push("/dashboard")}
-            className="hidden sm:flex h-9 items-center justify-center rounded-lg px-4 bg-[#6366f1] hover:bg-[#4f46e5] transition-all text-white text-sm font-bold shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_20px_rgba(99,102,241,0.6)]"
+            className="hidden sm:flex h-9 items-center justify-center rounded-lg px-4 bg-[#007d9c] hover:bg-[#4f46e5] transition-all text-white text-sm font-bold shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_20px_rgba(99,102,241,0.6)]"
           >
             Get Started
           </button>
@@ -64,7 +57,7 @@ export default function Navigation() {
             <a className="text-gray-300 hover:text-white text-sm font-medium transition-colors" href="https://github.com/Vanszs/VansRouter" target="_blank" rel="noopener noreferrer">GitHub</a>
             <button type="button" 
               onClick={() => router.push("/dashboard")}
-              className="h-9 rounded-lg bg-[#6366f1] hover:bg-[#4f46e5] text-white text-sm font-bold"
+              className="h-9 rounded-lg bg-[#007d9c] hover:bg-[#4f46e5] text-white text-sm font-bold"
             >
               Get Started
             </button>

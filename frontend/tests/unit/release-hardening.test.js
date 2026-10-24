@@ -91,6 +91,6 @@ describe("release hardening contracts", () => {
     expect(getStarted).toContain("docker run");
     expect(getStarted).toContain("ghcr.io/zanonaa/vansrouter:2.0.0");
     expect(getStarted).toContain("/masuk");
-    expect(navigation).toContain("VansRouter");
+    expect(navigation).toContain("VansGo");
   });
 });

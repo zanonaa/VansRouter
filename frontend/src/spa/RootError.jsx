@@ -33,7 +33,7 @@ export default function RootError() {
         <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
           <span className="material-symbols-outlined text-[24px]">emergency_home</span>
         </div>
-        <h1 className="text-xl font-semibold">VansAI could not load</h1>
+        <h1 className="text-xl font-semibold">VansGo could not load</h1>
         <p className="mt-2 text-sm leading-6 text-text-muted">
           A critical error occurred while rendering the application. Reload the page to try again.
         </p>
