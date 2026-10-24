@@ -122,7 +122,8 @@ export default function MasukClient({ initialAuth }) {
               <circle cx="16" cy="9" r="2" fill="#6366f1"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-primary mb-2">VansAI</h1>
+          <img src="/vansgo-logo.webp" alt="Logo VansGo" width="96" height="96" className="size-24 rounded-2xl mx-auto mb-4 object-contain" />
+          <h1 className="text-3xl font-bold text-primary mb-2">VansGo</h1>
           <p className="text-text-muted text-sm">
             {authMode === "oidc" && oidcConfigured
               ? "Masuk dengan OIDC provider untuk mengakses dashboard"

@@ -29,15 +29,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-2">
             <div className="flex items-center gap-2 mb-6">
-              <div className="size-6 text-primary">
-                <svg className="w-full h-full" fill="currentColor" viewBox="0 0 48 48">
-                  <path
-                    clipRule="evenodd"
-                    d="M12.08 24L4 19.25L9.96 8.75L18.04 13.5L18.04 4H29.96L29.96 13.5L38.04 8.75L44 19.25L35.92 24L44 28.75L38.04 39.25L29.96 34.5L29.96 44H18.04L18.04 34.5L9.96 39.25L4 28.75L12.08 24Z"
-                    fillRule="evenodd"
-                  />
-                </svg>
-              </div>
+              <img src="/vansgo-logo.webp" alt="" width="36" height="36" className="size-9 rounded-lg" />
               <span className="text-xl font-bold text-text-main">
                 {APP_CONFIG.name}
               </span>

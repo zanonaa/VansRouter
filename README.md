@@ -1,4 +1,6 @@
-# VansRouter
+# VansGo
+
+**VansGo** (anteriormente VansRouter). Os nomes técnicos do repositório, imagens Docker e volumes foram preservados para compatibilidade.
 
 Dashboard web e gateway de APIs de IA para gerenciar providers, modelos, conexões, chaves de API, combos, quotas e consumo.
 
