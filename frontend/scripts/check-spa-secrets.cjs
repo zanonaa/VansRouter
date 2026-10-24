@@ -21,7 +21,7 @@ if (!fs.existsSync(path.join(dist, "index.html"))) {
 // Chaves sensíveis do template de ambiente (valor presente = vazamento).
 // Placeholders do próprio template são permitidos: a landing exibe comandos
 // de exemplo com INITIAL_PASSWORD='replace-with-a-strong-password'.
-const envExample = fs.readFileSync(path.join(root, ".env.example"), "utf8");
+const envExample = fs.readFileSync(path.join(root, "..", ".env.example"), "utf8");
 const placeholders = new Map();
 const secretKeys = [...envExample.matchAll(/^([A-Z][A-Z0-9_]+)=(.*)$/gm)]
   .map((m) => {

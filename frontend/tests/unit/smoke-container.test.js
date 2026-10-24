@@ -78,7 +78,7 @@ describe("container release smoke test", () => {
   });
 
   it("ships no locality knob in the entrypoint", () => {
-    const entrypoint = fs.readFileSync("docker/entrypoint.sh", "utf8");
+    const entrypoint = fs.readFileSync(new URL("../../../docker/entrypoint.sh", import.meta.url), "utf8");
     expect(entrypoint).not.toContain("VANSROUTER_HOST_GATEWAY");
   });
 

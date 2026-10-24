@@ -8,6 +8,10 @@
 
 # Dependencies and build output
 node_modules
+**/node_modules
+frontend/dist
+frontend/tests
+frontend/images
 .next
 .next-cli-build
 out

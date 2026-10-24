@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { classifyInspectResult } from "../../scripts/inspect-image-digest.cjs";
 
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
 describe("release hardening contracts", () => {
@@ -31,7 +31,7 @@ describe("release hardening contracts", () => {
     expect(workflow).toContain("pnpm test");
     expect(workflow).not.toMatch(/run:\s*pnpm run build/);
     expect(read("Dockerfile")).toContain("RUN pnpm run build");
-    expect(JSON.parse(read("package.json")).scripts.build).toBe("vite build");
+    expect(JSON.parse(read("frontend/package.json")).scripts.build).toBe("vite build");
     expect(workflow).toContain("platforms: linux/amd64,linux/arm64");
     expect(workflow).toContain("push:");
     expect(workflow).not.toContain("windows-latest");
@@ -51,7 +51,7 @@ describe("release hardening contracts", () => {
     // estágio Vite, o @import "tailwindcss" vira CSS estático e a UI sobe sem
     // utilitárias. O build precisa copiar o config e provar que gerou classes.
     const dockerfile = read("Dockerfile");
-    expect(dockerfile).toContain("COPY index.html vite.config.js postcss.config.mjs ./");
+    expect(dockerfile).toContain("COPY frontend ./frontend");
     expect(dockerfile).toContain("grep -q '\\.flex{'");
     expect(dockerfile).toContain("grep -q '\\.grid{'");
   });
@@ -72,7 +72,7 @@ describe("release hardening contracts", () => {
   });
 
   it("keeps runtime scripts free of Next entries and documents the app port", () => {
-    const packageJson = JSON.parse(read("package.json"));
+    const packageJson = JSON.parse(read("frontend/package.json"));
     const scripts = Object.values(packageJson.scripts || {}).join(" ");
     expect(scripts).not.toContain("next ");
     expect(scripts).not.toMatch(/next-(dev|build|start)/);
@@ -81,8 +81,8 @@ describe("release hardening contracts", () => {
   });
 
   it("keeps landing onboarding on Docker and the web dashboard", () => {
-    const getStarted = read("src/app/landing/components/GetStarted.js");
-    const navigation = read("src/app/landing/components/Navigation.js");
+    const getStarted = read("frontend/src/app/landing/components/GetStarted.js");
+    const navigation = read("frontend/src/app/landing/components/Navigation.js");
     expect(getStarted).toContain("docker run");
     expect(getStarted).toContain("ghcr.io/zanonaa/vansrouter:2.0.0");
     expect(getStarted).toContain("/masuk");
