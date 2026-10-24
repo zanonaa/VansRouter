@@ -114,10 +114,16 @@ jobs:
           provenance: false
           sbom: false
 
-      # Publicação manual (workflow_dispatch) ou no push da branch de
-      # migração — imagem de desenvolvimento para o ambiente Dev, por padrão
-      # apenas linux/arm64. O step multi-arch oficial acima continua sendo a
-      # única via de release (main).
+      # A branch de migração foi encerrada; o Dev agora acompanha a main.
+      # Reaponta a tag de desenvolvimento para o manifesto recém-publicado,
+      # sem um segundo build.
+      - name: Point Dev image tag to main build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker buildx imagetools create -t "${GHCR_IMAGE}:dev-go-arm64" "${GHCR_IMAGE}:${GITHUB_SHA}"
+
+      # Publicação manual (workflow_dispatch) — imagem de desenvolvimento para
+      # o ambiente Dev, por padrão apenas linux/arm64. O step multi-arch
+      # oficial acima continua sendo a única via de release (main).
       - name: Publish branch image (manual dispatch or migration branch push)
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/migration/go-backend')
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
