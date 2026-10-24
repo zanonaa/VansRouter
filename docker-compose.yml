@@ -6,18 +6,18 @@
 
 services:
   vansrouter:
-    image: ghcr.io/vanszs/vansrouter:${VANSROUTER_VERSION:?Set VANSROUTER_VERSION in .env}
+    # Full image reference: Dev ARM64 by default; use vansrouter:go-local for a local build.
+    image: ${VANSROUTER_IMAGE:-ghcr.io/zanonaa/vansrouter:dev-go-arm64}
     container_name: vansrouter
     restart: unless-stopped
     ports:
-      # Published on all interfaces. Use "127.0.0.1:20128:20128" instead to keep the
-      # dashboard reachable only from the Docker host.
-      - "${PORT:-20128}:20128"
+      # Local-only by default; expose through an HTTPS reverse proxy if needed.
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-20128}:20128"
     volumes:
       - 9router-data:/app/data
       # Compatibility source for pre-v0.91.22 named-volume installs.
       # Bind-mount users must keep their existing host path or migrate it first.
-      # The entrypoint copies only missing files into the canonical volume.
+      # The Go startup migration imports legacy data without discarding the source.
       - vansrouter-data:/migration-data:ro
     env_file:
       - .env
@@ -27,9 +27,6 @@ services:
       HOSTNAME: "0.0.0.0"
       NODE_ENV: production
       HEADROOM_URL: http://headroom:8787
-    depends_on:
-      headroom:
-        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:20128/api/ready"]
       interval: 30s
@@ -38,6 +35,7 @@ services:
       start_period: 10s
 
   headroom:
+    profiles: [headroom]
     image: ghcr.io/chopratejas/headroom@sha256:50b85d8e320cfcdf1b38919bb7ae067b93ff7a8de0a93f05b2c1246370200d1c
     container_name: headroom
     restart: unless-stopped
