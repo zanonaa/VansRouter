@@ -15,19 +15,14 @@ ENV PATH="${PNPM_HOME}:${PATH}"
 RUN corepack enable && corepack prepare "pnpm@9.15.9" --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY frontend/package.json ./frontend/package.json
 RUN --mount=type=cache,target=/pnpm/store \
   pnpm install --frozen-lockfile --store-dir=/pnpm/store
 
-# postcss.config.mjs registra o @tailwindcss/postcss: sem ele o Vite só resolve
-# @import "tailwindcss" como CSS estático e o bundle fica sem as utilitárias
-# (a UI sobe "sem estilo"). O config lê o próprio diretório como base do scan.
-COPY index.html vite.config.js postcss.config.mjs ./
-COPY src ./src
-COPY public ./public
-COPY open-sse ./open-sse
-RUN pnpm run build && test -f dist/index.html \
-  && grep -q '\.flex{' dist/assets/*.css \
-  && grep -q '\.grid{' dist/assets/*.css
+COPY frontend ./frontend
+RUN pnpm run build && test -f frontend/dist/index.html \
+  && grep -q '\.flex{' frontend/dist/assets/*.css \
+  && grep -q '\.grid{' frontend/dist/assets/*.css
 
 # Step 2: build do backend Go. Cross-compile nativo: o stage roda na
 # plataforma do builder (BUILDPLATFORM) e GOARCH compila para o alvo — arm64
@@ -61,7 +56,7 @@ RUN apk add --no-cache su-exec ca-certificates tzdata nodejs npm \
   && chown -R app:app /app/data
 
 COPY --from=go-builder /out/vansrouter /app/vansrouter
-COPY --from=spa-builder /app/dist /app/spa
+COPY --from=spa-builder /app/frontend/dist /app/spa
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh /app/vansrouter
 

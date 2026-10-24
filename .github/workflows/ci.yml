@@ -56,15 +56,15 @@ jobs:
       # Fase 6: build Vite e verificação de que nenhum segredo vaza no bundle.
       - name: Build SPA and scan bundle for secrets
         run: |
-          pnpm exec vite build
-          node scripts/check-spa-secrets.cjs
+          pnpm build
+          node frontend/scripts/check-spa-secrets.cjs
 
       # Fase 6: composição Go+SPA pela mesma origem validada sem navegador
-      # (regressão visual completa: scripts/spa-visual-regression.cjs, local).
+      # (regressão visual completa: frontend/scripts/spa-visual-regression.cjs, local).
       - name: Static integration smoke (Go serves SPA)
         run: |
           cd backend && go build -o /tmp/vansrouter-ci ./cmd/api && cd ..
-          SPA_DIR="$PWD/dist" PORT=20131 DATA_DIR="$(mktemp -d)" JWT_SECRET=ci-secret \
+          SPA_DIR="$PWD/frontend/dist" PORT=20131 DATA_DIR="$(mktemp -d)" JWT_SECRET=ci-secret \
             /tmp/vansrouter-ci & SERVER=$!
           for i in $(seq 1 20); do curl -sf http://localhost:20131/api/health >/dev/null && break; sleep 1; done
           curl -sf http://localhost:20131/api/health

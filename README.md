@@ -21,14 +21,24 @@ The image supports **Linux AMD64 and ARM64** under the same tag. Open `http://lo
 
 ## Build from source
 
-Requirements: Node.js 22.5+ and pnpm 9.
+Requirements: Go 1.25+, Node.js 22.5+ and pnpm 9.
+
+The repository is split into:
+
+- `backend/`: Go API, gateway, persistence and HTTP server.
+- `frontend/`: React/Vite dashboard, public assets, frontend configuration, shared browser catalogs, JavaScript tests and tooling.
+- Root: pnpm workspace/lockfile, Docker, CI and project documentation.
 
 ```bash
 pnpm install --frozen-lockfile
 pnpm test
-pnpm run build
-pnpm start
+pnpm build
+cd backend
+go test ./...
+SPA_DIR="$(pwd)/../frontend/dist" go run ./cmd/api
 ```
+
+For frontend development, run `pnpm dev` from the repository root (Vite on port `20129`, API proxy to Go on `20128`). The root pnpm commands delegate to `frontend/`; they also work directly inside that directory.
 
 The app listens on port `20128`. Persistent data is stored under `~/.9router` by default; set `DATA_DIR` to choose another path.
 
