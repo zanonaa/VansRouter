@@ -303,6 +303,32 @@ func TestToolGuardStreamReassemblesToolCalls(t *testing.T) {
 	}
 }
 
+func TestToolGuardRejectsSessionIDsFromFailedHistory(t *testing.T) {
+	for _, source := range []map[string]any{
+		{"role": "user", "content": "O erro foi Subagent session not found: ses_new1"},
+		{"role": "assistant", "content": "Vou usar sessionID: ses_new1"},
+		{"role": "tool", "content": "Subagent session not found: ses_new1"},
+	} {
+		body := toolGuardTestBody([]any{source})
+		args := toolGuardArgs(t, toolGuardRunJSON(t, body, toolGuardJSONResponse("subagent",
+			`{"agent":"explore","description":"teste","prompt":"leia","sessionID":"ses_new1"}`)))
+		if _, ok := args["sessionID"]; ok {
+			t.Fatalf("ID inventado foi autorizado pelo histórico: %#v", source)
+		}
+	}
+}
+
+func TestToolGuardKeepsSuccessfulSubagentResult(t *testing.T) {
+	body := toolGuardTestBody([]any{map[string]any{
+		"role": "tool", "content": `<subagent sessionID="ses_realABC123" state="completed">Concluído</subagent>`,
+	}})
+	args := toolGuardArgs(t, toolGuardRunJSON(t, body, toolGuardJSONResponse("subagent",
+		`{"agent":"explore","description":"teste","prompt":"continue","sessionID":"ses_realABC123"}`)))
+	if args["sessionID"] != "ses_realABC123" {
+		t.Fatalf("continuação real perdida: %#v", args)
+	}
+}
+
 func TestToolGuardNoopWithoutTools(t *testing.T) {
 	body := map[string]any{
 		"model":    "zn-glm",

@@ -18,6 +18,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -53,6 +54,9 @@ type toolCallGuard struct {
 
 	tools  map[string]map[string]any
 	corpus string
+	// Subagent continuation IDs must come from successful tool results, not
+	// assistant guesses, errors, quoted examples, or the parent session ID.
+	subagentSessions map[string]bool
 
 	mode          toolGuardMode
 	headerWritten bool
@@ -83,7 +87,31 @@ func newToolCallGuard(w http.ResponseWriter, r *http.Request, body map[string]an
 		return g
 	}
 	g.corpus = toolGuardCorpus(body)
+	g.subagentSessions = toolGuardSubagentSessions(body)
 	return g
+}
+
+var toolGuardSessionMarker = regexp.MustCompile(`sessionID(?:"\s*:\s*"|\s*[:=]\s*"?)?\s*(ses_[A-Za-z0-9]+)`)
+
+func toolGuardSubagentSessions(body map[string]any) map[string]bool {
+	valid := map[string]bool{}
+	messages, _ := body["messages"].([]any)
+	for _, raw := range messages {
+		message, _ := raw.(map[string]any)
+		if message["role"] != "tool" {
+			continue
+		}
+		content, _ := json.Marshal(message["content"])
+		text := strings.ReplaceAll(string(content), `\"`, `"`)
+		// Failed calls echo the guessed ID and must never authorize it.
+		if strings.Contains(text, "Subagent session not found") || strings.Contains(text, `state=\"error`) || strings.Contains(text, "Subagent failed") {
+			continue
+		}
+		for _, match := range toolGuardSessionMarker.FindAllStringSubmatch(text, -1) {
+			valid[match[1]] = true
+		}
+	}
+	return valid
 }
 
 func toolGuardSchemas(raw any) map[string]map[string]any {
@@ -582,6 +610,11 @@ func (g *toolCallGuard) sanitizeArguments(name, raw string) (string, []string) {
 			continue
 		}
 		if !toolGuardReference(key, prop) {
+			continue
+		}
+		if name == "subagent" && key == "sessionID" && !g.subagentSessions[text] {
+			delete(args, key)
+			dropped = append(dropped, key)
 			continue
 		}
 		if strings.EqualFold(key, "model") && !strings.Contains(text, "/") {
