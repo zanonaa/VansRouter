@@ -114,6 +114,10 @@ func fusionPrompt(answers []fusionAnswer) string {
 
 func (g *Gateway) fusionCombo(w http.ResponseWriter, r *http.Request, models []string, name string, config, body map[string]any) {
 	if len(models) == 1 {
+		// Sem trocar o model, o body ainda aponta para o nome do combo e o
+		// OpenAIChat reentra no combo indefinidamente. A origem chama
+		// handleSingleModel(body, panel[0]) justamente para fixar o membro.
+		body["model"] = models[0]
 		encoded, _ := json.Marshal(body)
 		request := r.Clone(r.Context())
 		request.Body = io.NopCloser(bytes.NewReader(encoded))
@@ -134,9 +138,20 @@ func (g *Gateway) fusionCombo(w http.ResponseWriter, r *http.Request, models []s
 	defer cancel()
 	results := make([]fusionAnswer, len(models))
 	var mu sync.Mutex
-	done := make(chan struct{})
+	// allDone fecha quando todos os painéis terminaram (não há motivo para
+	// esperar o grace); quorum fecha quando já há respostas suficientes e
+	// inicia a janela para os stragglers, como collectPanel na origem.
+	allDone := make(chan struct{})
+	quorum := make(chan struct{})
 	successes := 0
 	settled := 0
+	signal := func(ch chan struct{}) {
+		select {
+		case <-ch:
+		default:
+			close(ch)
+		}
+	}
 	for index, model := range models {
 		go func(index int, model string) {
 			panel := map[string]any{}
@@ -167,24 +182,24 @@ func (g *Gateway) fusionCombo(w http.ResponseWriter, r *http.Request, models []s
 				results[index] = fusionAnswer{model: model, text: text}
 				successes++
 			}
-			if settled == len(models) || successes >= minPanel {
-				select {
-				case <-done:
-				default:
-					close(done)
-				}
+			if settled == len(models) {
+				signal(allDone)
+			} else if successes >= minPanel {
+				signal(quorum)
 			}
 		}(index, model)
 	}
 	select {
-	case <-done:
+	case <-allDone:
+	case <-ctx.Done():
+	case <-quorum:
 		timer := time.NewTimer(grace)
-		defer timer.Stop()
 		select {
+		case <-allDone:
 		case <-ctx.Done():
 		case <-timer.C:
 		}
-	case <-ctx.Done():
+		timer.Stop()
 	}
 	mu.Lock()
 	answers := []fusionAnswer{}

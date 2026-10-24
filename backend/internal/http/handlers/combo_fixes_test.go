@@ -59,8 +59,9 @@ func TestUpstreamHTMLIsRejectedEvenOn200(t *testing.T) {
 }
 
 func TestComboFallbackPolicy(t *testing.T) {
-	// Fiel a accountFallback.js: 401/403/429/5xx caem para o próximo model;
-	// 400/422/499 e bloqueio de conteúdo param no primeiro.
+	// Fiel a accountFallback.js: 401/402/403/404/429/5xx caem para o próximo
+	// model; os demais 4xx (400/408/410/422/499...) e bloqueio de conteúdo
+	// param no primeiro.
 	for _, test := range []struct {
 		status int
 		text   string
@@ -68,9 +69,12 @@ func TestComboFallbackPolicy(t *testing.T) {
 	}{
 		{403, "FreeTierError", true},
 		{401, "unauthorized", true},
+		{404, "model not found", true},
 		{429, "rate limit", true},
 		{502, "bad gateway", true},
 		{400, "context overflow", false},
+		{408, "request timeout", false},
+		{410, "model gone", false},
 		{422, "invalid", false},
 		{499, "client closed", false},
 		{403, "content-blocked", false},

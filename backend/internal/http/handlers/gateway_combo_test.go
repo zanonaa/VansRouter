@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/zanonaa/VansRouter/backend/internal/database"
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
@@ -60,6 +61,89 @@ func TestChatComboFallbackAndStickyRotation(t *testing.T) {
 		t.Fatal(requests)
 	}
 }
+
+// accountFallback.js só cai para o próximo modelo em 401/402/403/404/429 e
+// 5xx. Um 4xx sem regra (410, 408, 409, 413, ...) é erro do pedido e deve ser
+// devolvido sem consumir outro candidato.
+func TestComboDoesNotFallbackOnUnmatched4xx(t *testing.T) {
+	g := gatewayModelsFixture(t)
+	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false}'`)
+	if _, err := g.DB.Exec(`INSERT INTO combos VALUES('c','bundle','llm','["openai/primary","openai/second"]',NULL,'now','now');`); err != nil {
+		t.Fatal(err)
+	}
+	requests := []string{}
+	g.Send = &TranslatorSend{Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		raw, _ := io.ReadAll(r.Body)
+		model := "second"
+		if strings.Contains(string(raw), `"model":"primary"`) {
+			model = "primary"
+		}
+		requests = append(requests, model)
+		if model == "primary" {
+			return &http.Response{StatusCode: 410, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"error":"model gone"}`))}, nil
+		}
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader("data: ok\n\n"))}, nil
+	})}}
+	w := httptest.NewRecorder()
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/chat/completions", strings.NewReader(`{"model":"bundle","messages":[{"role":"user","content":"hi"}]}`)))
+	if w.Code != 410 {
+		t.Fatalf("status %d, esperado 410: %s", w.Code, w.Body.String())
+	}
+	if strings.Join(requests, ",") != "primary" {
+		t.Fatalf("não deveria tentar o segundo candidato: %v", requests)
+	}
+}
+
+// Fusion com um único modelo era reentrante: o body continuava com o nome do
+// combo e OpenAIChat chamava o combo de novo. Deve fixar o modelo do painel.
+func TestFusionSingleModelUsesConfiguredModel(t *testing.T) {
+	g := gatewayModelsFixture(t)
+	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false,"comboStrategy":"fusion"}'`)
+	if _, err := g.DB.Exec(`INSERT INTO combos VALUES('c','solo','llm','["openai/solo"]',NULL,'now','now');`); err != nil {
+		t.Fatal(err)
+	}
+	requests := []string{}
+	g.Send = &TranslatorSend{Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		raw, _ := io.ReadAll(r.Body)
+		model := ""
+		if strings.Contains(string(raw), `"model":"solo"`) {
+			model = "solo"
+		}
+		requests = append(requests, model)
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader("data: ok\n\n"))}, nil
+	})}}
+	w := httptest.NewRecorder()
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/chat/completions", strings.NewReader(`{"model":"solo","messages":[{"role":"user","content":"hi"}]}`)))
+	if w.Code != 200 {
+		t.Fatalf("status %d: %s", w.Code, w.Body.String())
+	}
+	if len(requests) != 1 || requests[0] != "solo" {
+		t.Fatalf("model do painel não foi fixado: %v", requests)
+	}
+}
+
+// Quando todos os painéis já terminaram (mesmo com falha), collectPanel na
+// origem encerra imediatamente; não há straggler para esperar.
+func TestFusionAllPanelFailuresDoesNotWaitGrace(t *testing.T) {
+	g := gatewayModelsFixture(t)
+	g.DB.Exec(`UPDATE settings SET data='{"requireApiKey":false,"comboStrategy":"fallback","comboStrategies":{"bundle":{"fallbackStrategy":"fusion","fusionTuning":{"stragglerGraceMs":5000}}}}'`)
+	if _, err := g.DB.Exec(`INSERT INTO combos VALUES('c','bundle','llm','["openai/first","openai/second"]',NULL,'now','now');`); err != nil {
+		t.Fatal(err)
+	}
+	g.Send = &TranslatorSend{Connections: sendConnections{items: []map[string]any{{"isActive": true, "apiKey": "upstream"}}}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: 500, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"error":"boom"}`))}, nil
+	})}}
+	start := time.Now()
+	w := httptest.NewRecorder()
+	g.OpenAIChat(w, httptest.NewRequest("POST", "/api/v1/chat/completions", strings.NewReader(`{"model":"bundle","messages":[{"role":"user","content":"hi"}]}`)))
+	if w.Code != 503 {
+		t.Fatalf("status %d, esperado 503: %s", w.Code, w.Body.String())
+	}
+	if elapsed := time.Since(start); elapsed > 2*time.Second {
+		t.Fatalf("esperou o grace sem stragglers: %s", elapsed)
+	}
+}
+
 func TestComboPermissionBlocksBeforeCandidate(t *testing.T) {
 	g := gatewayModelsFixture(t)
 	g.DB.Exec(`CREATE TABLE IF NOT EXISTS combos(id TEXT PRIMARY KEY,name TEXT,kind TEXT,models TEXT,context_length REAL,createdAt TEXT,updatedAt TEXT);INSERT INTO combos VALUES('c','bundle','llm','["openai/model"]',NULL,'now','now');`)
