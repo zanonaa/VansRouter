@@ -282,13 +282,16 @@ func TestFoldResponsesStream(t *testing.T) {
 }
 
 func TestSendCodexOpenAIClientStreamsAndFolds(t *testing.T) {
-	upstream := "data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_1\",\"status\":\"in_progress\"}}\n\n" +
+	upstream := "event: response.created\ndata: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_1\",\"status\":\"in_progress\"}}\n\n" +
 		"data: {\"type\":\"response.output_text.delta\",\"delta\":\"olá\"}\n\n" +
 		"data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_1\",\"status\":\"completed\",\"usage\":{\"input_tokens\":12,\"output_tokens\":3}}}\n\n" +
 		"data: [DONE]\n\n"
 	for _, stream := range []bool{true, false} {
 		t.Run(map[bool]string{true: "stream", false: "json"}[stream], func(t *testing.T) {
 			db, key := codexTestConnection(t)
+			if _, err := db.Exec(`CREATE TABLE usageHistory(id INTEGER PRIMARY KEY, timestamp TEXT,provider TEXT,model TEXT,connectionId TEXT,apiKey TEXT,endpoint TEXT,promptTokens INTEGER,completionTokens INTEGER,cost REAL,status TEXT,tokens TEXT,meta TEXT); CREATE TABLE usageDaily(dateKey TEXT PRIMARY KEY,data TEXT); CREATE TABLE _meta(key TEXT PRIMARY KEY,value TEXT);`); err != nil {
+				t.Fatal(err)
+			}
 			requests := 0
 			send := &TranslatorSend{Connections: database.Connections{DB: db}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
 				requests++
@@ -322,7 +325,7 @@ func TestSendCodexOpenAIClientStreamsAndFolds(t *testing.T) {
 					t.Fatalf("input: %s", encoded)
 				}
 				return &http.Response{
-					StatusCode: 200, Header: http.Header{"Content-Type": []string{"text/event-stream"}},
+					StatusCode: 200, Header: http.Header{}, // Real Codex upstream omits Content-Type.
 					Body: io.NopCloser(strings.NewReader(upstream)),
 				}, nil
 			})}}
@@ -332,6 +335,13 @@ func TestSendCodexOpenAIClientStreamsAndFolds(t *testing.T) {
 			request.Header.Set("Authorization", "Bearer "+key)
 			w := httptest.NewRecorder()
 			gateway.OpenAIChat(w, request)
+			var usageCount, promptTokens, completionTokens int
+			if err := db.QueryRow(`SELECT count(*),coalesce(sum(promptTokens),0),coalesce(sum(completionTokens),0) FROM usageHistory`).Scan(&usageCount, &promptTokens, &completionTokens); err != nil {
+				t.Fatal(err)
+			}
+			if usageCount != 1 || promptTokens != 12 || completionTokens != 3 {
+				t.Fatalf("codex usage missing: count=%d prompt=%d completion=%d", usageCount, promptTokens, completionTokens)
+			}
 			if w.Code != 200 {
 				t.Fatalf("%d %s", w.Code, w.Body.String())
 			}
@@ -364,7 +374,7 @@ func TestSendCodexResponsesClientPassthroughAndFold(t *testing.T) {
 			db, key := codexTestConnection(t)
 			send := &TranslatorSend{Connections: database.Connections{DB: db}, Client: &http.Client{Transport: kiroImportTransport(func(r *http.Request) (*http.Response, error) {
 				return &http.Response{
-					StatusCode: 200, Header: http.Header{"Content-Type": []string{"text/event-stream"}},
+					StatusCode: 200, Header: http.Header{}, // Real Codex upstream omits Content-Type.
 					Body: io.NopCloser(strings.NewReader(upstream)),
 				}, nil
 			})}}

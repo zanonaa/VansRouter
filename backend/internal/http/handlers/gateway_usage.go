@@ -95,7 +95,10 @@ type usageBody struct {
 func (b *usageBody) Read(p []byte) (int, error) {
 	n, err := b.ReadCloser.Read(p)
 	b.pending = append(b.pending, p[:n]...)
-	if !b.stream && bytes.HasPrefix(bytes.TrimSpace(b.pending), []byte("data:")) {
+	// Some Codex/Grok upstreams omit Content-Type and begin SSE with event:
+	// rather than data:. Detect both (including a prefix split across reads).
+	trimmed := bytes.TrimSpace(b.pending)
+	if !b.stream && (bytes.HasPrefix(trimmed, []byte("data:")) || bytes.HasPrefix(trimmed, []byte("event:")) || bytes.HasPrefix(trimmed, []byte(":"))) {
 		b.stream = true
 	}
 	for b.stream {
@@ -301,8 +304,30 @@ func (u *requestUsage) observe(event map[string]any) {
 			}
 		}
 	}
-	if details, ok := raw["prompt_tokens_details"].(map[string]any); ok && details["cached_tokens"] != nil {
-		u.tokens["cached_tokens"] = details["cached_tokens"]
+	for _, key := range []string{"prompt_tokens_details", "input_tokens_details"} {
+		if details, ok := raw[key].(map[string]any); ok {
+			if details["cached_tokens"] != nil {
+				u.tokens["cached_tokens"] = details["cached_tokens"]
+			}
+			if details["cache_creation_tokens"] != nil {
+				u.tokens["cache_creation_input_tokens"] = details["cache_creation_tokens"]
+			}
+		}
+	}
+	for _, key := range []string{"completion_tokens_details", "output_tokens_details"} {
+		if details, ok := raw[key].(map[string]any); ok && details["reasoning_tokens"] != nil {
+			u.tokens["reasoning_tokens"] = details["reasoning_tokens"]
+		}
+	}
+	if raw["promptTokenCount"] != nil {
+		prompt := pxpipeNum(raw["promptTokenCount"])
+		thoughts := pxpipeNum(raw["thoughtsTokenCount"])
+		candidates := pxpipeNum(raw["candidatesTokenCount"])
+		if candidates == 0 && pxpipeNum(raw["totalTokenCount"]) > 0 {
+			candidates = max(0, pxpipeNum(raw["totalTokenCount"])-prompt-thoughts)
+		}
+		u.tokens["completion_tokens"] = candidates + thoughts
+		u.tokens["reasoning_tokens"] = thoughts
 	}
 	// Claude input_tokens excludes cache reads/writes; storage is cache-inclusive.
 	if raw["input_tokens"] != nil && (raw["cache_read_input_tokens"] != nil || raw["cache_creation_input_tokens"] != nil) {
