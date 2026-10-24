@@ -97,6 +97,36 @@ func TestGatewayPersistsUsageAndDailyWithoutDoubleCounting(t *testing.T) {
 	}
 }
 
+func TestUsageObserverHeaderlessSSEAndNativeDetails(t *testing.T) {
+	for _, prefix := range []string{"event: response.created\n", ": keepalive\n\nevent: response.created\n"} {
+		u := &requestUsage{}
+		raw := prefix + "data: {\"type\":\"response.completed\",\"response\":{\"usage\":{\"input_tokens\":100,\"output_tokens\":20,\"input_tokens_details\":{\"cached_tokens\":80},\"output_tokens_details\":{\"reasoning_tokens\":7}}}}\n\n"
+		body := &usageBody{ReadCloser: io.NopCloser(strings.NewReader(raw)), u: u}
+		buffer := make([]byte, 2) // Split the event: prefix across reads.
+		for {
+			_, err := body.Read(buffer)
+			if err != nil {
+				break
+			}
+		}
+		for key, want := range map[string]float64{"prompt_tokens": 100, "completion_tokens": 20, "cached_tokens": 80, "reasoning_tokens": 7} {
+			if pxpipeNum(u.tokens[key]) != want {
+				t.Fatalf("%s: got %v want %v", key, u.tokens, want)
+			}
+		}
+	}
+}
+
+func TestUsageObserverGeminiParity(t *testing.T) {
+	for _, candidates := range []float64{0, 12} {
+		u := &requestUsage{}
+		u.observe(map[string]any{"usageMetadata": map[string]any{"promptTokenCount": float64(100), "candidatesTokenCount": candidates, "thoughtsTokenCount": float64(8), "totalTokenCount": float64(120), "cachedContentTokenCount": float64(60)}})
+		if pxpipeNum(u.tokens["completion_tokens"]) != 20 || pxpipeNum(u.tokens["reasoning_tokens"]) != 8 || pxpipeNum(u.tokens["cached_tokens"]) != 60 {
+			t.Fatal(u.tokens)
+		}
+	}
+}
+
 func TestUsageObserverClaudePartialUsageAndPrettyJSON(t *testing.T) {
 	u := &requestUsage{}
 	body := &usageBody{ReadCloser: io.NopCloser(strings.NewReader("{\n\"usage\": {\"input_tokens\": 5,\"output_tokens\": 2,\"cache_read_input_tokens\":10}\n}")), u: u}
