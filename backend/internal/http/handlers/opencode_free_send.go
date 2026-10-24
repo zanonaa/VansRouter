@@ -37,6 +37,7 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 	clientWantsStream := outbound["stream"] == true
 	outbound["stream"] = true
 	renames := openCodeApplyFingerprint(outbound)
+	t.TokenSaver.Apply(r.Context(), r, outbound, "openai", model, provider)
 
 	token := ttsString(firstNonEmpty(connection["apiKey"], connection["accessToken"]))
 	if token == "" {

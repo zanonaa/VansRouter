@@ -65,6 +65,7 @@ func (t *TranslatorSend) SendGeminiCLI(w http.ResponseWriter, r *http.Request, p
 	if project != "" {
 		wrapper["project"] = project
 	}
+	t.TokenSaver.Apply(r.Context(), r, wrapper, "gemini-cli", model, provider)
 	encoded, err := json.Marshal(wrapper)
 	if err != nil {
 		fail(500, err.Error())

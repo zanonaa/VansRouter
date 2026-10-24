@@ -276,6 +276,7 @@ func (t *TranslatorSend) SendOllama(w http.ResponseWriter, r *http.Request, prov
 		fail(400, err.Error())
 		return
 	}
+	t.TokenSaver.Apply(r.Context(), r, targetBody, "ollama", model, provider)
 	encoded, err := json.Marshal(targetBody)
 	if err != nil {
 		fail(500, err.Error())

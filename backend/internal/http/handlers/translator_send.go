@@ -19,6 +19,7 @@ type TranslatorSend struct {
 	Connections  NodeConnections
 	Client       *http.Client
 	GetPool      connectionPoolLookup
+	TokenSaver   *TokenSaver
 	refreshMu    sync.Mutex
 	refreshCalls map[[32]byte]*refreshCall
 }
@@ -110,6 +111,13 @@ func (t *TranslatorSend) Send(w http.ResponseWriter, r *http.Request) {
 		headers["Accept"] = "text/event-stream"
 		headers["x-session-id"] = uuid.NewString()
 	}
+	// Token savers no corpo final (mesma ordem da origem). Para commandcode o
+	// corpo já é o formato AI SDK; o pipeline usa a forma OpenAI equivalente.
+	saverFormat := format
+	if saverFormat == "commandcode" {
+		saverFormat = "openai"
+	}
+	t.TokenSaver.Apply(r.Context(), r, outbound, saverFormat, model, provider)
 	encoded, err := json.Marshal(outbound)
 	if err != nil {
 		fail(500, err.Error())

@@ -5,7 +5,9 @@ package handlers
 // executado via subprocesso `node -e` por operação (load check e self-test),
 // com cache de versão/loadedAt mantido in-process.
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -22,6 +24,8 @@ type PxpipeLoader struct {
 
 	// RunScript hook para testes; default roda `node -e` com PATH estendido.
 	RunScript func(ctx context.Context, script string) (string, error)
+	// RunScriptInput hook para testes do transform (corpo via stdin).
+	RunScriptInput func(ctx context.Context, script string, stdin []byte) (string, error)
 	// Timeout por execução do subprocesso.
 	Timeout time.Duration
 
@@ -47,28 +51,51 @@ func (l *PxpipeLoader) info() pxpipeLoadedInfo {
 
 // PxpipeRunScript real: node -e com PATH estendido, sem janela no Windows.
 func PxpipeRunScript(ctx context.Context, script string) (string, error) {
+	return pxpipeRunNode(ctx, script, nil)
+}
+
+// PxpipeRunScriptInput igual, mas envia o corpo binário por stdin.
+func PxpipeRunScriptInput(ctx context.Context, script string, stdin []byte) (string, error) {
+	return pxpipeRunNode(ctx, script, stdin)
+}
+
+func pxpipeRunNode(ctx context.Context, script string, stdin []byte) (string, error) {
 	node := "node"
 	if runtime.GOOS == "windows" {
 		node = "node.exe"
 	}
 	cmd := exec.CommandContext(ctx, node, "-e", script)
 	cmd.Env = append(os.Environ(), "PATH="+pxpipeExtendedPath())
+	if stdin != nil {
+		cmd.Stdin = bytes.NewReader(stdin)
+	}
 	hideHeadroomWindow(cmd)
 	out, err := cmd.Output()
 	return string(out), err
 }
 
 func (l *PxpipeLoader) run(ctx context.Context, script string) (string, error) {
-	run := l.RunScript
-	if run == nil {
-		run = PxpipeRunScript
-	}
+	return l.runWithInput(ctx, script, nil)
+}
+
+func (l *PxpipeLoader) runWithInput(ctx context.Context, script string, stdin []byte) (string, error) {
 	timeout := l.Timeout
 	if timeout <= 0 {
 		timeout = 30 * time.Second
 	}
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+	if stdin != nil {
+		run := l.RunScriptInput
+		if run == nil {
+			run = PxpipeRunScriptInput
+		}
+		return run(runCtx, script, stdin)
+	}
+	run := l.RunScript
+	if run == nil {
+		run = PxpipeRunScript
+	}
 	return run(runCtx, script)
 }
 
@@ -152,6 +179,90 @@ import(%s + '?v=' + encodeURIComponent(%s)).then(async (m) => {
 		"reason":     parsed.Reason,
 		"durationMs": time.Since(startedAt).Milliseconds(),
 	}, nil
+}
+
+// pxpipeTransformed reproduz o resultado de transformAnthropicMessages.
+type pxpipeTransformed struct {
+	Applied bool
+	Reason  string
+	Detail  string
+	Body    []byte
+	Info    map[string]any
+	Cache   map[string]any
+}
+
+// Transform porta a chamada real ao módulo pxpipe (library mode) via
+// subprocesso Node. O corpo trafega por stdin e volta em base64, evitando
+// limites de linha de comando e problemas de encoding.
+func (l *PxpipeLoader) Transform(ctx context.Context, body []byte, model string, minChars int) (*pxpipeTransformed, error) {
+	info := pxpipeInstallInfo(l.DataDir)
+	if installed, _ := info["installed"].(bool); !installed {
+		return nil, &pxpipeError{Code: "NOT_INSTALLED", Msg: "PXPIPE is not installed"}
+	}
+	version, _ := info["version"].(string)
+	if version == "" {
+		version = "0"
+	}
+	script := fmt.Sprintf(`
+const chunks = [];
+process.stdin.on("data", (chunk) => chunks.push(chunk));
+process.stdin.on("end", () => {
+  const body = new Uint8Array(Buffer.concat(chunks));
+  import(%s + "?v=" + encodeURIComponent(%s)).then(async (m) => {
+    if (typeof m.transformAnthropicMessages !== "function") {
+      process.stderr.write("installed pxpipe package does not export transformAnthropicMessages");
+      process.exit(1);
+    }
+    const result = await m.transformAnthropicMessages({ body, model: %s, options: { minCompressChars: %d } });
+    if (!result) {
+      process.stdout.write(JSON.stringify({ applied: false, reason: "passthrough" }));
+      return;
+    }
+    const out = {
+      applied: !!result.applied,
+      reason: result.reason,
+      detail: result.detail,
+      info: result.info || {},
+      cache: result.cache || {},
+    };
+    if (result.body) out.body = Buffer.from(result.body).toString("base64");
+    process.stdout.write(JSON.stringify(out));
+  }).catch((e) => { process.stderr.write(String((e && e.message) || e)); process.exit(1); });
+});
+`, strconvEntry(pxpipeAbsEntry(l.DataDir)), strconvEntry(version), strconvEntry(model), minChars)
+	out, runErr := l.runWithInput(ctx, script, body)
+	if runErr != nil {
+		return nil, runErr
+	}
+	var parsed struct {
+		Applied bool           `json:"applied"`
+		Reason  string         `json:"reason"`
+		Detail  string         `json:"detail"`
+		Body    string         `json:"body"`
+		Info    map[string]any `json:"info"`
+		Cache   map[string]any `json:"cache"`
+	}
+	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
+		return nil, fmt.Errorf("transform returned an unexpected shape: %w", err)
+	}
+	transformed := &pxpipeTransformed{
+		Applied: parsed.Applied,
+		Reason:  parsed.Reason,
+		Detail:  parsed.Detail,
+		Info:    parsed.Info,
+		Cache:   parsed.Cache,
+	}
+	if parsed.Applied {
+		if parsed.Body == "" {
+			return nil, fmt.Errorf("transform returned applied without body")
+		}
+		decoded, err := base64.StdEncoding.DecodeString(parsed.Body)
+		if err != nil {
+			return nil, fmt.Errorf("transform returned invalid body: %w", err)
+		}
+		transformed.Body = decoded
+	}
+	return transformed, nil
 }
 
 func strconvEntry(value string) string {

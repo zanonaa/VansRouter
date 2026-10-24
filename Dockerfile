@@ -2,7 +2,9 @@
 ARG APP_VERSION=unknown
 ARG VCS_REF=unknown
 
-# Fase 6: imagem integrada Go + SPA (sem Next.js e sem Node no runner).
+# Fase 6: imagem integrada Go + SPA (sem Next.js). O runtime Node permanece
+# apenas para o PXPIPE do Token Saver, que executa o pacote npm em library mode
+# exatamente como a origem (install on-demand + transform por subprocesso).
 # Step 1: build da SPA com Vite na plataforma nativa do builder.
 FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS spa-builder
 WORKDIR /app
@@ -51,7 +53,8 @@ ARG APP_VERSION
 ARG VCS_REF
 WORKDIR /app
 
-RUN apk add --no-cache su-exec ca-certificates tzdata \
+RUN apk add --no-cache su-exec ca-certificates tzdata nodejs npm \
+  && node -v && npm -v \
   && addgroup -g 1000 app \
   && adduser -D -u 1000 -G app app \
   && mkdir -p /app/data \

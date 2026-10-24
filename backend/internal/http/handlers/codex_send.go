@@ -1073,6 +1073,7 @@ func (t *TranslatorSend) SendCodex(w http.ResponseWriter, r *http.Request, provi
 		return
 	}
 	compact := nodeTruthy(targetBody["_compact"])
+	t.TokenSaver.Apply(r.Context(), r, targetBody, "openai-responses", model, provider)
 	prepared, resolvedModel, session, err := prepareCodexBody(targetBody, model, connection, r.Header)
 	if err != nil {
 		fail(400, err.Error())

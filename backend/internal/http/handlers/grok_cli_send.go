@@ -558,6 +558,7 @@ func (t *TranslatorSend) SendGrokCLI(w http.ResponseWriter, r *http.Request, pro
 		fail(400, err.Error())
 		return
 	}
+	t.TokenSaver.Apply(r.Context(), r, targetBody, "openai-responses", model, provider)
 	prepared, resolvedModel, err := prepareGrokCLIBody(targetBody, model)
 	if err != nil {
 		fail(400, err.Error())
