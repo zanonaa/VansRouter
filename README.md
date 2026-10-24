@@ -51,7 +51,7 @@ docker run -d \
 
 A imagem compila a SPA e o binário Go em estágios separados. Node/npm permanecem no runtime para o PXPIPE, que executa seu pacote via subprocesso; o servidor da aplicação é Go, não Next.js.
 
-> O `docker-compose.yml` da raiz ainda contém o endereço da imagem upstream e configuração legada com Headroom. Não o utilize sem revisar a imagem, a tag, os volumes e os serviços. O `.env.example` também contém opções herdadas; ele não é uma lista de recursos integralmente implementados em Go.
+> Para usar o Compose desta branch: copie `.env.example` para `.env`, defina `INITIAL_PASSWORD` e revise `VANSROUTER_IMAGE` e os volumes antes de executar `docker compose up -d`. O padrão é a imagem Dev ARM64, publicada apenas no loopback do host. Para uma imagem local, use `VANSROUTER_IMAGE=vansrouter:go-local`. Headroom é opcional: `docker compose --profile headroom up -d`; habilite a integração também no dashboard.
 
 ## Estrutura
 

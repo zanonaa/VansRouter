@@ -58,11 +58,16 @@ describe("release hardening contracts", () => {
 
   it("requires an explicit VansRouter version while preserving 9router storage", () => {
     const compose = read("docker-compose.yml");
-    expect(compose).toContain("VANSROUTER_VERSION");
+    expect(compose).toContain("VANSROUTER_IMAGE");
+    expect(compose).toContain("ghcr.io/zanonaa/vansrouter:dev-go-arm64");
+    expect(compose).not.toContain("ghcr.io/vanszs/vansrouter");
     expect(compose).not.toContain("vansrouter:latest");
     expect(compose).toContain("9router-data:/app/data");
     expect(compose).toContain("vansrouter-data:/migration-data:ro");
-    expect(read(".env.example")).toMatch(/VANSROUTER_VERSION=\d+\.\d+\.\d+/);
+    expect(read(".env.example")).toContain("VANSROUTER_IMAGE=ghcr.io/zanonaa/vansrouter:dev-go-arm64");
+    expect(compose).toContain("BIND_ADDRESS:-127.0.0.1");
+    expect(compose).toContain("profiles: [headroom]");
+    expect(compose).not.toContain("depends_on:");
   });
 
   it("keeps executable shell entrypoints LF across Windows checkouts", () => {
@@ -76,7 +81,7 @@ describe("release hardening contracts", () => {
     const scripts = Object.values(packageJson.scripts || {}).join(" ");
     expect(scripts).not.toContain("next ");
     expect(scripts).not.toMatch(/next-(dev|build|start)/);
-    expect(read("docker-compose.yml")).toContain("20128:20128");
+    expect(read("docker-compose.yml")).toContain("${PORT:-20128}:20128");
     expect(read("Dockerfile")).toContain("ENV PORT=20128");
   });
 
