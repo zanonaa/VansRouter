@@ -352,6 +352,9 @@ func (g *Gateway) finishUsage(r *http.Request, u *requestUsage) {
 			providerPrices, _ = prices[providers.AliasMap()[u.provider]].(map[string]any)
 		}
 		price, _ := providerPrices[u.model].(map[string]any)
+		if price == nil {
+			price = providers.FallbackPricing(u.model)
+		}
 		input, output := pxpipeNum(price["input"]), pxpipeNum(price["output"])
 		cached, creation := pxpipeNum(u.tokens["cached_tokens"]), pxpipeNum(u.tokens["cache_creation_input_tokens"])
 		rate := func(key string, fallback float64) float64 {
