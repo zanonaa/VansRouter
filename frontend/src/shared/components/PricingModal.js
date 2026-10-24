@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getDefaultPricing, formatCost } from "open-sse/providers/pricing.js";
+import { getDefaultPricing, formatCost } from "@/catalogs/pricing.js";
 
 export default function PricingModal({ isOpen, onClose, onSave }) {
   const [pricingData, setPricingData] = useState({});

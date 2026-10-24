@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import REGISTRY from "../../open-sse/providers/registry/index.js";
+import REGISTRY from "../../src/catalogs/registry/index.js";
 
 const REQUIRED_ALIASES = ["gitlab", "mmf"];
 const PROTECTED = {

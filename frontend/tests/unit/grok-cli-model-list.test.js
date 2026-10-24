@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PROVIDER_MODELS } from "open-sse/config/providerModels.js";
+import { PROVIDER_MODELS } from "@/config/providerModels.js";
 
 describe("Grok CLI model catalog", () => {
   it("keeps static models available when live discovery is partial", () => {

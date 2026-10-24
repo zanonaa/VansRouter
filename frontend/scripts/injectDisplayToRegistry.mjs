@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const REGISTRY_DIR = path.join(ROOT, "open-sse/providers/registry");
+const REGISTRY_DIR = path.join(ROOT, "src/catalogs/registry");
 
 // ── 1. Build DISPLAY map từ providersDisplay.js (parse thủ công để không cần import) ──
 // Đọc file, eval trong sandbox đơn giản

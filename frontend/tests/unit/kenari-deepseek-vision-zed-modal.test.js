@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
 
 // ── #4293 deepseek-v4-1-flash vision capability ───────────────────────────
 

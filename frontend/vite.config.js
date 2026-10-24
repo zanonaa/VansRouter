@@ -32,8 +32,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": srcRoot,
-      "open-sse": fileURLToPath(new URL("./open-sse", import.meta.url)),
-      "open-sse/": fileURLToPath(new URL("./open-sse/", import.meta.url)),
       "next/link": fileURLToPath(new URL("./src/compat/link.jsx", import.meta.url)),
       "next/navigation": fileURLToPath(new URL("./src/compat/navigation.js", import.meta.url)),
       "next/dynamic": fileURLToPath(new URL("./src/compat/dynamic.js", import.meta.url)),

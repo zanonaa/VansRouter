@@ -6,8 +6,8 @@ import { AI_PROVIDERS, getProviderAlias } from "@/shared/constants/providers";
 import { getModelsByProviderId, getModelKind } from "@/shared/constants/models";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { TTS_PROVIDER_CONFIG } from "@/shared/constants/ttsProviders";
-import { getTtsVoicesForModel } from "open-sse/config/ttsModels.js";
-import { GOOGLE_TTS_LANGUAGES } from "open-sse/config/googleTtsLanguages.js";
+import { getTtsVoicesForModel } from "@/config/ttsModels.js";
+import { GOOGLE_TTS_LANGUAGES } from "@/config/googleTtsLanguages.js";
 import { Row } from "./exampleShared";
 
 const DEFAULT_TTS_RESPONSE_EXAMPLE = `// Audio will appear here after running.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getThinkingLevels } from "../../open-sse/providers/thinkingLevels.js";
+import { getThinkingLevels } from "../../src/catalogs/thinkingLevels.js";
 
 describe("getThinkingLevels", () => {
   it("adds max for gpt-5.6-sol on codex", () => {

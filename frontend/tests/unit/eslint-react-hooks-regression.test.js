@@ -20,7 +20,6 @@ describe("eslint react-hooks regression guard", () => {
         [
           path.resolve("node_modules/eslint/bin/eslint.js"),
           "src/",
-          "open-sse/",
           "--no-warn-ignored",
           "--rule",
           JSON.stringify({

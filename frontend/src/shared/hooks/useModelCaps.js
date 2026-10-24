@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getCapabilitiesForModel } from "open-sse/providers/capabilities.js";
+import { getCapabilitiesForModel } from "@/catalogs/capabilities.js";
 
 // Module cache: one /api/models fetch shared by every useModelCaps instance.
 let cache = null; // { byFull, byId } | null

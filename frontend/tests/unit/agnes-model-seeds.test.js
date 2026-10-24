@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import agnes from "../../open-sse/providers/registry/agnes.js";
+import agnes from "../../src/catalogs/registry/agnes.js";
 
 // Seeds for Agnes AI. The live catalogue (apihub.agnes-ai.com/v1/models)
 // answers 401 without a token, so these ids are a curated starting set and

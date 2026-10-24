@@ -29,8 +29,6 @@ export default defineConfig({
   resolve: {
     // Use array form so subpath aliases (e.g. "@/lib/db/index.js") resolve correctly.
     alias: [
-      { find: /^open-sse\//, replacement: resolve(__dirname, "../open-sse") + "/" },
-      { find: "open-sse", replacement: resolve(__dirname, "../open-sse") },
       { find: /^@\//, replacement: resolve(__dirname, "../src") + "/" },
     ],
   },

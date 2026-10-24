@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import REGISTRY from "../../open-sse/providers/registry/index.js";
-import { PROVIDERS, PROVIDER_MODELS } from "../../open-sse/providers/index.js";
+import REGISTRY from "../../src/catalogs/registry/index.js";
+import { PROVIDERS, PROVIDER_MODELS } from "../../src/catalogs/index.js";
 
 describe("Venice AI provider", () => {
   const venice = REGISTRY.find((e) => e.id === "venice");
