@@ -9,61 +9,87 @@ import (
 
 type connectionPoolLookup func(context.Context, string) (map[string]any, error)
 
-// connectionHTTP resolves the single configured pool before legacy settings.
-// Rotation strategies remain handled by callers that select a pool beforehand.
+// connectionHTTP resolve o pool ativo (com rotação quando configurada) antes
+// do proxy legado da conexão. Em strictProxy a requisição nunca cai para o IP
+// direto; sem strict, uma falha de transporte no proxy é repetida direto.
 func connectionHTTP(ctx context.Context, data map[string]any, lookup connectionPoolLookup, base *http.Client) (*http.Client, string, func(), error) {
-	proxyURL, noProxy, relay := "", "", ""
-	enabled := data["connectionProxyEnabled"] == true
-	if enabled {
-		proxyURL = strings.TrimSpace(ttsString(data["connectionProxyUrl"]))
-	}
-	noProxy = strings.TrimSpace(ttsString(data["connectionNoProxy"]))
-	poolID := strings.TrimSpace(ttsString(data["proxyPoolId"]))
-	if poolID != "" && poolID != "__none__" && lookup != nil {
-		pool, err := lookup(ctx, poolID)
-		if err == nil && pool["isActive"] == true && strings.TrimSpace(ttsString(pool["proxyUrl"])) != "" {
-			noProxy = ttsString(pool["noProxy"])
-			switch pool["type"] {
-			case "vercel", "cloudflare", "deno":
-				relay = ttsString(pool["proxyUrl"])
-				proxyURL = ""
-			default:
-				proxyURL = ttsString(pool["proxyUrl"])
-			}
-		}
-	}
+	config := resolveConnectionProxy(ctx, data, lookup)
 	if base == nil {
 		base = http.DefaultClient
 	}
 	client := *base
 	cleanup := func() {}
-	if proxyURL != "" {
-		parsed, err := url.Parse(proxyURL)
+	transport := client.Transport
+	if transport == nil {
+		transport = sharedDirectTransport()
+	}
+
+	switch {
+	case config.relay != "":
+		// Relay não usa proxy de ambiente, como o originalFetch do caminho
+		// vercel/cloudflare/deno.
+		if client.Transport == nil {
+			client.Transport = sharedRelayTransport()
+		}
+	case config.proxyURL != "":
+		if err := dialCheck(config.proxyURL); err != nil {
+			return nil, "", cleanup, err
+		}
+		proxyTransport, custom, err := proxyTransport(config.proxyURL, config.noProxy, transport)
 		if err != nil {
 			return nil, "", cleanup, err
 		}
-		transport := http.DefaultTransport.(*http.Transport).Clone()
-		if existing, ok := base.Transport.(*http.Transport); ok {
-			transport = existing.Clone()
+		if custom {
+			cleanup = proxyTransport.CloseIdleConnections
 		}
-		transport.Proxy = func(request *http.Request) (*url.URL, error) {
-			if connectionNoProxyMatches(request.URL.Hostname(), noProxy) {
-				return nil, nil
-			}
-			return parsed, nil
+		if config.strict {
+			client.Transport = proxyTransport
+		} else {
+			client.Transport = proxyFallbackTransport{proxy: proxyTransport, direct: transport}
 		}
+	case config.strict && (config.intended || proxyIntended(data)):
+		return nil, "", cleanup, errProxyRequired
+	default:
 		client.Transport = transport
-		cleanup = transport.CloseIdleConnections
 	}
+
 	if usage, ok := ctx.Value(usageContextKey{}).(*requestUsage); ok {
-		transport := client.Transport
-		if transport == nil {
-			transport = http.DefaultTransport
+		base := client.Transport
+		if base == nil {
+			base = http.DefaultTransport
 		}
-		client.Transport = usageTransport{base: transport, usage: usage}
+		client.Transport = usageTransport{base: base, usage: usage}
 	}
-	return &client, relay, cleanup, nil
+	return &client, config.relay, cleanup, nil
 }
+
+// proxyTransport devolve o transporte do proxy. Para o transporte padrão usa
+// cache compartilhado (keep-alive reutilizável); para um transporte injetado
+// clona e sinaliza que o caller deve fechar as conexões ociosas.
+func proxyTransport(proxyURL, noProxy string, base http.RoundTripper) (*http.Transport, bool, error) {
+	if base == nil || base == http.RoundTripper(sharedDirectTransport()) {
+		transport, _, err := cachedProxyTransport(proxyURL, noProxy)
+		return transport, false, err
+	}
+	custom, ok := base.(*http.Transport)
+	if !ok {
+		transport, _, err := cachedProxyTransport(proxyURL, noProxy)
+		return transport, false, err
+	}
+	parsed, err := url.Parse(proxyURL)
+	if err != nil || parsed.Host == "" {
+		return nil, false, err
+	}
+	transport := custom.Clone()
+	transport.Proxy = func(request *http.Request) (*url.URL, error) {
+		if connectionNoProxyMatches(request.URL.Hostname(), noProxy) {
+			return nil, nil
+		}
+		return parsed, nil
+	}
+	return transport, true, nil
+}
+
 func connectionNoProxyMatches(host, list string) bool {
 	for _, raw := range strings.Split(list, ",") {
 		item := strings.TrimSpace(raw)
