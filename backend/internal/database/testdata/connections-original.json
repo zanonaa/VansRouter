@@ -1,0 +1,412 @@
+[
+  {
+    "method": "createProviderConnection",
+    "args": [
+      {
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "A",
+        "apiKey": "first",
+        "lastError": "old",
+        "testStatus": "error"
+      }
+    ],
+    "save": "a",
+    "expected": {
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "priority": 1,
+      "isActive": true,
+      "apiKey": "first",
+      "testStatus": "error",
+      "lastError": "old"
+    }
+  },
+  {
+    "method": "createProviderConnection",
+    "args": [
+      {
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "B",
+        "apiKey": "second"
+      }
+    ],
+    "save": "b",
+    "expected": {
+      "id": "b",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "B",
+      "priority": 2,
+      "isActive": true,
+      "apiKey": "second"
+    }
+  },
+  {
+    "method": "createProviderConnection",
+    "args": [
+      {
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "A",
+        "apiKey": "replacement",
+        "testStatus": "active"
+      }
+    ],
+    "save": "",
+    "expected": {
+      "apiKey": "replacement",
+      "testStatus": "active",
+      "lastError": null,
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "email": null,
+      "priority": 1,
+      "isActive": true,
+      "lastErrorAt": null,
+      "errorCode": null,
+      "rateLimitedUntil": null,
+      "backoffLevel": 0
+    }
+  },
+  {
+    "method": "getProviderConnectionById",
+    "args": [
+      "$a"
+    ],
+    "save": "",
+    "expected": {
+      "apiKey": "replacement",
+      "testStatus": "active",
+      "lastError": null,
+      "lastErrorAt": null,
+      "errorCode": null,
+      "rateLimitedUntil": null,
+      "backoffLevel": 0,
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "email": null,
+      "priority": 1,
+      "isActive": true
+    }
+  },
+  {
+    "method": "updateProviderConnection",
+    "args": [
+      "$a",
+      {
+        "providerSpecificData": {
+          "custom": true
+        },
+        "modelLock_test": "locked",
+        "unknown": "keep"
+      }
+    ],
+    "save": "",
+    "expected": {
+      "apiKey": "replacement",
+      "testStatus": "active",
+      "lastError": null,
+      "lastErrorAt": null,
+      "errorCode": null,
+      "rateLimitedUntil": null,
+      "backoffLevel": 0,
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "email": null,
+      "priority": 1,
+      "isActive": true,
+      "providerSpecificData": {
+        "custom": true
+      },
+      "modelLock_test": "locked",
+      "unknown": "keep"
+    }
+  },
+  {
+    "method": "updateProviderConnection",
+    "args": [
+      "$a",
+      {
+        "testStatus": "active"
+      }
+    ],
+    "save": "",
+    "expected": {
+      "apiKey": "replacement",
+      "testStatus": "active",
+      "lastError": null,
+      "lastErrorAt": null,
+      "errorCode": null,
+      "rateLimitedUntil": null,
+      "backoffLevel": 0,
+      "providerSpecificData": {
+        "custom": true
+      },
+      "modelLock_test": null,
+      "unknown": "keep",
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "email": null,
+      "priority": 1,
+      "isActive": true
+    }
+  },
+  {
+    "method": "getProviderConnections",
+    "args": [
+      {
+        "provider": "openai",
+        "isActive": true
+      }
+    ],
+    "save": "",
+    "expected": [
+      {
+        "apiKey": "replacement",
+        "testStatus": "active",
+        "lastError": null,
+        "lastErrorAt": null,
+        "errorCode": null,
+        "rateLimitedUntil": null,
+        "backoffLevel": 0,
+        "providerSpecificData": {
+          "custom": true
+        },
+        "modelLock_test": null,
+        "unknown": "keep",
+        "id": "a",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "A",
+        "email": null,
+        "priority": 1,
+        "isActive": true
+      },
+      {
+        "apiKey": "second",
+        "id": "b",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "B",
+        "email": null,
+        "priority": 2,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "method": "createProviderConnection",
+    "args": [
+      {
+        "provider": "codex",
+        "authType": "oauth",
+        "email": "same@example.test"
+      }
+    ],
+    "save": "codex1",
+    "expected": {
+      "id": "codex1",
+      "provider": "codex",
+      "authType": "oauth",
+      "name": "same@example.test",
+      "priority": 1,
+      "isActive": true,
+      "email": "same@example.test"
+    }
+  },
+  {
+    "method": "createProviderConnection",
+    "args": [
+      {
+        "provider": "codex",
+        "authType": "oauth",
+        "email": "same@example.test"
+      }
+    ],
+    "save": "codex2",
+    "expected": {
+      "id": "codex2",
+      "provider": "codex",
+      "authType": "oauth",
+      "name": "same@example.test",
+      "priority": 2,
+      "isActive": true,
+      "email": "same@example.test"
+    }
+  },
+  {
+    "method": "createProviderConnection",
+    "args": [
+      {
+        "provider": "github",
+        "authType": "oauth",
+        "email": "one@example.test",
+        "providerSpecificData": {
+          "githubLogin": "Operator"
+        }
+      }
+    ],
+    "save": "github",
+    "expected": {
+      "id": "github",
+      "provider": "github",
+      "authType": "oauth",
+      "name": "Operator",
+      "priority": 1,
+      "isActive": true,
+      "email": "one@example.test",
+      "providerSpecificData": {
+        "githubLogin": "Operator"
+      }
+    }
+  },
+  {
+    "method": "createProviderConnectionsBulk",
+    "args": [
+      [
+        {
+          "provider": "openai",
+          "name": "A",
+          "apiKey": "bulk-replaced"
+        },
+        {
+          "provider": "openai",
+          "name": "invalid"
+        }
+      ]
+    ],
+    "save": "",
+    "expected": [
+      {
+        "name": "A",
+        "ok": true,
+        "id": "a",
+        "updated": true
+      },
+      {
+        "name": "invalid",
+        "ok": false,
+        "error": "provider, apiKey, and name are required"
+      }
+    ]
+  },
+  {
+    "method": "getProviderConnectionById",
+    "args": [
+      "$a"
+    ],
+    "save": "",
+    "expected": {
+      "apiKey": "bulk-replaced",
+      "testStatus": "active",
+      "lastError": null,
+      "lastErrorAt": null,
+      "errorCode": null,
+      "rateLimitedUntil": null,
+      "backoffLevel": 0,
+      "providerSpecificData": {
+        "custom": true
+      },
+      "modelLock_test": null,
+      "unknown": "keep",
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "email": null,
+      "priority": 1,
+      "isActive": true
+    }
+  },
+  {
+    "method": "deleteProviderConnection",
+    "args": [
+      "$b"
+    ],
+    "save": "",
+    "expected": true
+  },
+  {
+    "method": "getProviderConnections",
+    "args": [
+      {
+        "provider": "openai"
+      }
+    ],
+    "save": "",
+    "expected": [
+      {
+        "apiKey": "bulk-replaced",
+        "testStatus": "active",
+        "lastError": null,
+        "lastErrorAt": null,
+        "errorCode": null,
+        "rateLimitedUntil": null,
+        "backoffLevel": 0,
+        "providerSpecificData": {
+          "custom": true
+        },
+        "modelLock_test": null,
+        "unknown": "keep",
+        "id": "a",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "A",
+        "email": null,
+        "priority": 1,
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "method": "deleteProviderConnection",
+    "args": [
+      "missing"
+    ],
+    "save": "",
+    "expected": false
+  },
+  {
+    "method": "cleanupProviderConnections",
+    "args": [],
+    "save": "",
+    "expected": 4
+  },
+  {
+    "method": "getProviderConnectionById",
+    "args": [
+      "$a"
+    ],
+    "save": "",
+    "expected": {
+      "apiKey": "bulk-replaced",
+      "testStatus": "active",
+      "errorCode": null,
+      "backoffLevel": 0,
+      "providerSpecificData": {
+        "custom": true
+      },
+      "modelLock_test": null,
+      "unknown": "keep",
+      "id": "a",
+      "provider": "openai",
+      "authType": "apikey",
+      "name": "A",
+      "email": null,
+      "priority": 1,
+      "isActive": true
+    }
+  }
+]

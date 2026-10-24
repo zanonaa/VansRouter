@@ -1,0 +1,415 @@
+{
+  "brave-search": {
+    "alias": "brave",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://api.search.brave.com/res/v1",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "x-subscription-token",
+      "costPerQuery": 0.005,
+      "freeMonthlyQuota": 1000,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 20,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "exa": {
+    "alias": "exa",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://api.exa.ai/search",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0.007,
+      "freeMonthlyQuota": 1000,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "exaSearchTypes": [
+        "instant",
+        "fast",
+        "auto",
+        "deep-lite",
+        "deep",
+        "deep-reasoning"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 100,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": {
+      "baseUrl": "https://api.exa.ai/contents",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "costPerQuery": 0.001,
+      "freeMonthlyQuota": 1000,
+      "formats": [
+        "text",
+        "markdown"
+      ],
+      "maxCharacters": 100000,
+      "timeoutMs": 15000
+    },
+    "video": null
+  },
+  "firecrawl": {
+    "alias": "firecrawl",
+    "noAuth": false,
+    "search": null,
+    "fetch": {
+      "baseUrl": "https://api.firecrawl.dev/v1/scrape",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0.002,
+      "freeMonthlyQuota": 500,
+      "formats": [
+        "markdown",
+        "html",
+        "text"
+      ],
+      "maxCharacters": 200000,
+      "timeoutMs": 30000
+    },
+    "video": null
+  },
+  "glm": {
+    "alias": "glm",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0,
+      "searchTypes": [
+        "web"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 50,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "google-pse": {
+    "alias": "gpse",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://www.googleapis.com/customsearch/v1",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "key",
+      "costPerQuery": 0.005,
+      "freeMonthlyQuota": 3000,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 10,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "jina-reader": {
+    "alias": "jina-reader",
+    "noAuth": false,
+    "search": null,
+    "fetch": {
+      "baseUrl": "https://r.jina.ai",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0,
+      "freeMonthlyQuota": 1000000,
+      "formats": [
+        "markdown",
+        "text",
+        "html"
+      ],
+      "maxCharacters": 200000,
+      "timeoutMs": 30000
+    },
+    "video": null
+  },
+  "kimchi": {
+    "alias": "kimchi",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://llm.kimchi.dev/v1/search",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "format": "openai",
+      "timeoutMs": 25000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "linkup": {
+    "alias": "linkup",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://api.linkup.so/v1/search",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0.005,
+      "freeMonthlyQuota": 1000,
+      "searchTypes": [
+        "web"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 50,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "openrouter": {
+    "alias": "openrouter",
+    "noAuth": false,
+    "search": null,
+    "fetch": null,
+    "video": {
+      "baseUrl": "https://openrouter.ai/api/v1/videos",
+      "headers": {
+        "HTTP-Referer": "https://endpoint-proxy.local",
+        "X-Title": "Endpoint Proxy"
+      }
+    }
+  },
+  "searchapi": {
+    "alias": "searchapi",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://www.searchapi.io/api/v1/search",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "api_key",
+      "costPerQuery": 0.004,
+      "freeMonthlyQuota": 100,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 100,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "searxng": {
+    "alias": "searxng",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "http://127.0.0.1:8888/search",
+      "method": "GET",
+      "authType": "none",
+      "authHeader": "none",
+      "costPerQuery": 0,
+      "freeMonthlyQuota": 999999,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 50,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 180000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "serper": {
+    "alias": "serper",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://google.serper.dev",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "costPerQuery": 0.001,
+      "freeMonthlyQuota": 2500,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 100,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "tavily": {
+    "alias": "tavily",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://api.tavily.com/search",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0.008,
+      "freeMonthlyQuota": 1000,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 20,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": {
+      "baseUrl": "https://api.tavily.com/extract",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0.008,
+      "freeMonthlyQuota": 1000,
+      "formats": [
+        "markdown",
+        "text"
+      ],
+      "maxCharacters": 100000,
+      "timeoutMs": 15000
+    },
+    "video": null
+  },
+  "vertex": {
+    "alias": "vertex",
+    "noAuth": false,
+    "search": null,
+    "fetch": null,
+    "video": {
+      "baseUrl": "https://aiplatform.googleapis.com"
+    }
+  },
+  "xai": {
+    "alias": "xai",
+    "noAuth": false,
+    "search": null,
+    "fetch": null,
+    "video": {
+      "baseUrl": "https://api.x.ai/v1/videos"
+    }
+  },
+  "youcom": {
+    "alias": "youcom",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://ydc-index.io/v1/search",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "costPerQuery": 0.005,
+      "freeMonthlyQuota": 0,
+      "searchTypes": [
+        "web",
+        "news"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 100,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "xquik": {
+    "alias": "xquik",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://xquik.com/api/v1/x/tweets/search",
+      "validateUrl": "https://xquik.com/api/v1/credits",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "searchTypes": [
+        "x"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 100,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 60000,
+      "creditsPerResult": 1
+    },
+    "fetch": null,
+    "video": null
+  },
+  "ollama-search": {
+    "alias": "ollama-search",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://ollama.com/api/web_search",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "bearer",
+      "costPerQuery": 0,
+      "freeMonthlyQuota": 1000,
+      "searchTypes": [
+        "web"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 10,
+      "timeoutMs": 10000,
+      "cacheTTLMs": 300000
+    },
+    "fetch": null,
+    "video": null
+  },
+  "tinyfish": {
+    "alias": "tinyfish",
+    "noAuth": false,
+    "search": {
+      "baseUrl": "https://api.search.tinyfish.ai",
+      "validateUrl": "https://api.search.tinyfish.ai/usage?limit=1",
+      "method": "GET",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "costPerQuery": 0,
+      "searchTypes": [
+        "web",
+        "news",
+        "research_paper"
+      ],
+      "defaultMaxResults": 5,
+      "maxMaxResults": 10,
+      "timeoutMs": 10000
+    },
+    "fetch": {
+      "baseUrl": "https://api.fetch.tinyfish.ai",
+      "method": "POST",
+      "authType": "apikey",
+      "authHeader": "x-api-key",
+      "costPerQuery": 0,
+      "formats": [
+        "markdown",
+        "html"
+      ],
+      "maxCharacters": 100000,
+      "timeoutMs": 150000
+    },
+    "video": null
+  }
+}

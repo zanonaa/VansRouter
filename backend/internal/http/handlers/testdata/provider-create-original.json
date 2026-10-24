@@ -1,0 +1,217 @@
+[
+  {
+    "input": {},
+    "status": 400,
+    "body": {
+      "error": "Invalid provider"
+    }
+  },
+  {
+    "input": {
+      "provider": "openai"
+    },
+    "status": 400,
+    "body": {
+      "error": "API Key is required"
+    }
+  },
+  {
+    "input": {
+      "provider": " OpenAI ",
+      "apiKey": "dummy",
+      "name": "N"
+    },
+    "status": 201,
+    "body": {
+      "connection": {
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "N",
+        "priority": 1,
+        "globalPriority": null,
+        "defaultModel": null,
+        "providerSpecificData": {
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "",
+          "connectionNoProxy": ""
+        },
+        "isActive": true,
+        "testStatus": "unknown"
+      }
+    }
+  },
+  {
+    "input": {
+      "provider": "openai",
+      "apiKey": "dummy",
+      "connectionProxyEnabled": true
+    },
+    "status": 400,
+    "body": {
+      "error": "Connection proxy URL is required when connection proxy is enabled"
+    }
+  },
+  {
+    "input": {
+      "provider": "openai",
+      "apiKey": "dummy",
+      "proxyPoolId": "missing"
+    },
+    "status": 400,
+    "body": {
+      "error": "Proxy pool not found"
+    }
+  },
+  {
+    "input": {
+      "provider": "openai",
+      "apiKey": "dummy",
+      "proxyPoolId": "pool",
+      "providerSpecificData": [
+        1,
+        2
+      ]
+    },
+    "status": 201,
+    "body": {
+      "connection": {
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "OpenAI",
+        "priority": 1,
+        "globalPriority": null,
+        "defaultModel": null,
+        "providerSpecificData": {
+          "0": 1,
+          "1": 2,
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "",
+          "connectionNoProxy": "",
+          "proxyPoolId": "pool"
+        },
+        "isActive": true,
+        "testStatus": "unknown"
+      }
+    }
+  },
+  {
+    "input": {
+      "provider": "ollama-local",
+      "baseURL": " http://local.test "
+    },
+    "status": 201,
+    "body": {
+      "connection": {
+        "provider": "ollama-local",
+        "authType": "apikey",
+        "name": "Ollama Local",
+        "priority": 1,
+        "globalPriority": null,
+        "defaultModel": null,
+        "providerSpecificData": {
+          "baseUrl": "http://local.test",
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "",
+          "connectionNoProxy": ""
+        },
+        "isActive": true,
+        "testStatus": "unknown"
+      }
+    }
+  },
+  {
+    "input": {
+      "provider": "custom-embedding-missing",
+      "apiKey": "dummy",
+      "name": "N"
+    },
+    "status": 404,
+    "body": {
+      "error": "Custom Embedding node not found"
+    }
+  },
+  {
+    "input": {
+      "provider": "openai-compatible-known",
+      "apiKey": "dummy",
+      "name": "N"
+    },
+    "status": 201,
+    "body": {
+      "connection": {
+        "provider": "openai-compatible-known",
+        "authType": "apikey",
+        "name": "N",
+        "priority": 1,
+        "globalPriority": null,
+        "defaultModel": null,
+        "providerSpecificData": {
+          "prefix": "n",
+          "apiType": "chat",
+          "baseUrl": "https://node.test/v1",
+          "nodeName": "Node",
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "",
+          "connectionNoProxy": ""
+        },
+        "isActive": true,
+        "testStatus": "unknown"
+      }
+    }
+  },
+  {
+    "input": {
+      "provider": "anthropic-compatible-known",
+      "apiKey": "dummy",
+      "name": "N"
+    },
+    "status": 201,
+    "body": {
+      "connection": {
+        "provider": "anthropic-compatible-known",
+        "authType": "apikey",
+        "name": "N",
+        "priority": 1,
+        "globalPriority": null,
+        "defaultModel": null,
+        "providerSpecificData": {
+          "prefix": "n",
+          "baseUrl": "https://node.test/v1",
+          "nodeName": "Node",
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "",
+          "connectionNoProxy": ""
+        },
+        "isActive": true,
+        "testStatus": "unknown"
+      }
+    }
+  },
+  {
+    "input": {
+      "provider": "openai",
+      "apiKey": "dummy",
+      "priority": 0,
+      "globalPriority": 0,
+      "providerSpecificData": "ignored"
+    },
+    "status": 201,
+    "body": {
+      "connection": {
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "OpenAI",
+        "priority": 1,
+        "globalPriority": null,
+        "defaultModel": null,
+        "providerSpecificData": {
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "",
+          "connectionNoProxy": ""
+        },
+        "isActive": true,
+        "testStatus": "unknown"
+      }
+    }
+  }
+]

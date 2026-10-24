@@ -1,0 +1,152 @@
+[
+  {
+    "input": {},
+    "status": 400,
+    "body": {
+      "error": "Name is required"
+    }
+  },
+  {
+    "input": {
+      "name": "N"
+    },
+    "status": 400,
+    "body": {
+      "error": "Prefix is required"
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p"
+    },
+    "status": 400,
+    "body": {
+      "error": "Invalid OpenAI compatible API type"
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p",
+      "type": "invalid"
+    },
+    "status": 400,
+    "body": {
+      "error": "Invalid provider node type"
+    }
+  },
+  {
+    "input": {
+      "name": 12,
+      "prefix": "p"
+    },
+    "status": 500,
+    "body": {
+      "error": "Failed to create provider node"
+    }
+  },
+  {
+    "input": {
+      "name": " N ",
+      "prefix": " p ",
+      "apiType": "chat"
+    },
+    "status": 201,
+    "body": {
+      "node": {
+        "id": "openai-compatible-chat-fixture-uuid",
+        "type": "openai-compatible",
+        "prefix": "p",
+        "apiType": "chat",
+        "baseUrl": "https://api.openai.com/v1",
+        "name": "N"
+      }
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p",
+      "apiType": "responses",
+      "baseUrl": " https://example.test/v1/ "
+    },
+    "status": 201,
+    "body": {
+      "node": {
+        "id": "openai-compatible-responses-fixture-uuid",
+        "type": "openai-compatible",
+        "prefix": "p",
+        "apiType": "responses",
+        "baseUrl": "https://example.test/v1/",
+        "name": "N"
+      }
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p",
+      "type": "anthropic-compatible",
+      "baseUrl": " https://example.test/messages/ "
+    },
+    "status": 201,
+    "body": {
+      "node": {
+        "id": "anthropic-compatible-fixture-uuid",
+        "type": "anthropic-compatible",
+        "prefix": "p",
+        "baseUrl": "https://example.test/v1",
+        "name": "N"
+      }
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p",
+      "type": "custom-embedding",
+      "baseUrl": "https://example.test/v1/embeddings/"
+    },
+    "status": 201,
+    "body": {
+      "node": {
+        "id": "custom-embedding-fixture-uuid",
+        "type": "custom-embedding",
+        "prefix": "p",
+        "baseUrl": "https://example.test/v1",
+        "name": "N"
+      }
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p",
+      "type": "custom-embedding",
+      "baseUrl": "   "
+    },
+    "status": 201,
+    "body": {
+      "node": {
+        "id": "custom-embedding-fixture-uuid",
+        "type": "custom-embedding",
+        "prefix": "p",
+        "baseUrl": "",
+        "name": "N"
+      }
+    }
+  },
+  {
+    "input": {
+      "name": "N",
+      "prefix": "p",
+      "apiType": "chat",
+      "baseUrl": 42
+    },
+    "status": 500,
+    "body": {
+      "error": "Failed to create provider node"
+    }
+  }
+]

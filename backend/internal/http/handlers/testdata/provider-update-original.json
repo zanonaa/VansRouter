@@ -1,0 +1,237 @@
+[
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {},
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "custom": true,
+          "proxyPoolId": "old"
+        }
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "name": "New",
+      "apiKey": "replacement"
+    },
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "New",
+        "providerSpecificData": {
+          "custom": true,
+          "proxyPoolId": "old"
+        }
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "connectionProxyEnabled": true
+    },
+    "status": 400,
+    "body": {
+      "error": "Connection proxy URL is required when connection proxy is enabled"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "connectionProxyUrl": " http://proxy ",
+      "connectionNoProxy": " local "
+    },
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "custom": true,
+          "proxyPoolId": "old",
+          "connectionProxyEnabled": false,
+          "connectionProxyUrl": "http://proxy",
+          "connectionNoProxy": "local"
+        }
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "proxyPoolId": "missing"
+    },
+    "status": 400,
+    "body": {
+      "error": "Proxy pool not found"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "proxyPoolId": null
+    },
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "custom": true
+        }
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "proxyPoolIds": [
+        "pool",
+        "pool"
+      ],
+      "proxyRotationStrategy": " SMART "
+    },
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "custom": true,
+          "proxyPoolIds": [
+            "pool"
+          ],
+          "proxyRotationStrategy": "smart"
+        }
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "proxyPoolIds": [],
+      "proxyRotationStrategy": "invalid"
+    },
+    "status": 400,
+    "body": {
+      "error": "Invalid proxy rotation strategy"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "providerSpecificData": [
+        1,
+        2
+      ]
+    },
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "0": 1,
+          "1": 2,
+          "custom": true,
+          "proxyPoolId": "old"
+        }
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "conn",
+    "input": {
+      "providerSpecificData": "xy"
+    },
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "0": "x",
+          "1": "y",
+          "custom": true,
+          "proxyPoolId": "old"
+        }
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "id": "conn",
+    "input": null,
+    "status": 200,
+    "body": {
+      "connection": {
+        "id": "conn",
+        "provider": "openai",
+        "authType": "apikey",
+        "name": "Existing",
+        "providerSpecificData": {
+          "custom": true,
+          "proxyPoolId": "old"
+        }
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "id": "missing",
+    "input": null,
+    "status": 404,
+    "body": {
+      "error": "Connection not found"
+    }
+  },
+  {
+    "method": "DELETE",
+    "id": "conn",
+    "input": null,
+    "status": 200,
+    "body": {
+      "message": "Connection deleted successfully"
+    }
+  },
+  {
+    "method": "DELETE",
+    "id": "missing",
+    "input": null,
+    "status": 404,
+    "body": {
+      "error": "Connection not found"
+    }
+  }
+]

@@ -2,6 +2,7 @@
 # Dependencies
 # =============================================================================
 /node_modules
+/frontend/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,7 +12,6 @@
 !.yarn/versions
 package-lock.json
 !cli/package-lock.json
-!docker/native-deps/package-lock.json
 !gitbook/package-lock.json
 
 # =============================================================================
@@ -132,3 +132,6 @@ graphify-out/*
 
 # CLI package smoke scratch dir (CI + local `npm pack` verification)
 .ci-cli-smoke/
+
+# Saída do build Vite da SPA (Fase 4A)
+dist/

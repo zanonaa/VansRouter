@@ -1,0 +1,331 @@
+[
+  {
+    "method": "createProxyPool",
+    "args": [
+      {
+        "id": "a",
+        "name": "A",
+        "proxyUrl": "http://proxy.example.test",
+        "strictProxy": true
+      }
+    ],
+    "expected": {
+      "id": "a",
+      "name": "A",
+      "proxyUrl": "http://proxy.example.test",
+      "noProxy": "",
+      "type": "http",
+      "isActive": true,
+      "strictProxy": true,
+      "testStatus": "unknown",
+      "lastTestedAt": null,
+      "lastError": null
+    }
+  },
+  {
+    "method": "createProxyPool",
+    "args": [
+      {
+        "id": "b",
+        "name": "B",
+        "isActive": false,
+        "type": "deno"
+      }
+    ],
+    "expected": {
+      "id": "b",
+      "name": "B",
+      "noProxy": "",
+      "type": "deno",
+      "isActive": false,
+      "strictProxy": false,
+      "testStatus": "unknown",
+      "lastTestedAt": null,
+      "lastError": null
+    }
+  },
+  {
+    "method": "getProxyPoolById",
+    "args": [
+      "a"
+    ],
+    "expected": {
+      "name": "A",
+      "proxyUrl": "http://proxy.example.test",
+      "noProxy": "",
+      "type": "http",
+      "strictProxy": true,
+      "lastTestedAt": null,
+      "lastError": null,
+      "id": "a",
+      "isActive": true,
+      "testStatus": "unknown"
+    }
+  },
+  {
+    "method": "updateProxyPool",
+    "args": [
+      "a",
+      {
+        "testStatus": "active",
+        "unknown": {
+          "keep": true
+        },
+        "lastError": null
+      }
+    ],
+    "expected": {
+      "name": "A",
+      "proxyUrl": "http://proxy.example.test",
+      "noProxy": "",
+      "type": "http",
+      "strictProxy": true,
+      "lastTestedAt": null,
+      "lastError": null,
+      "id": "a",
+      "isActive": true,
+      "testStatus": "active",
+      "unknown": {
+        "keep": true
+      }
+    }
+  },
+  {
+    "method": "getProxyPools",
+    "args": [
+      {
+        "isActive": true,
+        "testStatus": "active"
+      }
+    ],
+    "expected": [
+      {
+        "name": "A",
+        "proxyUrl": "http://proxy.example.test",
+        "noProxy": "",
+        "type": "http",
+        "strictProxy": true,
+        "lastTestedAt": null,
+        "lastError": null,
+        "unknown": {
+          "keep": true
+        },
+        "id": "a",
+        "isActive": true,
+        "testStatus": "active"
+      }
+    ]
+  },
+  {
+    "method": "getProxyPools",
+    "args": [
+      {
+        "isActive": false
+      }
+    ],
+    "expected": [
+      {
+        "name": "B",
+        "noProxy": "",
+        "type": "deno",
+        "strictProxy": false,
+        "lastTestedAt": null,
+        "lastError": null,
+        "id": "b",
+        "isActive": false,
+        "testStatus": "unknown"
+      }
+    ]
+  },
+  {
+    "method": "updateProxyPool",
+    "args": [
+      "missing",
+      {
+        "name": "X"
+      }
+    ],
+    "expected": null
+  },
+  {
+    "method": "upsertProxyPoolFitness",
+    "args": [
+      "a",
+      "openai::model",
+      1790000000000,
+      "limit"
+    ],
+    "expected": {
+      "poolId": "a",
+      "scope": "openai::model",
+      "until": 1790000000000,
+      "reason": "limit"
+    }
+  },
+  {
+    "method": "upsertProxyPoolFitness",
+    "args": [
+      "a",
+      "openai::model",
+      1790000000001,
+      ""
+    ],
+    "expected": {
+      "poolId": "a",
+      "scope": "openai::model",
+      "until": 1790000000001,
+      "reason": ""
+    }
+  },
+  {
+    "method": "upsertProxyPoolFitness",
+    "args": [
+      "b",
+      "other::*",
+      0,
+      ""
+    ],
+    "expected": {
+      "poolId": "b",
+      "scope": "other::*",
+      "until": 0,
+      "reason": ""
+    }
+  },
+  {
+    "method": "upsertProxyPoolFitness",
+    "args": [
+      "",
+      "invalid",
+      1,
+      ""
+    ],
+    "expected": null
+  },
+  {
+    "method": "listProxyPoolFitness",
+    "args": [],
+    "expected": [
+      {
+        "poolId": "a",
+        "scope": "openai::model",
+        "until": 1790000000001,
+        "reason": ""
+      },
+      {
+        "poolId": "b",
+        "scope": "other::*",
+        "until": 0,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "method": "listProxyPoolFitness",
+    "args": [
+      "a"
+    ],
+    "expected": [
+      {
+        "poolId": "a",
+        "scope": "openai::model",
+        "until": 1790000000001,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "method": "deleteProxyPoolFitness",
+    "args": [
+      "a",
+      "missing"
+    ],
+    "expected": 0
+  },
+  {
+    "method": "clearProxyPoolFitness",
+    "args": [
+      "openai"
+    ],
+    "expected": 1
+  },
+  {
+    "method": "listProxyPoolFitness",
+    "args": [],
+    "expected": [
+      {
+        "poolId": "b",
+        "scope": "other::*",
+        "until": 0,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "method": "upsertProxyPoolFitness",
+    "args": [
+      "a",
+      "scope",
+      1,
+      ""
+    ],
+    "expected": {
+      "poolId": "a",
+      "scope": "scope",
+      "until": 1,
+      "reason": ""
+    }
+  },
+  {
+    "method": "deleteProxyPool",
+    "args": [
+      "a"
+    ],
+    "expected": {
+      "name": "A",
+      "proxyUrl": "http://proxy.example.test",
+      "noProxy": "",
+      "type": "http",
+      "strictProxy": true,
+      "lastTestedAt": null,
+      "lastError": null,
+      "unknown": {
+        "keep": true
+      },
+      "id": "a",
+      "isActive": true,
+      "testStatus": "active"
+    }
+  },
+  {
+    "method": "listProxyPoolFitness",
+    "args": [],
+    "expected": [
+      {
+        "poolId": "b",
+        "scope": "other::*",
+        "until": 0,
+        "reason": ""
+      }
+    ]
+  },
+  {
+    "method": "deleteProxyPool",
+    "args": [
+      "a"
+    ],
+    "expected": null
+  },
+  {
+    "method": "deleteProxyPoolFitnessByPool",
+    "args": [
+      "b"
+    ],
+    "expected": 1
+  },
+  {
+    "method": "clearProxyPoolFitness",
+    "args": [],
+    "expected": 0
+  }
+]

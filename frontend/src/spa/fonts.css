@@ -1,0 +1,20 @@
+/* Fase 4A — fontes fora do next/font.
+   Inter vem do Google Fonts via <link> no index.html (mesma família/subset latin
+   do next/font/google; divergência de carregamento documentada no lote).
+   Material Symbols usa o mesmo woff2 subset do next/font/local. */
+@font-face {
+  font-family: "Material Symbols Local";
+  src: url("../app/fonts/material-symbols-outlined-subset.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-material-symbols: "Material Symbols Local";
+}
+
+body {
+  font-family: var(--font-inter);
+}

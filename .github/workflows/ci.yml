@@ -2,10 +2,19 @@ name: Gateway CI
 
 on:
   push:
-    branches: [main, master, dev]
+    branches: [main, master, dev, migration/go-backend]
   pull_request:
     branches: [main, master, dev]
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Tag da imagem a publicar (ghcr.io/zanonaa/vansrouter:<tag>)"
+        required: false
+        default: "dev-arm64"
+      platforms:
+        description: "Plataformas do build manual"
+        required: false
+        default: "linux/arm64"
 
 permissions:
   contents: read
@@ -44,14 +53,35 @@ jobs:
       - name: Run JavaScript tests
         run: pnpm test
 
-      # Dockerfile runs scripts/build.js; do not compile the app a second time here.
+      # Fase 6: build Vite e verificação de que nenhum segredo vaza no bundle.
+      - name: Build SPA and scan bundle for secrets
+        run: |
+          pnpm build
+          node frontend/scripts/check-spa-secrets.cjs
+
+      # Fase 6: composição Go+SPA pela mesma origem validada sem navegador
+      # (regressão visual completa: frontend/scripts/spa-visual-regression.cjs, local).
+      - name: Static integration smoke (Go serves SPA)
+        run: |
+          cd backend && go build -o /tmp/vansrouter-ci ./cmd/api && cd ..
+          SPA_DIR="$PWD/frontend/dist" PORT=20131 DATA_DIR="$(mktemp -d)" JWT_SECRET=ci-secret \
+            /tmp/vansrouter-ci & SERVER=$!
+          for i in $(seq 1 20); do curl -sf http://localhost:20131/api/health >/dev/null && break; sleep 1; done
+          curl -sf http://localhost:20131/api/health
+          curl -sf http://localhost:20131/dashboard | grep -q '<div id="root">'
+          ASSET=$(curl -s http://localhost:20131/dashboard | grep -o '/assets/[^"]*\.js' | head -1)
+          curl -sf "http://localhost:20131${ASSET}" >/dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:20131/api/rota-que-nao-existe)" != "200"
+          kill $SERVER
+
+      # Dockerfile runs the Vite SPA build; do not build the app a second time here.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
 
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      - name: Log in to GHCR (main only)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+      - name: Log in to GHCR (main, dev branch, or manual dispatch)
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/migration/go-backend'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
@@ -60,7 +90,14 @@ jobs:
 
       - name: Read version
         id: version
-        run: node -e 'console.log(`version=${require("./package.json").version}`)' >> "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          base="$(node -p "require('./package.json').version")"
+          # 2.0.0 + número da execução => 2.0.<build>. Cada build publica uma
+          # versão estritamente maior (inclusive na branch de migração) sem
+          # precisar commitar bump em package.json.
+          echo "version=${base%.*}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "release=${base}" >> "$GITHUB_OUTPUT"
 
       - name: Build and publish multi-architecture image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -71,6 +108,24 @@ jobs:
           tags: |
             ${{ env.GHCR_IMAGE }}:${{ steps.version.outputs.version }}
             ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.version }}
+            VCS_REF=${{ github.sha }}
+          provenance: false
+          sbom: false
+
+      # Publicação manual (workflow_dispatch) ou no push da branch de
+      # migração — imagem de desenvolvimento para o ambiente Dev, por padrão
+      # apenas linux/arm64. O step multi-arch oficial acima continua sendo a
+      # única via de release (main).
+      - name: Publish branch image (manual dispatch or migration branch push)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/migration/go-backend')
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: ${{ (github.event_name == 'workflow_dispatch' && inputs.platforms) || 'linux/arm64' }}
+          push: true
+          tags: ${{ env.GHCR_IMAGE }}:${{ (github.event_name == 'workflow_dispatch' && inputs.image_tag) || 'dev-go-arm64' }}
           build-args: |
             APP_VERSION=${{ steps.version.outputs.version }}
             VCS_REF=${{ github.sha }}

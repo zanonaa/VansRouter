@@ -1,0 +1,710 @@
+{
+  "agentrouter": {
+    "url": "https://agentrouter.org/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": ""
+  },
+  "ai21": {
+    "url": "https://api.ai21.com/studio/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "alibaba": {
+    "url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "alicode-intl": {
+    "url": "https://coding-intl.dashscope.aliyuncs.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "alicode": {
+    "url": "https://coding.dashscope.aliyuncs.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "anthropic": {
+    "url": "https://api.anthropic.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "assemblyai": {
+    "url": "https://api.assemblyai.com/v1/account",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "baseten": {
+    "url": "https://inference.baseten.co/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "blackbox": {
+    "url": "https://api.blackbox.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "byteplus": {
+    "url": "https://ark.ap-southeast.bytepluses.com/api/coding/v3/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "bytez": {
+    "url": "https://api.bytez.com/models/v2/openai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "cerebras": {
+    "url": "https://api.cerebras.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "chutes": {
+    "url": "https://llm.chutes.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "claude": {
+    "url": "https://api.anthropic.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": ""
+  },
+  "cline": {
+    "url": "https://api.cline.bot/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "clinepass": {
+    "url": "https://api.cline.bot/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "cloudflare-ai": {
+    "url": "https://api.cloudflare.com/client/v4/accounts/{accountId}/ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "codebuddy-cn": {
+    "url": "https://copilot.tencent.com/v2/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "codestral": {
+    "url": "https://codestral.mistral.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "codex": {
+    "url": "https://chatgpt.com/backend-api/codex/responses/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "cohere": {
+    "url": "https://api.cohere.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "commandcode": {
+    "url": "https://api.commandcode.ai/alpha/generate/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "cursor": {
+    "url": "https://api2.cursor.sh/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "databricks": {
+    "url": "https://adb-0000000000000000.0.azuredatabricks.net/serving-endpoints",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "deepgram": {
+    "url": "https://api.deepgram.com/v1/listen/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "deepinfra": {
+    "url": "https://api.deepinfra.com/v1/openai/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "deepseek": {
+    "url": "https://api.deepseek.com/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "featherless": {
+    "url": "https://api.featherless.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "fireworks": {
+    "url": "https://api.fireworks.ai/inference/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "friendliai": {
+    "url": "https://api.friendli.ai/serverless/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "galadriel": {
+    "url": "https://api.galadriel.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "gemini-cli": {
+    "url": "https://cloudcode-pa.googleapis.com/v1internal/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "gemini": {
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": ""
+  },
+  "gigachat": {
+    "url": "https://gigachat.devices.sberbank.ru/api/v1",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "github": {
+    "url": "https://api.githubcopilot.com/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "gitlab": {
+    "url": "https://gitlab.com/api/v4/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "glm-cn": {
+    "url": "https://open.bigmodel.cn/api/coding/paas/v4/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "glm": {
+    "url": "https://api.z.ai/api/anthropic/v1/models",
+    "public": false,
+    "authHeader": "x-api-key",
+    "authPrefix": ""
+  },
+  "grok-cli": {
+    "url": "https://cli-chat-proxy.grok.com/v1/responses/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "grok-web": {
+    "url": "https://grok.com/rest/app-chat/conversations/new/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "groq": {
+    "url": "https://api.groq.com/openai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "heroku": {
+    "url": "https://us.inference.heroku.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "hyperbolic": {
+    "url": "https://api.hyperbolic.xyz/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "iflow": {
+    "url": "https://apis.iflow.cn/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "kilocode": {
+    "url": "https://api.kilo.ai/api/gateway/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "kimchi": {
+    "url": "https://llm.kimchi.dev/openai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": ""
+  },
+  "kimi": {
+    "url": "https://api.kimi.com/coding/v1/models",
+    "public": false,
+    "authHeader": "x-api-key",
+    "authPrefix": ""
+  },
+  "kiro": {
+    "url": "https://runtime.us-east-1.kiro.dev/generateAssistantResponse/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "llamagate": {
+    "url": "https://llamagate.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "mimo-free": {
+    "url": "https://models.dev/api.json",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "minimax-cn": {
+    "url": "https://api.minimaxi.com/anthropic/v1/models",
+    "public": false,
+    "authHeader": "x-api-key",
+    "authPrefix": ""
+  },
+  "minimax": {
+    "url": "https://api.minimax.io/anthropic/v1/models",
+    "public": false,
+    "authHeader": "x-api-key",
+    "authPrefix": ""
+  },
+  "mistral": {
+    "url": "https://api.mistral.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "mmf": {
+    "url": "https://api.xiaomimimo.com/api/free-ai/openai/chat/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "nanobanana": {
+    "url": "https://api.nanobananaapi.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "nanogpt": {
+    "url": "https://nano-gpt.com/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "nebius": {
+    "url": "https://api.studio.nebius.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "nscale": {
+    "url": "https://inference.api.nscale.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "nvidia": {
+    "url": "https://integrate.api.nvidia.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "ollama-local": {
+    "url": "http://localhost:11434/api/chat/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "ollama": {
+    "url": "https://ollama.com/api/tags",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "openai": {
+    "url": "https://api.openai.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "opencode-go": {
+    "url": "https://opencode.ai/zen/go/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "opencode": {
+    "url": "https://opencode.ai/zen/v1/models",
+    "public": true,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "opencode-zen": {
+    "url": "https://opencode.ai/zen/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "openrouter": {
+    "url": "https://openrouter.ai/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "ovhcloud": {
+    "url": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "perplexity-agent": {
+    "url": "https://api.perplexity.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "perplexity-web": {
+    "url": "https://www.perplexity.ai/rest/sse/perplexity_ask/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "perplexity": {
+    "url": "https://api.perplexity.ai/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "predibase": {
+    "url": "https://serving.app.predibase.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "publicai": {
+    "url": "https://api.publicai.co/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "qoder": {
+    "url": "https://api3.qoder.sh/algo/api/v2/service/pro/sse/agent_chat_generation/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "qwen": {
+    "url": "https://portal.qwen.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "sambanova": {
+    "url": "https://api.sambanova.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "siliconflow": {
+    "url": "https://api.siliconflow.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "snowflake": {
+    "url": "https://{account}.snowflakecomputing.com/api/v2",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "together": {
+    "url": "https://api.together.xyz/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "upstage": {
+    "url": "https://api.upstage.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "venice": {
+    "url": "https://api.venice.ai/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "vercel-ai-gateway": {
+    "url": "https://ai-gateway.vercel.sh/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "vertex-partner": {
+    "url": "https://aiplatform.googleapis.com/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "vertex": {
+    "url": "https://aiplatform.googleapis.com/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "volcengine-ark": {
+    "url": "https://ark.cn-beijing.volces.com/api/coding/v3/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "volcengine": {
+    "url": "https://ark.cn-beijing.volces.com/api/v3/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "wandb": {
+    "url": "https://api.inference.wandb.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "xai": {
+    "url": "https://api.x.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "xiaomi-mimo": {
+    "url": "https://api.xiaomimimo.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "xiaomi-tokenplan": {
+    "url": "https://token-plan-sgp.xiaomimimo.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "zcode": {
+    "url": "https://api.z.ai/api/anthropic/v1/models",
+    "public": false,
+    "authHeader": "x-api-key",
+    "authPrefix": ""
+  },
+  "muse-spark-web": {
+    "url": "https://www.meta.ai/api/graphql/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "a6api": {
+    "url": "https://a6api.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "alims-intl": {
+    "url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "zenmux": {
+    "url": "https://zenmux.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "tokenrouter": {
+    "url": "https://api.tokenrouter.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "poolside": {
+    "url": "https://inference.poolside.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "devin-cli": {
+    "url": "devin://acp/stdio/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "codebuddy-intl": {
+    "url": "https://www.codebuddy.ai/v2/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "api-airforce": {
+    "url": "https://api.airforce/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "baidu": {
+    "url": "https://qianfan.baidubce.com/v2/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "bazaarlink": {
+    "url": "https://bazaarlink.ai/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "bluesminds": {
+    "url": "https://api.bluesminds.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "kilo-gateway": {
+    "url": "https://api.kilo.ai/api/gateway/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "llm7": {
+    "url": "https://api.llm7.io/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "morph": {
+    "url": "https://api.morphllm.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "tencent": {
+    "url": "https://api.hunyuan.cloud.tencent.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "freebuff": {
+    "url": "https://www.codebuff.com/api/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "alitp-intl": {
+    "url": "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "zed": {
+    "url": "https://cloud.zed.dev/completions/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": ""
+  },
+  "qoder-cn": {
+    "url": "https://gateway.qoder.com.cn/algo/api/v2/service/pro/sse/agent_chat_generation/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "tokenharbor": {
+    "url": "https://tokenharbor.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "meta": {
+    "url": "https://api.meta.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "hive": {
+    "url": "https://api.thehive.ai/api/v3/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "dahl": {
+    "url": "https://inference.dahl.global/v1/models",
+    "public": true,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "atria": {
+    "url": "https://api.atria-asi.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "agnes": {
+    "url": "https://apihub.agnes-ai.com/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "bai": {
+    "url": "https://api.b.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  },
+  "muse": {
+    "url": "https://api.meta.ai/v1/models",
+    "public": false,
+    "authHeader": "Authorization",
+    "authPrefix": "Bearer "
+  }
+}

@@ -1,0 +1,225 @@
+package router
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+
+	"github.com/zanonaa/VansRouter/backend/internal/http/handlers"
+	"strings"
+	"testing"
+)
+
+func TestVersionPublicSkip(t *testing.T) {
+	t.Setenv("VANSROUTER_SKIP_UPDATE_CHECK", "1")
+	auth, _ := wiredAuth(t)
+	r := NewWithAuth(nil, auth)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/version", nil))
+	var value map[string]any
+	_ = json.Unmarshal(w.Body.Bytes(), &value)
+	if w.Code != 200 || value["currentVersion"] != "2.0.0" || value["latestVersion"] != nil || value["hasUpdate"] != false {
+		t.Fatal(w.Code, value)
+	}
+	for _, method := range []string{"HEAD", "OPTIONS"} {
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(method, "/api/version", nil))
+		if w.Body.Len() != 0 || (w.Code != 200 && w.Code != 204) {
+			t.Fatal(method, w.Code)
+		}
+	}
+}
+
+func TestVersionUpdateRouteGate(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithAuth(nil, auth)
+	// ALWAYS_PROTECTED: sem autenticação é 401 para POST e OPTIONS.
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("POST", "/api/version/update", nil))
+	if w.Code != 401 {
+		t.Fatalf("anon post %d %s", w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("OPTIONS", "/api/version/update", nil))
+	if w.Code != 401 {
+		t.Fatalf("anon options %d", w.Code)
+	}
+	token, _ := auth.Sessions.Create(nil)
+	cookie := &http.Cookie{Name: "auth_token", Value: token}
+	req := httptest.NewRequest("POST", "/api/version/update", nil)
+	req.AddCookie(cookie)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != 403 || !strings.Contains(w.Body.String(), "Update is only available in production build (vansrouter CLI)") {
+		t.Fatalf("update gate %d %s", w.Code, w.Body.String())
+	}
+	req = httptest.NewRequest("OPTIONS", "/api/version/update", nil)
+	req.AddCookie(cookie)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != 200 && w.Code != 204 {
+		t.Fatalf("authed options %d", w.Code)
+	}
+}
+
+func TestHeadroomRoutesLocalOnly(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{Headroom: &handlers.HeadroomRoutes{H: &handlers.Headroom{DataDir: t.TempDir()}}})
+	methods := map[string]string{
+		"/api/headroom/status":  "GET",
+		"/api/headroom/start":   "POST",
+		"/api/headroom/stop":    "POST",
+		"/api/headroom/restart": "POST",
+		"/api/headroom/extras":  "GET",
+	}
+	for path, method := range methods {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(method, path, nil))
+		if w.Code != 401 && w.Code != 403 && w.Code != 500 {
+			t.Fatalf("%s %s anon espera guarda local: %d %s", method, path, w.Code, w.Body.String())
+		}
+	}
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/headroom/nonexistent", nil))
+	if w.Code != 404 {
+		t.Fatalf("rota não registrada %d", w.Code)
+	}
+}
+
+func TestVersionShutdownRouteRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithAuth(nil, auth)
+	// ALWAYS_PROTECTED exige 401 antes do gate/exit.
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("POST", "/api/version/shutdown", nil))
+	if w.Code != 401 {
+		t.Fatalf("anon %d %s", w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("OPTIONS", "/api/version/shutdown", nil))
+	if w.Code == 404 {
+		t.Fatal("options não registrada")
+	}
+}
+
+func TestV1BetaModelsRoutePublic(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithAuth(nil, auth)
+	// Public LLM prefix: loopback do peer TCP é confiável; remoto exige key.
+	loopback := httptest.NewRequest("GET", "/api/v1beta/models", nil)
+	loopback.RemoteAddr = "127.0.0.1:5000"
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, loopback)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"models"`) {
+		t.Fatalf("v1beta %d", w.Code)
+	}
+	remote := httptest.NewRequest("GET", "/api/v1beta/models", nil)
+	remote.RemoteAddr = "203.0.113.5:5000"
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, remote)
+	if w.Code != 401 {
+		t.Fatalf("remoto %d %s", w.Code, w.Body.String())
+	}
+	loopbackNoAPI := httptest.NewRequest("GET", "/v1beta/models", nil)
+	loopbackNoAPI.RemoteAddr = "127.0.0.1:5000"
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, loopbackNoAPI)
+	if w.Code != 200 {
+		t.Fatalf("prefixo sem api %d", w.Code)
+	}
+}
+
+func TestPxpipeRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{Pxpipe: &handlers.Pxpipe{Loader: &handlers.PxpipeLoader{}}})
+	// wiredAuth usa requireLogin=false: anônimo acessa rotas comuns do /api/*.
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/pxpipe/status", nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `"mode":"library"`) {
+		t.Fatalf("status anon %d %s", w.Code, w.Body.String())
+	}
+	// Sem sessão autenticada não é possível acionar; testar registro por OPTIONS.
+	for _, probe := range []string{"/api/pxpipe/health", "/api/pxpipe/install", "/api/pxpipe/start", "/api/pxpipe/stop", "/api/pxpipe/restart", "/api/pxpipe/logs", "/api/pxpipe/stats"} {
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s options não registrada", probe)
+		}
+	}
+	// Sem Pxpipe no wiring: rotas não existem (nil-safe).
+	r2 := NewWithNodes(nil, auth, nil, &handlers.Providers{})
+	w = httptest.NewRecorder()
+	r2.ServeHTTP(w, httptest.NewRequest("GET", "/api/pxpipe/status", nil))
+	if w.Code != 404 {
+		t.Fatalf("sem wiring %d", w.Code)
+	}
+}
+
+func TestModelsExtrasRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{
+		ModelAvailability: &handlers.ModelAvailability{},
+		CatalogSync:       &handlers.ModelCatalogSync{DataDir: t.TempDir()},
+	})
+	for _, probe := range []string{"/api/models/availability", "/api/models/catalog-sync"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("GET", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s GET não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("POST", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s POST não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s OPTIONS não registrada", probe)
+		}
+	}
+}
+
+func TestProxyPoolExtrasRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{
+		PoolFitness:  &handlers.PoolFitnessRoutes{Service: &handlers.PoolFitnessService{}},
+		ImportPublic: &handlers.ImportPublic{},
+	})
+	for _, probe := range []string{"/api/proxy-pools/fitness", "/api/proxy-pools/fitness/clear-all", "/api/proxy-pools/p1/fitness/clear", "/api/proxy-pools/import-public"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("POST", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s POST não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s OPTIONS não registrada", probe)
+		}
+	}
+	// Sem wiring: rotas ausentes.
+	r2 := NewWithNodes(nil, auth, nil, &handlers.Providers{})
+	w := httptest.NewRecorder()
+	r2.ServeHTTP(w, httptest.NewRequest("GET", "/api/proxy-pools/fitness", nil))
+	if w.Code != 404 {
+		t.Fatalf("sem wiring %d", w.Code)
+	}
+}
+
+func TestPoolDeployRoutesRegistered(t *testing.T) {
+	auth, _ := wiredAuth(t)
+	r := NewWithNodes(nil, auth, nil, &handlers.Providers{Deploys: handlers.NewRelayDeploys(nil)})
+	for _, probe := range []string{"/api/proxy-pools/cloudflare-deploy", "/api/proxy-pools/deno-deploy", "/api/proxy-pools/vercel-deploy"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("POST", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s não registrada", probe)
+		}
+		w = httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("OPTIONS", probe, nil))
+		if w.Code == 404 {
+			t.Fatalf("%s OPTIONS não registrada", probe)
+		}
+	}
+}

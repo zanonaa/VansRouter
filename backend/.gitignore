@@ -1,0 +1,7 @@
+/bin/
+/api
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.test
+coverage.out

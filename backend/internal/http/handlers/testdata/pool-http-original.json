@@ -1,0 +1,217 @@
+[
+  {
+    "method": "POST",
+    "id": "",
+    "input": null,
+    "status": 400,
+    "body": {
+      "error": "Name is required"
+    }
+  },
+  {
+    "method": "POST",
+    "id": "",
+    "input": {},
+    "status": 400,
+    "body": {
+      "error": "Name is required"
+    }
+  },
+  {
+    "method": "POST",
+    "id": "",
+    "input": {
+      "name": 12
+    },
+    "status": 400,
+    "body": {
+      "error": "Name is required"
+    }
+  },
+  {
+    "method": "POST",
+    "id": "",
+    "input": {
+      "name": " P "
+    },
+    "status": 400,
+    "body": {
+      "error": "Proxy URL is required"
+    }
+  },
+  {
+    "method": "POST",
+    "id": "",
+    "input": {
+      "name": " P ",
+      "proxyUrl": " http://proxy.test ",
+      "type": "invalid"
+    },
+    "status": 201,
+    "body": {
+      "proxyPool": {
+        "name": "P",
+        "proxyUrl": "http://proxy.test",
+        "noProxy": "",
+        "isActive": true,
+        "strictProxy": false,
+        "type": "http"
+      }
+    }
+  },
+  {
+    "method": "POST",
+    "id": "",
+    "input": {
+      "name": "P",
+      "proxyUrl": "http://proxy.test",
+      "isActive": "true",
+      "strictProxy": 1,
+      "noProxy": 12
+    },
+    "status": 201,
+    "body": {
+      "proxyPool": {
+        "name": "P",
+        "proxyUrl": "http://proxy.test",
+        "noProxy": "",
+        "isActive": false,
+        "strictProxy": false,
+        "type": "http"
+      }
+    }
+  },
+  {
+    "method": "POST",
+    "id": "",
+    "input": {
+      "name": "P",
+      "proxyUrl": "http://proxy.test",
+      "isActive": false,
+      "strictProxy": true,
+      "type": "cloudflare"
+    },
+    "status": 201,
+    "body": {
+      "proxyPool": {
+        "name": "P",
+        "proxyUrl": "http://proxy.test",
+        "noProxy": "",
+        "isActive": false,
+        "strictProxy": true,
+        "type": "cloudflare"
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": null,
+    "status": 500,
+    "body": {
+      "error": "Failed to update proxy pool"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {},
+    "status": 200,
+    "body": {
+      "proxyPool": {
+        "id": "pool"
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {
+      "name": "  "
+    },
+    "status": 400,
+    "body": {
+      "error": "Name is required"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {
+      "proxyUrl": ""
+    },
+    "status": 400,
+    "body": {
+      "error": "Proxy URL is required"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {
+      "name": " N ",
+      "noProxy": " local ",
+      "isActive": "true",
+      "strictProxy": true,
+      "type": "deno"
+    },
+    "status": 200,
+    "body": {
+      "proxyPool": {
+        "id": "pool",
+        "name": "N",
+        "noProxy": "local",
+        "isActive": false,
+        "strictProxy": true,
+        "type": "deno"
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {
+      "name": 12
+    },
+    "status": 400,
+    "body": {
+      "error": "Name is required"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {
+      "proxyUrl": 42
+    },
+    "status": 400,
+    "body": {
+      "error": "Proxy URL is required"
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "pool",
+    "input": {
+      "type": "other"
+    },
+    "status": 200,
+    "body": {
+      "proxyPool": {
+        "id": "pool",
+        "type": "http"
+      }
+    }
+  },
+  {
+    "method": "PUT",
+    "id": "missing",
+    "input": {
+      "name": "N"
+    },
+    "status": 404,
+    "body": {
+      "error": "Proxy pool not found"
+    }
+  }
+]
