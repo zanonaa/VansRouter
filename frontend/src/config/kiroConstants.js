@@ -15,8 +15,8 @@
  * fiction. The suffix is stripped before the request leaves this process.
  */
 
-import { extractThinking, parseSuffix } from "../translator/concerns/thinkingUnified.js";
-import { effortToBudget } from "../translator/concerns/thinking.js";
+import { extractThinking, parseSuffix } from "../utils/modelMetadata/thinkingUnified.js";
+import { effortToBudget } from "../utils/modelMetadata/thinking.js";
 
 export const KIRO_AGENTIC_SUFFIX = "-agentic";
 export const KIRO_THINKING_SUFFIX = "-thinking";

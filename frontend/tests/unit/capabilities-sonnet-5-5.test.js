@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
 
 // claude-sonnet-5-5 has no exact entry and matched only the generic *claude*sonnet*
 // pattern (claude-budget). That sent thinking.type "enabled" and made the translator

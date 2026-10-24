@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import antigravity from "../../open-sse/providers/registry/antigravity.js";
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
-import { resolveAntigravityUpstreamModel } from "../../open-sse/config/providerModels.js";
+import antigravity from "../../src/catalogs/registry/antigravity.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
+import { resolveAntigravityUpstreamModel } from "../../src/config/providerModels.js";
 
 describe("Antigravity Gemini 3.7 catalog", () => {
   it("exposes all three explicit tiers without the plain alias", () => {

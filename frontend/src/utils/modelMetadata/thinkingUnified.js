@@ -2,9 +2,9 @@
 // Config-driven: thinking format/limits come from capabilities.js + registry transport,
 // never hardcoded per-model here; provider mappings are covered by translator tests.
 
-import { getCapabilitiesForModel } from "../../providers/capabilities.js";
-import { PROVIDERS } from "../../providers/index.js";
-import { getThinkingLevels } from "../../providers/thinkingLevels.js";
+import { getCapabilitiesForModel } from "../../catalogs/capabilities.js";
+import { PROVIDERS } from "../../catalogs/index.js";
+import { getThinkingLevels } from "../../catalogs/thinkingLevels.js";
 import { LEVEL_TO_BUDGET, budgetToLevel, effortToBudget, effortToThinkingLevel } from "./thinking.js";
 
 // Map a target wire-format to its native thinking format (when capability has none).

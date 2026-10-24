@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getProviderAuthTypes } from "../../src/shared/utils/providerAuth.js";
-import REGISTRY from "../../open-sse/providers/registry/index.js";
+import REGISTRY from "../../src/catalogs/registry/index.js";
 
 describe("provider auth types", () => {
   it("uses declared auth modes for Kimchi OAuth and API-key connections", () => {

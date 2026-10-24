@@ -33,7 +33,7 @@ const outDir = path.join(root, "src", "app", "fonts");
 const outFile = path.join(outDir, "material-symbols-outlined-subset.woff2");
 const manifestFile = path.join(outDir, "material-symbols-icons.json");
 const wideRoots = ["src"];
-const literalRoots = ["src", "open-sse"];
+const literalRoots = ["src"];
 // The app pins opsz 24, wght 400, GRAD 0 and only toggles FILL between 0 and 1
 // (see .material-symbols-outlined / .fill-1 in globals.css), so request exactly
 // those axes. A narrower axis set keeps the subset small.

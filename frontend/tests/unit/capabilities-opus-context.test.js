@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
 
 // Claude Opus 4.6+ ships a 1M-token context window (GA, standard pricing).
 // The registry exposes dashed ids (claude-opus-5, claude-opus-4-8, claude-opus-4-7), which

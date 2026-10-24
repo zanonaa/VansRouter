@@ -6,7 +6,7 @@ async function loadProvider(url) {
   if (url === undefined) delete process.env.SEARXNG_URL;
   else process.env.SEARXNG_URL = url;
   vi.resetModules();
-  return (await import("../../open-sse/providers/registry/searxng.js")).default;
+  return (await import("../../src/catalogs/registry/searxng.js")).default;
 }
 
 afterEach(() => {

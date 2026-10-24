@@ -13,7 +13,6 @@ const result = spawnSync(
   [
     "--ext", ".js",
     "src/",
-    "open-sse/",
     "--no-warn-ignored",
     "--rule",
     JSON.stringify({

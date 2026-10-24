@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
-import { getThinkingLevels } from "../../open-sse/providers/thinkingLevels.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
+import { getThinkingLevels } from "../../src/catalogs/thinkingLevels.js";
 
 describe("getCapabilitiesForModel", () => {
   it("reports DeepSeek V4.1-Flash ids as vision-capable without dropping their thinking/context", () => {

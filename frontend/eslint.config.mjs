@@ -102,7 +102,7 @@ const eslintConfig = defineConfig([
   // Server-side modules (open-sse engine, lib) são Node ESM puro sem JSX —
   // no-undef como error para capturar ReferenceError de runtime.
   {
-    files: ["open-sse/**/*.js", "src/lib/**/*.js", "src/sse/**/*.js"],
+    files: ["src/catalogs/**/*.js", "src/config/**/*.js", "src/utils/modelMetadata/**/*.js", "src/lib/**/*.js", "src/sse/**/*.js"],
     languageOptions: { globals: nodeGlobals },
     rules: {
       "no-undef": "error",

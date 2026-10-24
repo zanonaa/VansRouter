@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { PROVIDERS } from "../../open-sse/config/providers.js";
+import { PROVIDERS } from "../../src/config/providers.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const baseline = JSON.parse(readFileSync(join(here, "providers-baseline.json"), "utf8"));

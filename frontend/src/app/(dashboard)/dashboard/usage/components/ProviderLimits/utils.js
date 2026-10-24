@@ -1,4 +1,4 @@
-import { getModelsByProviderId } from "open-sse/config/providerModels.js";
+import { getModelsByProviderId } from "@/config/providerModels.js";
 
 // Providers whose usage endpoint returns per-model quota rows.
 // The model filter dropdown is shown only for these providers.

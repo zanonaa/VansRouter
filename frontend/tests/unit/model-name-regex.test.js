@@ -1,7 +1,7 @@
 // Guards C2: regex name fallback (no catalog). Terse entries derive name; existing names untouched.
 import { describe, it, expect } from "vitest";
-import { deriveModelName } from "../../open-sse/providers/models/namePatterns.js";
-import { normalizeModel, normalizeModelId } from "../../open-sse/providers/models/schema.js";
+import { deriveModelName } from "../../src/catalogs/models/namePatterns.js";
+import { normalizeModel, normalizeModelId } from "../../src/catalogs/models/schema.js";
 
 describe("model name regex fallback (C2)", () => {
   it("derives display name from id per family", () => {

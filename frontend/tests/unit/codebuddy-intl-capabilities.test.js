@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import REGISTRY from "../../open-sse/providers/registry/index.js";
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
-import { getThinkingLevels } from "../../open-sse/providers/thinkingLevels.js";
+import REGISTRY from "../../src/catalogs/registry/index.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
+import { getThinkingLevels } from "../../src/catalogs/thinkingLevels.js";
 
 describe("CodeBuddy international registry parity", () => {
   it("matches CodeBuddy CN model coverage and transport capability", () => {

@@ -19,7 +19,7 @@ import path from "path";
 // ── #4202 Registry checks ────────────────────────────────────────────────────
 
 const codexSrc = fs.readFileSync(
-  path.resolve(__dirname, "../../open-sse/providers/registry/codex.js"),
+  path.resolve(__dirname, "../../src/catalogs/registry/codex.js"),
   "utf-8"
 );
 

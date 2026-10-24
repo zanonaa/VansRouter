@@ -11,12 +11,12 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { getCapabilitiesForModel } from "../../open-sse/providers/capabilities.js";
+import { getCapabilitiesForModel } from "../../src/catalogs/capabilities.js";
 import fs from "fs";
 import path from "path";
 
 const kiroSrc = fs.readFileSync(
-  new URL("../../open-sse/providers/registry/kiro.js", import.meta.url),
+  new URL("../../src/catalogs/registry/kiro.js", import.meta.url),
   "utf-8"
 );
 
