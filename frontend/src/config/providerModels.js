@@ -4,8 +4,8 @@ import REGISTRY from "../catalogs/registry/index.js";
 import { PROVIDER_MODELS } from "../catalogs/index.js";
 import { modelQuotaFamily, modelStrip, modelTargetFormat, modelSupportedFormats, normalizeModelId } from "../catalogs/models/schema.js";
 import { CODEX_REVIEW_SUFFIX, isMuseSparkModel, opencodeFamilyFormats } from "../catalogs/models/helpers.js";
-import { FORMATS } from "../utils/modelMetadata/formats.js";
-import { stripThinkingSuffix } from "../utils/modelMetadata/thinkingUnified.js";
+import { FORMATS } from "../catalogs/formats.js";
+import { stripThinkingSuffix } from "../catalogs/modelNames.js";
 export { PROVIDER_MODELS };
 
 // OpenCode providers sharing the endpoint-family fallback for unknown model ids

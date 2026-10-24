@@ -8,7 +8,7 @@ import {
   getModelUpstreamId,
 } from "../../src/config/providerModels.js";
 import { PROVIDERS } from "../../src/config/providers.js";
-import { FORMATS } from "../../src/utils/modelMetadata/formats.js";
+import { FORMATS } from "../../src/catalogs/formats.js";
 
 // Reverse alias → providerId to resolve provider-level config.format
 const ALIAS_TO_PROVIDER_ID = Object.fromEntries(

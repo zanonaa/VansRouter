@@ -7,7 +7,7 @@
 // only and verifies the translated Claude-format body carries valid thinking
 // config rather than an invalid OpenAI `reasoning_effort` field.
 import { describe, expect, it } from "vitest";
-import { applyThinking } from "../../src/utils/modelMetadata/thinkingUnified.js";
+import { applyThinking } from "../reference/thinking/thinkingUnified.js";
 
 describe("agentrouter GLM-5.2 reasoning leak prevention", () => {
   it("disables thinking by default when client does not request reasoning", () => {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { applyKiroThinkingOverride, resolveKiroModelIntent } from "../../src/config/kiroConstants.js";
+import { applyKiroThinkingOverride, resolveKiroModelIntent } from "../reference/thinking/kiroConstants.js";
 import { getThinkingLevels } from "../../src/catalogs/thinkingLevels.js";
-import { applyThinking } from "../../src/utils/modelMetadata/thinkingUnified.js";
-import { buildKiroAdditionalModelRequestFieldsForModel } from "../../src/config/kiroConstants.js";
+import { applyThinking } from "../reference/thinking/thinkingUnified.js";
+import { buildKiroAdditionalModelRequestFieldsForModel } from "../reference/thinking/kiroConstants.js";
 
 describe("Kiro model(level) suffix", () => {
   it("strips suffix before synthetic Kiro variants", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { applyThinking } from "../../src/utils/modelMetadata/thinkingUnified.js";
-import { FORMATS } from "../../src/utils/modelMetadata/formats.js";
+import { applyThinking } from "../reference/thinking/thinkingUnified.js";
+import { FORMATS } from "../../src/catalogs/formats.js";
 
 // Regression: Claude Code sends thinking effort "max" (its top level). When
 // 9router routes to an OpenAI-format provider, applyThinking() case "openai"
