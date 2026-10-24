@@ -56,6 +56,7 @@ func (t *TranslatorSend) SendResponses(w http.ResponseWriter, r *http.Request, p
 		fail(400, err.Error())
 		return
 	}
+	t.TokenSaver.Apply(r.Context(), r, targetBody, "openai-responses", model, provider)
 	encoded, err := json.Marshal(targetBody)
 	if err != nil {
 		fail(500, err.Error())

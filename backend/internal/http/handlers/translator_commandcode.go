@@ -373,6 +373,10 @@ func (t *TranslatorSend) SendCommandCode(w http.ResponseWriter, r *http.Request,
 			return
 		}
 	}
+	// O corpo final do CommandCode (params.messages/system) é derivado do
+	// intermediário OpenAI; aplica o saver antes para preservar a mesma ordem
+	// RTK → Headroom → prompt → Caveman → Ponytail.
+	t.TokenSaver.Apply(r.Context(), r, intermediate, "openai", model, provider)
 	targetBody, err := commandCodeTarget(intermediate, model, true)
 	if err != nil {
 		fail(400, err.Error())

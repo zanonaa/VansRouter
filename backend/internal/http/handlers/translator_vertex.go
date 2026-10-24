@@ -245,7 +245,9 @@ func (t *TranslatorSend) SendVertex(w http.ResponseWriter, r *http.Request, prov
 		fail(400, err.Error())
 		return
 	}
-	encoded, err := json.Marshal(vertexPostProcess(geminiBody))
+	outbound := vertexPostProcess(geminiBody)
+	t.TokenSaver.Apply(r.Context(), r, outbound, "vertex", model, provider)
+	encoded, err := json.Marshal(outbound)
 	if err != nil {
 		fail(500, err.Error())
 		return
