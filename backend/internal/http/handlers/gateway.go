@@ -165,7 +165,7 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if provider != "" {
-		usage := &requestUsage{provider: provider, model: model, live: g.LiveUsage}
+		usage := &requestUsage{provider: provider, model: model, live: g.LiveUsage, inputEstimate: estimateInputTokens(body)}
 		if usage.live != nil {
 			usage.live.Track(model, provider, "", true, false)
 		}
