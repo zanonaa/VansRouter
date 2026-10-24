@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { budgetToLevel } from "../../src/utils/modelMetadata/thinking.js";
-import { applyThinking } from "../../src/utils/modelMetadata/thinkingUnified.js";
-import { FORMATS } from "../../src/utils/modelMetadata/formats.js";
+import { budgetToLevel } from "../reference/thinking/thinking.js";
+import { applyThinking } from "../reference/thinking/thinkingUnified.js";
+import { FORMATS } from "../../src/catalogs/formats.js";
 
 // budgetToLevel is the reverse of LEVEL_TO_BUDGET: the xhigh/max boundary sits
 // at the midpoint of their budgets (32768 / 128000 = 80384). A larger budget

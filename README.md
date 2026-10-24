@@ -26,7 +26,7 @@ Requirements: Go 1.25+, Node.js 22.5+ and pnpm 9.
 The repository is split into:
 
 - `backend/`: Go API, gateway, persistence and HTTP server.
-- `frontend/`: React/Vite dashboard, public assets, frontend configuration, model catalogs (`src/catalogs/`), settings (`src/config/`), model metadata helpers (`src/utils/modelMetadata/`), JavaScript tests and tooling.
+- `frontend/`: React/Vite dashboard, public assets, frontend configuration, model catalogs (`src/catalogs/`), settings (`src/config/`), model-name metadata (`src/catalogs/modelNames.js`), JavaScript tests and tooling. Legacy request-transformer fixtures are isolated in `frontend/tests/reference/`, never imported by the application.
 - Root: pnpm workspace/lockfile, Docker, CI and project documentation.
 
 ```bash
