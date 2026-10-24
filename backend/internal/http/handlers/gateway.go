@@ -184,6 +184,13 @@ func (g *Gateway) OpenAIChat(w http.ResponseWriter, r *http.Request) {
 	// que pediram JSON — achado no teste real dos combos.
 	stream := body["stream"] == true
 	format := providers.TargetFormat(provider)
+	// Alguns upstreams preenchem todas as propriedades opcionais do schema de
+	// tools com valores inventados (sessionID "ses_invalid", model "auto").
+	// O guard remove referências não ancoradas na conversa antes de devolver a
+	// tool call ao cliente. Não altera texto e é no-op sem tools de referência.
+	guard := newToolCallGuard(w, r, body)
+	defer guard.Close()
+	w = guard
 	// grok-cli fala Responses API com stream forçado e fingerprint próprio;
 	// o executor dedicado cobre request, headers e fold para clientes JSON.
 	if provider == "grok-cli" && format == "openai-responses" {
