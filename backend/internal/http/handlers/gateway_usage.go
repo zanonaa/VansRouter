@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/zanonaa/VansRouter/backend/internal/database"
 	"github.com/zanonaa/VansRouter/backend/internal/providers"
@@ -19,6 +20,37 @@ type requestUsage struct {
 	provider, model, connection string
 	tokens                      map[string]any
 	live                        *UsageLive
+	// inputEstimate e contentChars alimentam o fallback de estimativa quando o
+	// upstream não devolve usage (paridade com estimateUsage da origem Node).
+	// Sem isso o request some do dashboard: o registro só acontece quando há
+	// prompt_tokens/completion_tokens > 0.
+	inputEstimate int
+	contentChars  int
+	succeeded     bool
+}
+
+// Mesmo buffer aplicado por addBufferToUsage na origem Node ao estimar usage.
+const usageEstimateBuffer = 2000
+
+func estimateInputTokens(body map[string]any) int {
+	if len(body) == 0 {
+		return 0
+	}
+	encoded, err := json.Marshal(body)
+	if err != nil {
+		return 0
+	}
+	return (len(encoded) + 3) / 4
+}
+
+func estimateOutputTokens(chars int) int {
+	if chars <= 0 {
+		return 0
+	}
+	if chars/4 < 1 {
+		return 1
+	}
+	return chars / 4
 }
 
 func usageSelected(ctx context.Context, connection map[string]any) {
@@ -47,6 +79,7 @@ type usageTransport struct {
 func (t usageTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	response, err := t.base.RoundTrip(r)
 	if err == nil && response.StatusCode >= 200 && response.StatusCode < 300 {
+		t.usage.succeeded = true
 		response.Body = &usageBody{ReadCloser: response.Body, u: t.usage, stream: strings.Contains(response.Header.Get("Content-Type"), "event-stream") || strings.Contains(response.Header.Get("Content-Type"), "ndjson") || t.usage.provider == "commandcode"}
 	}
 	return response, err
@@ -93,6 +126,150 @@ func (b *usageBody) parse(raw []byte) {
 		return
 	}
 	b.u.observe(event)
+	if b.stream {
+		b.u.countStreamContent(event)
+	} else {
+		b.u.countResponseContent(event)
+	}
+}
+
+func (u *requestUsage) addText(value any) {
+	switch typed := value.(type) {
+	case string:
+		u.contentChars += utf8.RuneCountInString(typed)
+	case []any:
+		for _, item := range typed {
+			u.addText(item)
+		}
+	case map[string]any:
+		u.addText(typed["text"])
+		u.addText(typed["thinking"])
+		u.addText(typed["content"])
+	}
+}
+
+func (u *requestUsage) addToolCalls(value any) {
+	calls, _ := value.([]any)
+	for _, raw := range calls {
+		call, _ := raw.(map[string]any)
+		function, _ := call["function"].(map[string]any)
+		u.addText(function["name"])
+		u.addText(function["arguments"])
+	}
+}
+
+func (u *requestUsage) addCandidates(value any) {
+	candidates, _ := value.([]any)
+	for _, raw := range candidates {
+		candidate, _ := raw.(map[string]any)
+		content, _ := candidate["content"].(map[string]any)
+		u.addText(content["parts"])
+	}
+}
+
+func (u *requestUsage) addResponsesOutput(value any) {
+	items, _ := value.([]any)
+	for _, raw := range items {
+		item, _ := raw.(map[string]any)
+		u.addText(item["arguments"])
+		u.addText(item["content"])
+	}
+}
+
+func (u *requestUsage) addOpenAIChoices(value any, stream bool) {
+	choices, _ := value.([]any)
+	for _, raw := range choices {
+		choice, _ := raw.(map[string]any)
+		u.addText(choice["text"])
+		if stream {
+			delta, _ := choice["delta"].(map[string]any)
+			u.addText(delta["content"])
+			u.addText(delta["reasoning_content"])
+			u.addText(delta["reasoning"])
+			u.addToolCalls(delta["tool_calls"])
+			continue
+		}
+		message, _ := choice["message"].(map[string]any)
+		u.addText(message["content"])
+		u.addText(message["reasoning_content"])
+		u.addText(message["reasoning"])
+		u.addToolCalls(message["tool_calls"])
+	}
+}
+
+// countStreamContent soma apenas os deltas do stream. O evento terminal do
+// Responses API repete o output completo, então ele só é usado quando nenhum
+// delta chegou (executores que emitem apenas o evento final).
+func (u *requestUsage) countStreamContent(event map[string]any) {
+	eventType := ttsString(event["type"])
+	u.addOpenAIChoices(event["choices"], true)
+	if delta, ok := event["delta"].(map[string]any); ok {
+		u.addText(delta["text"])
+		u.addText(delta["thinking"])
+		u.addText(delta["partial_json"])
+	} else if text, ok := event["delta"].(string); ok && strings.Contains(eventType, "delta") {
+		u.addText(text)
+	}
+	u.addText(event["arguments"])
+	u.addCandidates(event["candidates"])
+	if response, ok := event["response"].(map[string]any); ok {
+		u.addCandidates(response["candidates"])
+		if u.contentChars == 0 {
+			u.addResponsesOutput(response["output"])
+		}
+	}
+	if u.contentChars == 0 && (strings.HasSuffix(eventType, ".completed") || strings.HasSuffix(eventType, ".done")) {
+		u.addResponsesOutput(event["output"])
+	}
+}
+
+func (u *requestUsage) countResponseContent(event map[string]any) {
+	u.addOpenAIChoices(event["choices"], false)
+	// Claude: content é uma lista de blocos {type,text,thinking}.
+	u.addText(event["content"])
+	u.addCandidates(event["candidates"])
+	u.addResponsesOutput(event["output"])
+	if message, ok := event["message"].(map[string]any); ok {
+		u.addText(message["content"])
+	}
+	if response, ok := event["response"].(map[string]any); ok {
+		u.addText(response["content"])
+		u.addCandidates(response["candidates"])
+		u.addResponsesOutput(response["output"])
+	}
+}
+
+// applyEstimatedUsage reproduz o fallback da origem: quando o provider não
+// devolve usage, estima tokens a partir do corpo da requisição e do conteúdo
+// recebido. Sem isso o request é servido com 200 mas nunca entra no histórico.
+func (u *requestUsage) applyEstimatedUsage() {
+	if !u.succeeded {
+		return
+	}
+	prompt := pxpipeNum(u.tokens["prompt_tokens"])
+	completion := pxpipeNum(u.tokens["completion_tokens"])
+	if prompt == 0 && completion == 0 {
+		// Sem conteúdo não há como estimar a saída; a origem também não
+		// registra nada nesse caso (evita contar tentativas vazias/erros).
+		if u.contentChars == 0 {
+			return
+		}
+		if u.tokens == nil {
+			u.tokens = map[string]any{}
+		}
+		u.tokens["prompt_tokens"] = float64(u.inputEstimate + usageEstimateBuffer)
+		u.tokens["completion_tokens"] = float64(estimateOutputTokens(u.contentChars))
+		u.tokens["estimated"] = true
+		return
+	}
+	if completion == 0 && u.contentChars > 0 {
+		u.tokens["completion_tokens"] = float64(estimateOutputTokens(u.contentChars))
+		u.tokens["estimated"] = true
+	}
+	if prompt == 0 && u.inputEstimate > 0 {
+		u.tokens["prompt_tokens"] = float64(u.inputEstimate)
+		u.tokens["estimated"] = true
+	}
 }
 func (u *requestUsage) observe(event map[string]any) {
 	for _, key := range []string{"response", "message"} {
@@ -136,6 +313,7 @@ func (g *Gateway) finishUsage(r *http.Request, u *requestUsage) {
 	if u.live != nil {
 		defer u.live.Track(u.model, u.provider, u.connection, false, false)
 	}
+	u.applyEstimatedUsage()
 	if pxpipeNum(u.tokens["prompt_tokens"])+pxpipeNum(u.tokens["completion_tokens"]) == 0 {
 		return
 	}
