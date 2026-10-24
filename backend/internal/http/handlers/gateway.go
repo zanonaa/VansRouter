@@ -17,6 +17,7 @@ import (
 type Gateway struct {
 	DB                *sql.DB
 	Client            *http.Client
+	GetPool           connectionPoolLookup
 	Send              *TranslatorSend
 	LiveUsage         *UsageLive
 	googleSpeechMu    sync.Mutex
@@ -48,7 +49,7 @@ func (g *Gateway) connection(ctx context.Context, provider string) (map[string]a
 	}
 	return connections[0], nil
 }
-func (g *Gateway) proxy(w http.ResponseWriter, r *http.Request, url string, headers map[string]string) {
+func (g *Gateway) proxy(w http.ResponseWriter, r *http.Request, url string, headers map[string]string, metadata map[string]any) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		nodeReply(w, 400, map[string]any{"error": err.Error()})
@@ -62,9 +63,15 @@ func (g *Gateway) proxy(w http.ResponseWriter, r *http.Request, url string, head
 	for k, v := range headers {
 		request.Header.Set(k, v)
 	}
-	client := g.Client
-	if client == nil {
-		client = http.DefaultClient
+	client, relay, cleanup, err := connectionHTTP(r.Context(), metadata, g.GetPool, g.Client)
+	if err != nil {
+		nodeReply(w, 500, map[string]any{"error": err.Error()})
+		return
+	}
+	defer cleanup()
+	if err := rewriteConnectionRelay(request, relay); err != nil {
+		nodeReply(w, 500, map[string]any{"error": err.Error()})
+		return
 	}
 	response, err := client.Do(request)
 	if err != nil {
@@ -86,7 +93,8 @@ func (g *Gateway) Chat(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 404, map[string]any{"error": "No active connection"})
 		return
 	}
-	g.proxy(w, r, "https://api.openai.com/v1/chat/completions", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"})
+	metadata, _ := connection["providerSpecificData"].(map[string]any)
+	g.proxy(w, r, "https://api.openai.com/v1/chat/completions", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"}, metadata)
 }
 func (g *Gateway) Embeddings(w http.ResponseWriter, r *http.Request) {
 	if !g.key(r) {
@@ -98,7 +106,8 @@ func (g *Gateway) Embeddings(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 404, map[string]any{"error": "No active connection"})
 		return
 	}
-	g.proxy(w, r, "https://api.openai.com/v1/embeddings", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"})
+	metadata, _ := connection["providerSpecificData"].(map[string]any)
+	g.proxy(w, r, "https://api.openai.com/v1/embeddings", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"}, metadata)
 }
 func (g *Gateway) Images(w http.ResponseWriter, r *http.Request) {
 	if !g.key(r) {
@@ -110,7 +119,8 @@ func (g *Gateway) Images(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 404, map[string]any{"error": "No active connection"})
 		return
 	}
-	g.proxy(w, r, "https://api.openai.com/v1/images/generations", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"})
+	metadata, _ := connection["providerSpecificData"].(map[string]any)
+	g.proxy(w, r, "https://api.openai.com/v1/images/generations", map[string]string{"Authorization": "Bearer " + ttsString(connection["apiKey"]), "Content-Type": "application/json"}, metadata)
 }
 func (g *Gateway) Models(w http.ResponseWriter, r *http.Request) {
 	g.catalogModels(w, r)

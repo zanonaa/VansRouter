@@ -243,6 +243,12 @@ func bodyHas(body map[string]any, key string) bool {
 
 var outboundProxyMu sync.Mutex
 
+// ApplyOutboundProxy aplica as Settings de proxy global ao ambiente. O
+// transporte do gateway lê o ambiente a cada requisição, então a mudança vale
+// sem reiniciar. Chamado também na inicialização para restaurar o valor
+// persistido após um restart.
+func ApplyOutboundProxy(settings map[string]any) { applyOutboundProxy(settings) }
+
 func applyOutboundProxy(settings map[string]any) {
 	outboundProxyMu.Lock()
 	defer outboundProxyMu.Unlock()
