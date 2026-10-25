@@ -201,3 +201,19 @@ func startTestHTTPServer(t *testing.T, body string) *httptest.Server {
 	t.Cleanup(server.Close)
 	return server
 }
+
+func TestNordEndpointResolvesHostnameForUAPI(t *testing.T) {
+	endpoint, err := nordResolveEndpoint(context.Background(), "localhost:51820")
+	if err != nil {
+		t.Fatal(err)
+	}
+	host, port, err := net.SplitHostPort(endpoint)
+	if err != nil || net.ParseIP(host) == nil || port != "51820" {
+		t.Fatalf("invalid numeric endpoint: %q %v", endpoint, err)
+	}
+	tunnel, err := StartNordTunnel(context.Background(), NordTunnelSpec{ID: "hostname-endpoint", Endpoint: "localhost:1", PrivateKey: wgTestKey(), PublicKey: wgTestKey()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tunnel.Close()
+}

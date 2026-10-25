@@ -56,14 +56,19 @@ func TestNordCredentialsCachesPrivateKey(t *testing.T) {
 
 func TestNordServersByCountrySortsAndFilters(t *testing.T) {
 	client, _ := nordTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("filters[country_code]") != "us" {
+		if r.URL.Path == "/v1/servers/countries" {
+			io.WriteString(w, `[{"id":228,"code":"US"}]`)
+			return
+		}
+		if r.URL.Path != "/v1/servers/recommendations" || r.URL.Query().Get("filters[country_id]") != "228" || r.URL.Query().Get("filters[servers_technologies][identifier]") != "wireguard_udp" {
 			w.WriteHeader(400)
 			return
 		}
-		_ = json.NewEncoder(w).Encode([]map[string]any{
-			{"id": 2, "hostname": "us2.nordvpn.com", "load": 40},
-			{"id": 1, "hostname": "us1.nordvpn.com", "load": 10},
-		})
+		io.WriteString(w, `[
+ {"id":2,"hostname":"us2.nordvpn.com","load":40,"locations":[{"country":{"code":"US"}}],"technologies":[{"identifier":"wireguard_udp","metadata":[{"name":"public_key","value":"key2"}]}]},
+ {"id":1,"hostname":"us1.nordvpn.com","load":10,"locations":[{"country":{"code":"US"}}],"technologies":[{"identifier":"wireguard_udp","metadata":[{"name":"public_key","value":"key1"}]}]},
+ {"id":3,"hostname":"uk765.nordvpn.com","load":1,"locations":[{"country":{"code":"GB"}}],"technologies":[{"identifier":"wireguard_udp","metadata":[{"name":"public_key","value":"wrong-country-key"}]}]}
+ ]`)
 	})
 	servers, err := client.ServersByCountry(context.Background(), "us", 10)
 	if err != nil {
