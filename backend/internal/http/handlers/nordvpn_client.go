@@ -115,7 +115,7 @@ func (c *NordClient) do(ctx context.Context, method, path string, body any, auth
 		if token == "" {
 			return nil, 0, fmt.Errorf("nordvpn: not authenticated")
 		}
-		request.Header.Set("Authorization", "Bearer "+token)
+		request.Header.Set("Authorization", "Bearer token:"+token)
 	}
 	response, err := c.httpClient().Do(request)
 	if err != nil {
