@@ -20,7 +20,11 @@ type connectionPoolLookup func(context.Context, string) (map[string]any, error)
 // precisam dele para marcar fitness (ex.: ip-limit do opencode free) quando o
 // upstream rejeita a cota daquele IP.
 func connectionHTTP(ctx context.Context, data map[string]any, lookup connectionPoolLookup, base *http.Client) (*http.Client, string, func(), error) {
-	config := resolveConnectionProxy(ctx, data, lookup)
+	return connectionHTTPResolved(ctx, data, resolveConnectionProxy(ctx, data, lookup), base)
+}
+
+// Build the transport from exactly the selection reported to the caller.
+func connectionHTTPResolved(ctx context.Context, data map[string]any, config resolvedProxy, base *http.Client) (*http.Client, string, func(), error) {
 	if base == nil {
 		base = http.DefaultClient
 	}
@@ -83,7 +87,7 @@ type connectionPoolResult struct {
 // escolhido na resolução (vazio quando saiu por IP direto ou relay).
 func resolveConnectionHTTP(ctx context.Context, data map[string]any, lookup connectionPoolLookup, base *http.Client) (*http.Client, string, string, func(), error) {
 	config := resolveConnectionProxy(ctx, data, lookup)
-	client, relay, cleanup, err := connectionHTTP(ctx, data, lookup, base)
+	client, relay, cleanup, err := connectionHTTPResolved(ctx, data, config, base)
 	return client, relay, config.poolID, cleanup, err
 }
 

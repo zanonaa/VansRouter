@@ -262,3 +262,39 @@ func mustHostname(t *testing.T, raw string) string {
 	}
 	return parsed.Hostname()
 }
+
+func TestResolvedPoolMatchesActualRoundRobinTransport(t *testing.T) {
+	clearProxyEnv(t)
+	var a, b atomic.Int32
+	pa := proxyServer(t, &a)
+	pb := proxyServer(t, &b)
+	data := map[string]any{"id": "single-resolution-regression", "proxyPoolIds": []any{"a", "b"}, "proxyRotationStrategy": "round-robin"}
+	lookup := func(_ context.Context, id string) (map[string]any, error) {
+		raw := pa.URL
+		if id == "b" {
+			raw = pb.URL
+		}
+		return map[string]any{"isActive": true, "strictProxy": true, "proxyUrl": raw}, nil
+	}
+	for _, want := range []string{"a", "b"} {
+		client, _, id, cleanup, err := resolveConnectionHTTP(context.Background(), data, lookup, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp, err := client.Get("http://upstream.invalid/ok")
+		cleanup()
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if id != want {
+			t.Fatalf("reported %s expected %s", id, want)
+		}
+		if want == "a" && (a.Load() != 1 || b.Load() != 0) {
+			t.Fatal("reported pool differs from actual proxy")
+		}
+	}
+	if a.Load() != 1 || b.Load() != 1 {
+		t.Fatalf("wrong rotation hits a=%d b=%d", a.Load(), b.Load())
+	}
+}
