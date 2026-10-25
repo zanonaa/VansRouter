@@ -56,8 +56,11 @@ func (s *spaServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Assets do Vite têm hash no nome: cache imutável. O resto do público
-	// (favicon, ícones, i18n) pode mudar entre builds: revalidação curta.
-	cache := "public, max-age=3600"
+	// (favicon, logo, ícones, i18n) pode mudar entre builds e não tem hash no
+	// nome — sem revalidação, uma troca de logo só aparece depois de expirar o
+	// max-age (ou nunca, com o disco cache do navegador). no-cache força
+	// revalidação por ETag/Last-Modified a cada carga, sem perder o cache.
+	cache := "no-cache"
 	if strings.HasPrefix(r.URL.Path, "/assets/") {
 		cache = "public, max-age=31536000, immutable"
 	}

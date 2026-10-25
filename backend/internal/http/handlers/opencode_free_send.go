@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,6 +25,12 @@ func newOpenCodeStreamScanner(reader io.Reader) *bufio.Scanner {
 // fingerprint do quarteto, IDs canônicos, stream forçado upstream, credencial
 // "public" quando a conexão não tem chave, e fold do stream de volta a um
 // chat.completion quando o cliente pediu JSON (com nomes de tools restaurados).
+//
+// ip-limit: o free tier limita por IP de saída (janela diária UTC). Quando o
+// upstream responde 429/403 FreeUsageLimitError, a origem marca o pool como
+// unfit no escopo provider::modelo (retryAfter quando disponível) e re-tenta
+// com o próximo pool do pool-set (MAX_POOL_RETRIES=2). Sem mais pools,
+// devolve o 429 com Retry-After para o cliente.
 func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request, provider, model string, body map[string]any, connection map[string]any) {
 	fail := func(status int, message string) {
 		nodeReply(w, status, map[string]any{"success": false, "error": message})
@@ -45,6 +52,7 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 		// lê outra coisa como credencial ausente e responde 401.
 		token = "public"
 	}
+	// Upstream do free tier conforme o transport registrado do provider.
 	target := strings.TrimRight(providers.TransportFor(provider).BaseURL, "/")
 	if !strings.HasSuffix(target, "/chat/completions") {
 		target += "/chat/completions"
@@ -56,38 +64,102 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 		fail(500, err.Error())
 		return
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
-	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, target, bytes.NewReader(encoded))
-	if err != nil {
-		fail(500, err.Error())
-		return
-	}
-	for key, value := range headers {
-		request.Header.Set(key, value)
-	}
+
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
-	client, relay, cleanup, err := connectionHTTP(ctx, metadata, t.GetPool, t.Client)
-	if err != nil {
-		fail(502, err.Error())
-		return
-	}
-	defer cleanup()
-	if err := rewriteConnectionRelay(request, relay); err != nil {
-		fail(502, err.Error())
-		return
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		fail(502, err.Error())
-		return
-	}
-	defer response.Body.Close()
-	if response.StatusCode < 200 || response.StatusCode >= 300 {
+	const maxPoolRetries = 2
+	excluded := []string{}
+	var lastStatus int
+	var lastDetails string
+	var lastRetryAfter string
+	for attempt := 0; ; attempt++ {
+		attemptMetadata := metadata
+		if len(excluded) > 0 {
+			copied := map[string]any{}
+			for key, value := range metadata {
+				copied[key] = value
+			}
+			// proxyPoolIds vira a lista candidata sem os pools já reprovados;
+			// a resolução continua respeitando estratégia/targets/fitness.
+			if remaining := mergePoolCandidates(metadata, excluded); len(remaining) > 0 {
+				copied["proxyPoolIds"] = remaining
+				copied["excludeProxyPoolIds"] = excluded
+				if single := strings.TrimSpace(ttsString(copied["proxyPoolId"])); single != "" && single != "__none__" {
+					copied["proxyPoolId"] = "__none__"
+				}
+				copied["proxyPoolScope"] = openCodeIPLimitScope(provider, model)
+			}
+			attemptMetadata = copied
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
+		request, err := http.NewRequestWithContext(ctx, http.MethodPost, target, bytes.NewReader(encoded))
+		if err != nil {
+			cancel()
+			fail(500, err.Error())
+			return
+		}
+		for key, value := range headers {
+			request.Header.Set(key, value)
+		}
+		client, relay, poolID, cleanup, err := resolveConnectionHTTP(ctx, attemptMetadata, t.GetPool, t.Client)
+		if err != nil {
+			cancel()
+			fail(502, err.Error())
+			return
+		}
+		if err := rewriteConnectionRelay(request, relay); err != nil {
+			cancel()
+			fail(502, err.Error())
+			return
+		}
+		response, err := client.Do(request)
+		if err != nil {
+			response = nil
+			if poolID != "" && attempt < maxPoolRetries {
+				// Falha de transporte no proxy marcado: tenta o próximo pool
+				// antes de devolver erro ao cliente.
+				excluded = append(excluded, poolID)
+				markPoolUnfit(r.Context(), poolID, openCodeIPLimitScope(provider, model), nil, "transport-error")
+				cancel()
+				cleanup()
+				continue
+			}
+			cancel()
+			cleanup()
+			fail(502, err.Error())
+			return
+		}
+		if response.StatusCode >= 200 && response.StatusCode < 300 {
+			defer cleanup()
+			defer cancel()
+			t.openCodeRelayResponse(w, response, clientWantsStream, model, renames)
+			return
+		}
 		details, _ := io.ReadAll(io.LimitReader(response.Body, 8<<10))
-		nodeReply(w, response.StatusCode, map[string]any{"success": false, "error": fmt.Sprintf("Provider error: %d", response.StatusCode), "details": string(details)})
-		return
+		response.Body.Close()
+		cancel()
+		cleanup()
+		lastStatus = response.StatusCode
+		lastDetails = string(details)
+		lastRetryAfter = response.Header.Get("Retry-After")
+		if poolID != "" && openCodeIsIPLimit(response.StatusCode, lastDetails) && attempt < maxPoolRetries && len(mergePoolCandidates(metadata, excluded)) > 0 {
+			until := ipLimitRetryAfter(lastRetryAfter)
+			markPoolUnfit(r.Context(), poolID, openCodeIPLimitScope(provider, model), until, "ip-limit")
+			excluded = append(excluded, poolID)
+			continue
+		}
+		break
 	}
+	if lastRetryAfter != "" {
+		w.Header().Set("Retry-After", lastRetryAfter)
+	}
+	nodeReply(w, lastStatus, map[string]any{"success": false, "error": fmt.Sprintf("Provider error: %d", lastStatus), "details": lastDetails})
+}
+
+// openCodeRelayResponse escreve a resposta de sucesso: stream dobrado de volta
+// em chat.completion para clientes JSON, ou SSE repassado com nomes de tools
+// restaurados.
+func (t *TranslatorSend) openCodeRelayResponse(w http.ResponseWriter, response *http.Response, clientWantsStream bool, model string, renames map[string]string) {
+	defer response.Body.Close()
 	if clientWantsStream {
 		// Cliente pediu SSE: repassa o stream reescrevendo os nomes das tools
 		// renomeadas em cada chunk.
@@ -113,10 +185,66 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 	}
 	completion, err := openCodeFoldStream(response.Body, model, renames)
 	if err != nil {
-		fail(502, err.Error())
+		nodeReply(w, 502, map[string]any{"success": false, "error": err.Error()})
 		return
 	}
 	nodeReply(w, 200, completion)
+}
+
+// openCodeIPLimitScope é o escopo de fitness do free tier (provider::modelo),
+// como o proxyScope do chatCore original.
+func openCodeIPLimitScope(provider, model string) string {
+	return provider + "::" + model
+}
+
+// openCodeIsIPLimit reproduz parseError do executor original: 429/403 com
+// corpo de limite (limit|rate|quota|exhausted|capacity|too many|retry) é um
+// erro escopado ao pool (ip-limit).
+func openCodeIsIPLimit(status int, body string) bool {
+	if status != 429 && status != 403 {
+		return false
+	}
+	lower := strings.ToLower(body)
+	for _, marker := range []string{"limit", "rate", "quota", "exhausted", "capacity", "too many", "retry"} {
+		if strings.Contains(lower, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+// ipLimitRetryAfter converte o Retry-After do upstream em timestamp de
+// expiração do fitness; sem valor usa 24h (a janela do free tier é diária).
+func ipLimitRetryAfter(retryAfter string) *int64 {
+	if seconds, err := strconv.Atoi(strings.TrimSpace(retryAfter)); err == nil && seconds > 0 {
+		until := time.Now().Add(time.Duration(seconds) * time.Second).UnixMilli()
+		return &until
+	}
+	fallback := time.Now().Add(24 * time.Hour).UnixMilli()
+	return &fallback
+}
+
+// mergePoolCandidates devolve a lista de pools candidatos menos os excluídos,
+// preservando a ordem. Inclui o pool único quando não há pool-set — a origem
+// re-resolve por resolveProxyConfig com excludePoolIds.
+func mergePoolCandidates(metadata map[string]any, excluded []string) []string {
+	ids := dedupeStrings(stringSlice(metadata["proxyPoolIds"]))
+	if len(ids) == 0 {
+		if single := strings.TrimSpace(ttsString(metadata["proxyPoolId"])); single != "" && single != "__none__" {
+			ids = []string{single}
+		}
+	}
+	result := make([]string, 0, len(ids))
+	skip := map[string]bool{}
+	for _, id := range excluded {
+		skip[id] = true
+	}
+	for _, id := range ids {
+		if !skip[id] {
+			result = append(result, id)
+		}
+	}
+	return result
 }
 
 // openCodeRewriteChunk aplica os nomes originais em um chunk SSE de uma linha.

@@ -57,10 +57,11 @@ func TestSPASameOriginServesIndexAssetsAnd404(t *testing.T) {
 		t.Fatalf("asset js: %d %v %s", w.Code, w.Header(), w.Body.String())
 	}
 
-	// Público sem hash: revalidação curta.
+	// Público sem hash (logo/favicon/ícones): troca entre builds precisa
+	// aparecer no próximo load — no-cache revalida por ETag/Last-Modified.
 	w = httptest.NewRecorder()
 	handler.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/favicon.svg", nil))
-	if w.Code != http.StatusOK || w.Header().Get("Cache-Control") != "public, max-age=3600" || !strings.Contains(w.Header().Get("Content-Type"), "svg") {
+	if w.Code != http.StatusOK || w.Header().Get("Cache-Control") != "no-cache" || !strings.Contains(w.Header().Get("Content-Type"), "svg") {
 		t.Fatalf("favicon: %d %v", w.Code, w.Header())
 	}
 

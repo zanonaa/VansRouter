@@ -12,6 +12,9 @@ type connectionPoolLookup func(context.Context, string) (map[string]any, error)
 // connectionHTTP resolve o pool ativo (com rotação quando configurada) antes
 // do proxy legado da conexão. Em strictProxy a requisição nunca cai para o IP
 // direto; sem strict, uma falha de transporte no proxy é repetida direto.
+// O poolID devolvido identifica o pool efetivamente usado — os executores
+// precisam dele para marcar fitness (ex.: ip-limit do opencode free) quando o
+// upstream rejeita a cota daquele IP.
 func connectionHTTP(ctx context.Context, data map[string]any, lookup connectionPoolLookup, base *http.Client) (*http.Client, string, func(), error) {
 	config := resolveConnectionProxy(ctx, data, lookup)
 	if base == nil {
@@ -61,6 +64,22 @@ func connectionHTTP(ctx context.Context, data map[string]any, lookup connectionP
 		client.Transport = usageTransport{base: base, usage: usage}
 	}
 	return &client, config.relay, cleanup, nil
+}
+
+// connectionPoolResult estende connectionHTTP com o pool efetivamente usado.
+type connectionPoolResult struct {
+	Client  *http.Client
+	Relay   string
+	PoolID  string
+	Cleanup func()
+}
+
+// resolveConnectionHTTP executa connectionHTTP e devolve também o poolID
+// escolhido na resolução (vazio quando saiu por IP direto ou relay).
+func resolveConnectionHTTP(ctx context.Context, data map[string]any, lookup connectionPoolLookup, base *http.Client) (*http.Client, string, string, func(), error) {
+	config := resolveConnectionProxy(ctx, data, lookup)
+	client, relay, cleanup, err := connectionHTTP(ctx, data, lookup, base)
+	return client, relay, config.poolID, cleanup, err
 }
 
 // proxyTransport devolve o transporte do proxy. Para o transporte padrão usa
