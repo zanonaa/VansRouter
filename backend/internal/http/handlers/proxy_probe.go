@@ -32,14 +32,20 @@ func (p ProxyProbe) probe(ctx context.Context, pool map[string]any) probeResult 
 		return probeResult{Status: 400, Error: "proxyUrl is required"}
 	}
 	u, err := url.Parse(raw)
-	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
-		return probeResult{Status: 400, Error: "Invalid proxy URL: expected HTTP(S) proxy"}
+	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https" && u.Scheme != "socks5" && u.Scheme != "socks5h") {
+		return probeResult{Status: 400, Error: "Invalid proxy URL: expected HTTP(S) or SOCKS5 proxy"}
 	}
 	kind, _ := pool["type"].(string)
 	relay := kind == "vercel" || kind == "cloudflare" || kind == "deno"
 	transport := &http.Transport{TLSHandshakeTimeout: 8 * time.Second}
 	if !relay {
 		transport.Proxy = http.ProxyURL(u)
+	}
+	if isSOCKSProxyURL(raw) {
+		transport, _, err = proxyTransport(raw, "", nil)
+		if err != nil {
+			return probeResult{Status: 400, Error: "Invalid SOCKS5 proxy"}
+		}
 	}
 	if p.Transport != nil {
 		transport = p.Transport(u)

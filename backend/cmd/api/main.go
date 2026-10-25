@@ -147,6 +147,9 @@ func run() error {
 	if err := handlers.StartNordAuthPersistence(context.Background(), nordAuthStore); err != nil {
 		return fmt.Errorf("NordVPN credential restore: %w", err)
 	}
+	if err := handlers.StartNordTunnelPersistence(context.Background(), db); err != nil {
+		return fmt.Errorf("NordVPN tunnel restore: %w", err)
+	}
 	shutdownRequested := make(chan struct{}, 1)
 	shutdownHandler := &handlers.Shutdown{Request: func() {
 		select {
