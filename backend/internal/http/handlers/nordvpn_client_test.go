@@ -134,8 +134,25 @@ func TestNordPKCEShape(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// verifier: 64 hex (32 bytes); challenge: sha256 hex do verifier
-	if len(verifier) != 64 || len(challenge) != 64 {
+	// verifier: 48 hex (24 bytes), como o cliente Nord; challenge SHA256 hex.
+	if len(verifier) != 48 || len(challenge) != 64 {
 		t.Fatalf("shapes: %d %d", len(verifier), len(challenge))
+	}
+}
+
+func TestNordLoginURIUsesOfficialContract(t *testing.T) {
+	client, _ := nordTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatal(err)
+		}
+		if body["redirect_flow"] != "default" || body["preferred_flow"] != "login" || body["challenge"] != "challenge" {
+			t.Errorf("invalid login contract: %v", body)
+		}
+		w.Write([]byte(`{"redirect_uri":"https://nordaccount.com/login","attempt":"attempt"}`))
+	})
+	uri, attempt, err := client.LoginURI(context.Background(), "challenge")
+	if err != nil || uri == "" || attempt != "attempt" {
+		t.Fatalf("login start failed: %v", err)
 	}
 }

@@ -4,6 +4,7 @@ package handlers
 // rotação. Autenticadas pelo mesmo token CLI do dashboard de pools.
 import (
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -69,6 +70,13 @@ func (n *NordVPNRoutes) OAuthComplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	state, exchange := ttsString(body["state"]), strings.TrimSpace(ttsString(body["exchangeToken"]))
+	if parsed, err := url.Parse(exchange); err == nil && parsed.Scheme != "" {
+		exchange = parsed.Query().Get("exchange_token")
+	}
+	if exchange == "" {
+		nodeReply(w, 400, map[string]any{"error": "Paste the Nord Account return link in the OAuth login section, not the dashboard token field"})
+		return
+	}
 	n.mu.Lock()
 	login, ok := n.pending[state]
 	delete(n.pending, state)
@@ -104,6 +112,10 @@ func (n *NordVPNRoutes) SetToken(w http.ResponseWriter, r *http.Request) {
 	token := strings.TrimSpace(ttsString(body["token"]))
 	if token == "" {
 		nodeReply(w, 400, map[string]any{"error": "token required"})
+		return
+	}
+	if strings.Contains(token, "exchange_token") || strings.Contains(token, "://") {
+		nodeReply(w, 400, map[string]any{"error": "This is an OAuth return link, not a dashboard token. Start Nord Account / Google login and paste it under Return link."})
 		return
 	}
 	if err := NordSetToken(token); err != nil {

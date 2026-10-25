@@ -182,7 +182,7 @@ func (c *NordClient) LoginExchange(ctx context.Context, attempt, verifier, excha
 
 // NordPKCE gera o par verifier/challenge (RFC7636), como o cliente oficial.
 func NordPKCE() (verifier, challenge string, err error) {
-	raw := make([]byte, 32)
+	raw := make([]byte, 24)
 	if _, err = rand.Read(raw); err != nil {
 		return "", "", err
 	}
@@ -197,6 +197,7 @@ func (c *NordClient) LoginURI(ctx context.Context, challenge string) (uri, attem
 	payload, _, err := c.do(ctx, http.MethodPost, "/v1/users/oauth/login", map[string]any{
 		"challenge":      challenge,
 		"preferred_flow": "login",
+		"redirect_flow":  "default",
 	}, false)
 	if err != nil {
 		return "", "", err
