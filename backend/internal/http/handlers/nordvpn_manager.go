@@ -10,6 +10,7 @@ package handlers
 // em settings — ver nordvpn_token em Settings).
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -20,6 +21,8 @@ import (
 
 // NordManager é o singleton ligado no main.
 type NordManager struct {
+	ops     sync.Mutex
+	db      *sql.DB
 	mu      sync.RWMutex
 	client  *NordClient
 	tunnels map[string]*NordTunnel
@@ -96,87 +99,51 @@ type NordCreateRequest struct {
 // NordCreate cria um túnel por (país × réplica), registra o pool socks5 e
 // valida o IP de saída. Réplicas do mesmo país usam servidores distintos.
 func NordCreate(ctx context.Context, request NordCreateRequest) ([]map[string]any, error) {
-	if len(request.Countries) == 0 {
-		return nil, fmt.Errorf("nordvpn: informe ao menos um país")
+	nordManager.ops.Lock()
+	defer nordManager.ops.Unlock()
+	if len(request.Countries) == 0 || request.Replicas < 1 || request.Replicas > 10 || len(request.Countries)*request.Replicas > 10 {
+		return nil, fmt.Errorf("nordvpn: select 1–10 tunnels total")
 	}
-	if request.Replicas <= 0 {
-		request.Replicas = 1
-	}
-	if request.Replicas > 10 {
-		return nil, fmt.Errorf("nordvpn: máximo de 10 réplicas por país")
-	}
-	nordManager.mu.RLock()
-	client := nordManager.client
-	pools := nordManager.pools
-	nordManager.mu.RUnlock()
-	if client == nil {
-		return nil, fmt.Errorf("nordvpn: token não configurado")
-	}
-	if pools == nil {
-		return nil, fmt.Errorf("nordvpn: pool store não configurado")
-	}
-	credentials, err := client.Credentials(ctx)
-	if err != nil {
-		return nil, err
+	if nordManager.db == nil {
+		return nil, fmt.Errorf("nordvpn: persistent store unavailable")
 	}
 	created := []map[string]any{}
-	for _, country := range request.Countries {
+	for _, country := range dedupeStrings(request.Countries) {
 		country = strings.ToLower(strings.TrimSpace(country))
-		if country == "" {
-			continue
+		if len(country) != 2 {
+			return created, fmt.Errorf("nordvpn: invalid country")
 		}
-		servers, err := client.ServersByCountry(ctx, country, request.Replicas*3)
-		if err != nil {
-			return created, err
-		}
-		online := []NordServer{}
-		for _, server := range servers {
-			if server.Hostname != "" {
-				online = append(online, server)
-			}
-		}
-		if len(online) < request.Replicas {
-			return created, fmt.Errorf("nordvpn: %s tem apenas %d servidores online", country, len(online))
-		}
-		sort.SliceStable(online, func(i, j int) bool { return online[i].Load < online[j].Load })
-		for index := 0; index < request.Replicas; index++ {
-			server := online[index%len(online)]
-			publicKey := server.wireguardKey()
-			spec := NordTunnelSpec{
-				ID:         fmt.Sprintf("nord-%s-%d", country, index+1),
-				Country:    country,
-				Hostname:   server.Hostname,
-				Endpoint:   server.endpoint(),
-				PrivateKey: credentials.NordlynxPrivateKey,
-				PublicKey:  publicKey,
-			}
-			tunnel, err := StartNordTunnel(ctx, spec)
-			if err != nil {
-				return created, fmt.Errorf("nordvpn %s: %w", spec.ID, err)
-			}
-			nordManager.mu.Lock()
-			nordManager.tunnels[tunnel.id] = tunnel
-			nordManager.mu.Unlock()
-			// pool correspondente: nome estável, url socks5 do túnel
-			pool, err := pools.Create(ctx, map[string]any{
-				"name":     "NordVPN " + strings.ToUpper(country) + " " + fmt.Sprint(index+1),
-				"proxyUrl": tunnel.Address(),
-				"noProxy":  "",
-				"isActive": true,
-				"type":     "socks5",
-			})
-			if err != nil {
-				tunnel.Close()
-				nordManager.mu.Lock()
-				delete(nordManager.tunnels, tunnel.id)
-				nordManager.mu.Unlock()
+		for i := 1; i <= request.Replicas; i++ {
+			id := fmt.Sprintf("nord-%s-%d", country, i)
+			record := nordTunnelRecord{ID: id, Country: country}
+			err := nordManager.db.QueryRowContext(ctx, `SELECT poolId FROM nordvpnTunnels WHERE id=?`, id).Scan(&record.PoolID)
+			if err == sql.ErrNoRows {
+				pool, e := nordManager.pools.Create(ctx, map[string]any{"name": fmt.Sprintf("NordVPN %s %d", strings.ToUpper(country), i), "proxyUrl": "socks5://127.0.0.1:1", "type": "socks5", "strictProxy": true, "isActive": false})
+				if e != nil {
+					return created, e
+				}
+				record.PoolID = ttsString(pool["id"])
+				if _, e = nordManager.db.ExecContext(ctx, `INSERT INTO nordvpnTunnels(id,poolId,country) VALUES(?,?,?)`, id, record.PoolID, country); e != nil {
+					_, _ = nordManager.pools.Delete(ctx, record.PoolID)
+					return created, e
+				}
+			} else if err != nil {
 				return created, err
 			}
-			status := tunnel.Status()
-			status["poolId"] = pool["id"]
+			nordManager.mu.RLock()
+			existing := nordManager.tunnels[id]
+			nordManager.mu.RUnlock()
+			if existing != nil {
+				status := existing.Status()
+				status["poolId"] = record.PoolID
+				created = append(created, status)
+				continue
+			}
+			status, e := nordConnectRecord(ctx, record, "")
+			if e != nil {
+				return created, e
+			}
 			created = append(created, status)
-			// health assíncrono: valida handshake e captura o IP real
-			go tunnel.CheckIP(context.Background())
 		}
 	}
 	return created, nil
@@ -198,79 +165,51 @@ func NordList() []map[string]any {
 
 // NordRotate troca o servidor de um túnel (novo IP) mantendo o pool.
 func NordRotate(ctx context.Context, id string) (map[string]any, error) {
-	nordManager.mu.RLock()
-	client := nordManager.client
-	pools := nordManager.pools
-	tunnel := nordManager.tunnels[id]
-	nordManager.mu.RUnlock()
-	if client == nil {
-		return nil, fmt.Errorf("nordvpn: token não configurado")
+	nordManager.ops.Lock()
+	defer nordManager.ops.Unlock()
+	if nordManager.db == nil {
+		return nil, fmt.Errorf("nordvpn: persistent store unavailable")
 	}
-	if tunnel == nil {
-		return nil, fmt.Errorf("nordvpn: túnel %s não encontrado", id)
-	}
-	credentials, err := client.Credentials(ctx)
-	if err != nil {
-		return nil, err
-	}
-	servers, err := client.ServersByCountry(ctx, tunnel.country, 12)
-	if err != nil {
+	var record nordTunnelRecord
+	record.ID = id
+	if err := nordManager.db.QueryRowContext(ctx, `SELECT poolId,country FROM nordvpnTunnels WHERE id=?`, id).Scan(&record.PoolID, &record.Country); err != nil {
 		return nil, err
 	}
 	nordManager.mu.RLock()
-	current := nordManager.tunnels[id].hostname
+	old := nordManager.tunnels[id]
 	nordManager.mu.RUnlock()
-	var candidate *NordServer
-	for i := range servers {
-		if servers[i].Hostname != current {
-			candidate = &servers[i]
-			break
-		}
+	host := ""
+	if old != nil {
+		host = old.hostname
 	}
-	if candidate == nil {
-		return nil, fmt.Errorf("nordvpn: sem servidor alternativo em %s", tunnel.country)
-	}
-	publicKey := candidate.wireguardKey()
-	spec := NordTunnelSpec{
-		ID:         tunnel.id,
-		Country:    tunnel.country,
-		Hostname:   candidate.Hostname,
-		Endpoint:   candidate.endpoint(),
-		PrivateKey: credentials.NordlynxPrivateKey,
-		PublicKey:  publicKey,
-	}
-	// preserva o endereço socks (pool aponta pra ele)
-	oldAddress := tunnel.Address()
-	tunnel.Close()
-	replacement, err := StartNordTunnelAt(ctx, spec, oldAddress)
-	if err != nil {
-		nordManager.mu.Lock()
-		delete(nordManager.tunnels, id)
-		nordManager.mu.Unlock()
-		return nil, err
-	}
-	nordManager.mu.Lock()
-	nordManager.tunnels[id] = replacement
-	nordManager.mu.Unlock()
-	go replacement.CheckIP(context.Background())
-	if pools != nil {
-		// atualiza pool caso a porta tenha mudado (não deveria)
-		_ = pools
-	}
-	return replacement.Status(), nil
+	return nordConnectRecord(ctx, record, host)
 }
 
-// NordDelete encerra um túnel (o pool permanece, desativado pelo usuário se
-// quiser — túnel e pool têm ciclos de vida independentes).
 func NordDelete(id string) bool {
-	nordManager.mu.Lock()
-	defer nordManager.mu.Unlock()
-	tunnel, ok := nordManager.tunnels[id]
-	if !ok {
+	nordManager.ops.Lock()
+	defer nordManager.ops.Unlock()
+	if nordManager.db == nil {
 		return false
 	}
-	tunnel.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var poolID string
+	if err := nordManager.db.QueryRowContext(ctx, `SELECT poolId FROM nordvpnTunnels WHERE id=?`, id).Scan(&poolID); err != nil {
+		return false
+	}
+	if _, err := nordManager.pools.Update(ctx, poolID, map[string]any{"isActive": false, "strictProxy": true, "lastError": "NordVPN tunnel deleted"}); err != nil {
+		return false
+	}
+	if _, err := nordManager.db.ExecContext(ctx, `DELETE FROM nordvpnTunnels WHERE id=?`, id); err != nil {
+		return false
+	}
+	nordManager.mu.Lock()
+	t := nordManager.tunnels[id]
 	delete(nordManager.tunnels, id)
+	nordManager.mu.Unlock()
+	if t != nil {
+		t.Close()
+	}
 	return true
 }
 

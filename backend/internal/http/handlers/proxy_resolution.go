@@ -263,6 +263,22 @@ func selectProxyPoolID(ctx context.Context, data map[string]any, lookup connecti
 
 func resolveConnectionProxy(ctx context.Context, data map[string]any, lookup connectionPoolLookup) resolvedProxy {
 	result := resolvedProxy{}
+	// Managed NordVPN sets must fail closed even if every member is inactive.
+	if lookup != nil && data != nil {
+		ids := append([]string{}, stringSlice(data["proxyPoolIds"])...)
+		ids = append(ids, ttsString(data["proxyPoolId"]))
+		for _, id := range ids {
+			if id == "" || id == "__none__" {
+				continue
+			}
+			pool, err := lookup(ctx, id)
+			if err == nil && pool != nil && strings.HasPrefix(ttsString(pool["name"]), "NordVPN ") {
+				result.strict = true
+				result.intended = true
+				break
+			}
+		}
+	}
 	if data == nil {
 		return result
 	}
@@ -270,7 +286,7 @@ func resolveConnectionProxy(ctx context.Context, data map[string]any, lookup con
 		result.poolID = poolID
 		result.intended = true
 		if pool != nil {
-			result.strict = pool["strictProxy"] == true
+			result.strict = result.strict || pool["strictProxy"] == true
 			if pool["isActive"] == true {
 				raw := strings.TrimSpace(ttsString(pool["proxyUrl"]))
 				if raw != "" {
@@ -287,6 +303,9 @@ func resolveConnectionProxy(ctx context.Context, data map[string]any, lookup con
 		}
 	}
 
+	if result.strict && result.intended && result.proxyURL == "" && result.relay == "" {
+		return result
+	}
 	enabled := data["connectionProxyEnabled"] == true
 	legacyURL := strings.TrimSpace(ttsString(data["connectionProxyUrl"]))
 	if enabled {

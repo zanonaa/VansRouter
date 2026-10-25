@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "tables": {
     "_meta": {
       "columns": {
@@ -181,6 +181,14 @@
       "columns": {
         "id": "INTEGER PRIMARY KEY",
         "encrypted": "BLOB NOT NULL"
+      },
+      "indexes": []
+    },
+    "nordvpnTunnels": {
+      "columns": {
+        "id": "TEXT PRIMARY KEY",
+        "poolId": "TEXT NOT NULL UNIQUE",
+        "country": "TEXT NOT NULL"
       },
       "indexes": []
     }
