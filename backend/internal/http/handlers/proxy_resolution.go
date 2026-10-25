@@ -37,6 +37,7 @@ var proxyPoolCursors = proxyPoolCursorState{index: map[string]int{}}
 type proxyFitnessState struct {
 	mu     sync.RWMutex
 	lookup func(context.Context, string) ([]database.Fitness, error)
+	mark   func(context.Context, string, string, float64, string) error
 }
 
 var proxyFitness proxyFitnessState
@@ -47,6 +48,34 @@ func SetProxyFitnessLookup(lookup func(context.Context, string) ([]database.Fitn
 	proxyFitness.mu.Lock()
 	proxyFitness.lookup = lookup
 	proxyFitness.mu.Unlock()
+}
+
+// SetProxyFitnessMarker liga a persistência de fitness (markPoolUnfit da
+// origem). O executor opencode free usa para marcar ip-limit e girar o pool.
+func SetProxyFitnessMarker(mark func(context.Context, string, string, float64, string) error) {
+	proxyFitness.mu.Lock()
+	proxyFitness.mark = mark
+	proxyFitness.mu.Unlock()
+}
+
+// markPoolUnfit persiste a marcação de indisponibilidade do pool para o
+// escopo (provider::modelo) até o timestamp; nil usa o default de 5 min.
+// Sem marker ligado é no-op (como a origem sem banco configurado).
+func markPoolUnfit(ctx context.Context, poolID, scope string, until *int64, reason string) {
+	if poolID == "" || scope == "" {
+		return
+	}
+	proxyFitness.mu.RLock()
+	mark := proxyFitness.mark
+	proxyFitness.mu.RUnlock()
+	if mark == nil {
+		return
+	}
+	target := float64(time.Now().Add(5 * time.Minute).UnixMilli())
+	if until != nil {
+		target = float64(*until)
+	}
+	_ = mark(ctx, poolID, scope, target, reason)
 }
 
 func fitnessLookup() func(context.Context, string) ([]database.Fitness, error) {
@@ -152,6 +181,31 @@ func selectProxyPoolID(ctx context.Context, data map[string]any, lookup connecti
 	}
 
 	eligible := filterTargetPools(ids, dedupeStrings(stringSlice(data["targetProxyPoolIds"])))
+	// excludePoolIds é setado pelo retry-loop do executor (ip-limit): pools
+	// já marcados como unfit nesta request não são reconsiderados.
+	if excluded := stringSlice(data["excludeProxyPoolIds"]); len(excluded) > 0 {
+		skip := map[string]bool{}
+		for _, id := range excluded {
+			skip[id] = true
+		}
+		kept := make([]string, 0, len(eligible))
+		for _, id := range eligible {
+			if !skip[id] {
+				kept = append(kept, id)
+			}
+		}
+		eligible = kept
+	}
+	// Sem pool-set, o pool único também pode ser excluído pelo retry-loop.
+	if single != "" && len(eligible) == 0 && len(ids) == 0 {
+		if excluded := stringSlice(data["excludeProxyPoolIds"]); len(excluded) > 0 {
+			for _, id := range excluded {
+				if id == single {
+					return "", nil
+				}
+			}
+		}
+	}
 	pools := map[string]map[string]any{}
 	active := make([]string, 0, len(eligible))
 	for _, id := range eligible {

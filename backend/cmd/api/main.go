@@ -108,9 +108,14 @@ func run() error {
 	if settings, err := authentication.Settings(context.Background()); err == nil {
 		auth.ApplyOutboundProxy(settings)
 	}
-	// Fitness dos pools usado pela estratégia smart (provider::modelo).
+	// Fitness dos pools usado pela estratégia smart (provider::modelo) e pelo
+	// retry-loop de ip-limit do opencode free (markPoolUnfit + re-resolve).
 	handlers.SetProxyFitnessLookup(func(ctx context.Context, id string) ([]database.Fitness, error) {
 		return (database.ProxyFitness{DB: db}).List(ctx, &id)
+	})
+	handlers.SetProxyFitnessMarker(func(ctx context.Context, poolID, scope string, until float64, reason string) error {
+		_, err := (database.ProxyFitness{DB: db}).Upsert(ctx, poolID, scope, until, reason)
+		return err
 	})
 	shutdownRequested := make(chan struct{}, 1)
 	shutdownHandler := &handlers.Shutdown{Request: func() {
