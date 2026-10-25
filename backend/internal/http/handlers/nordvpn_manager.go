@@ -141,15 +141,12 @@ func NordCreate(ctx context.Context, request NordCreateRequest) ([]map[string]an
 		sort.SliceStable(online, func(i, j int) bool { return online[i].Load < online[j].Load })
 		for index := 0; index < request.Replicas; index++ {
 			server := online[index%len(online)]
-			publicKey, err := client.PublicKey(ctx, server.Hostname)
-			if err != nil {
-				return created, err
-			}
+			publicKey := server.wireguardKey()
 			spec := NordTunnelSpec{
 				ID:         fmt.Sprintf("nord-%s-%d", country, index+1),
 				Country:    country,
 				Hostname:   server.Hostname,
-				Endpoint:   server.Hostname + ":51820",
+				Endpoint:   server.endpoint(),
 				PrivateKey: credentials.NordlynxPrivateKey,
 				PublicKey:  publicKey,
 			}
@@ -233,15 +230,12 @@ func NordRotate(ctx context.Context, id string) (map[string]any, error) {
 	if candidate == nil {
 		return nil, fmt.Errorf("nordvpn: sem servidor alternativo em %s", tunnel.country)
 	}
-	publicKey, err := client.PublicKey(ctx, candidate.Hostname)
-	if err != nil {
-		return nil, err
-	}
+	publicKey := candidate.wireguardKey()
 	spec := NordTunnelSpec{
 		ID:         tunnel.id,
 		Country:    tunnel.country,
 		Hostname:   candidate.Hostname,
-		Endpoint:   candidate.Hostname + ":51820",
+		Endpoint:   candidate.endpoint(),
 		PrivateKey: credentials.NordlynxPrivateKey,
 		PublicKey:  publicKey,
 	}

@@ -21,7 +21,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"sort"
 	"strings"
@@ -68,10 +70,44 @@ type nordOAuthLoginResponse struct {
 }
 
 // NordServer é o servidor WireGuard candidato (menor load primeiro).
+type nordTechnology struct {
+	Identifier string `json:"identifier"`
+	Metadata   []struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	} `json:"metadata"`
+}
+
 type NordServer struct {
-	ID       int64  `json:"id"`
-	Hostname string `json:"hostname"`
-	Load     int    `json:"load"`
+	ID        int64  `json:"id"`
+	Hostname  string `json:"hostname"`
+	Station   string `json:"station"`
+	Load      int    `json:"load"`
+	Locations []struct {
+		Country struct {
+			Code string `json:"code"`
+		} `json:"country"`
+	} `json:"locations"`
+	Technologies []nordTechnology `json:"technologies"`
+}
+
+func (s NordServer) wireguardKey() string {
+	for _, tech := range s.Technologies {
+		if tech.Identifier == "wireguard_udp" {
+			for _, meta := range tech.Metadata {
+				if meta.Name == "public_key" {
+					return meta.Value
+				}
+			}
+		}
+	}
+	return ""
+}
+func (s NordServer) endpoint() string {
+	if ip, err := netip.ParseAddr(s.Station); err == nil {
+		return net.JoinHostPort(ip.String(), "51820")
+	}
+	return net.JoinHostPort(s.Hostname, "51820")
 }
 
 func (c *NordClient) baseURL() string {
@@ -249,7 +285,32 @@ func (c *NordClient) ServersByCountry(ctx context.Context, countryCode string, l
 	if limit <= 0 {
 		limit = 10
 	}
-	path := fmt.Sprintf("/v1/servers?filters[country_code]=%s&limit=%d", url.QueryEscape(country), limit)
+	countriesRaw, _, err := c.do(ctx, http.MethodGet, "/v1/servers/countries", nil, false)
+	if err != nil {
+		return nil, err
+	}
+	var countries []struct {
+		ID   int64  `json:"id"`
+		Code string `json:"code"`
+	}
+	if err = json.Unmarshal(countriesRaw, &countries); err != nil {
+		return nil, err
+	}
+	var countryID int64
+	for _, entry := range countries {
+		if strings.EqualFold(entry.Code, country) {
+			countryID = entry.ID
+			break
+		}
+	}
+	if countryID == 0 {
+		return nil, fmt.Errorf("nordvpn: país desconhecido: %s", country)
+	}
+	query := url.Values{}
+	query.Set("filters[country_id]", fmt.Sprint(countryID))
+	query.Set("filters[servers_technologies][identifier]", "wireguard_udp")
+	query.Set("limit", fmt.Sprint(limit))
+	path := "/v1/servers/recommendations?" + query.Encode()
 	payload, _, err := c.do(ctx, http.MethodGet, path, nil, false)
 	if err != nil {
 		return nil, err
@@ -258,8 +319,24 @@ func (c *NordClient) ServersByCountry(ctx context.Context, countryCode string, l
 	if err := json.Unmarshal(payload, &servers); err != nil {
 		return nil, err
 	}
-	sort.SliceStable(servers, func(i, j int) bool { return servers[i].Load < servers[j].Load })
-	return servers, nil
+	verified := make([]NordServer, 0, len(servers))
+	for _, server := range servers {
+		matches := false
+		for _, location := range server.Locations {
+			if strings.EqualFold(location.Country.Code, country) {
+				matches = true
+				break
+			}
+		}
+		if matches && server.Hostname != "" && server.wireguardKey() != "" {
+			verified = append(verified, server)
+		}
+	}
+	if len(verified) == 0 {
+		return nil, fmt.Errorf("nordvpn: sem servidores WireGuard verificados em %s", country)
+	}
+	sort.SliceStable(verified, func(i, j int) bool { return verified[i].Load < verified[j].Load })
+	return verified, nil
 }
 
 // PublicKey devolve a public key WireGuard do servidor (metadata

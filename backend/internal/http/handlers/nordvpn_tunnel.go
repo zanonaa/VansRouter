@@ -77,6 +77,10 @@ func StartNordTunnel(ctx context.Context, spec NordTunnelSpec) (*NordTunnel, err
 	if spec.PrivateKey == "" || spec.PublicKey == "" || spec.Endpoint == "" {
 		return nil, fmt.Errorf("nordvpn: spec incompleta (private/public/endpoint)")
 	}
+	endpoint, err := nordResolveEndpoint(ctx, spec.Endpoint)
+	if err != nil {
+		return nil, err
+	}
 	localPort, err := nordFreePort()
 	if err != nil {
 		return nil, err
@@ -97,7 +101,7 @@ func StartNordTunnel(ctx context.Context, spec NordTunnelSpec) (*NordTunnel, err
 	}
 	dev := device.NewDevice(tun, conn.NewDefaultBind(), device.NewLogger(device.LogLevelSilent, "nord"))
 	config := fmt.Sprintf("private_key=%s\npublic_key=%s\nendpoint=%s\nallowed_ip=0.0.0.0/0\npersistent_keepalive_interval=25\n",
-		normalizeWgKey(spec.PrivateKey), normalizeWgKey(spec.PublicKey), spec.Endpoint)
+		normalizeWgKey(spec.PrivateKey), normalizeWgKey(spec.PublicKey), endpoint)
 	if err := dev.IpcSet(config); err != nil {
 		dev.Close()
 		return nil, fmt.Errorf("nordvpn wg config: %w", err)
@@ -397,4 +401,26 @@ func mustParseURLLoose(raw string) *url.URL {
 		return &url.URL{Host: raw}
 	}
 	return parsed
+}
+
+// WireGuard UAPI only accepts numeric endpoints, unlike wg-quick which
+// resolves DNS before IpcSet. Only the outer VPN endpoint uses host DNS.
+func nordResolveEndpoint(ctx context.Context, endpoint string) (string, error) {
+	host, port, err := net.SplitHostPort(endpoint)
+	if err != nil {
+		return "", fmt.Errorf("nordvpn: invalid endpoint: %w", err)
+	}
+	if ip, err := netip.ParseAddr(host); err == nil {
+		return net.JoinHostPort(ip.String(), port), nil
+	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	ips, err := net.DefaultResolver.LookupNetIP(ctx, "ip4", host)
+	if err != nil {
+		return "", fmt.Errorf("nordvpn: resolve endpoint %s: %w", host, err)
+	}
+	if len(ips) == 0 {
+		return "", fmt.Errorf("nordvpn: endpoint has no IPv4 address: %s", host)
+	}
+	return net.JoinHostPort(ips[0].String(), port), nil
 }
