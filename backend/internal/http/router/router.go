@@ -429,6 +429,8 @@ func NewWithSPA(ready handlers.Readiness, authentication *auth.HTTP, nodes *hand
 		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].NordVPN != nil {
 			nordvpn := providerAPI[0].NordVPN
+			r.Post("/api/nordvpn/oauth/start", nordvpn.OAuthStart)
+			r.Post("/api/nordvpn/oauth/complete", nordvpn.OAuthComplete)
 			r.Post("/api/nordvpn/token", nordvpn.SetToken)
 			r.Options("/api/nordvpn/token", options("POST, OPTIONS"))
 			r.Get("/api/nordvpn/countries", nordvpn.Countries)
