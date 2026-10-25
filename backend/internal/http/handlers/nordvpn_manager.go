@@ -60,6 +60,9 @@ func NordSetToken(token string) error {
 		nordManager.client = nil
 		return err
 	}
+	if err := persistNordClient(ctx, client); err != nil {
+		return err
+	}
 	nordManager.client = client
 	return nil
 }

@@ -53,7 +53,7 @@ export default function NordVPNModal({ onClose, onChanged }) {
     <Modal isOpen title="NordVPN" onClose={onClose}>
       <div className="space-y-4">
         <p className="text-sm text-text-muted">Crie túneis por país e vincule os pools às conexões dos providers. O restante do tráfego não usa a VPN.</p>
-        <p className="text-xs text-warning">A autenticação e os túneis atuais são mantidos em memória: após reiniciar o servidor, reconecte a conta. Tokens são credenciais sensíveis; não os compartilhe.</p>
+        <p className="text-xs text-warning">A sessão da conta é salva cifrada no servidor; sessões OAuth são renovadas automaticamente quando a Nord permite. Tokens manuais exigem nova autenticação ao expirar. Túneis ainda precisam ser recriados após restart. Tokens são credenciais sensíveis; não os compartilhe.</p>
         {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
         <fieldset disabled={busy} className="space-y-3">
           <legend className="mb-2 font-medium">Autenticação</legend>

@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "tables": {
     "_meta": {
       "columns": {
@@ -176,6 +176,13 @@
         "CREATE INDEX IF NOT EXISTS idx_cpm_kind ON cachedProviderModels(kind)",
         "CREATE INDEX IF NOT EXISTS idx_cpm_provider ON cachedProviderModels(providerId)"
       ]
+    },
+    "nordvpnAuth": {
+      "columns": {
+        "id": "INTEGER PRIMARY KEY",
+        "encrypted": "BLOB NOT NULL"
+      },
+      "indexes": []
     }
   }
 }

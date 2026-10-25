@@ -85,6 +85,10 @@ func (n *NordVPNRoutes) OAuthComplete(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 401, map[string]any{"error": "Could not retrieve NordLynx credentials"})
 		return
 	}
+	if err := persistNordClient(r.Context(), login.client); err != nil {
+		nodeReply(w, 500, map[string]any{"error": "Could not save Nord Account session"})
+		return
+	}
 	nordManager.mu.Lock()
 	nordManager.client = login.client
 	nordManager.mu.Unlock()

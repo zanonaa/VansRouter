@@ -27,6 +27,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const nordAPIBase = "https://api.nordvpn.com"
@@ -39,6 +41,7 @@ type NordClient struct {
 	Client  *http.Client
 
 	mu          sync.Mutex
+	renewMu     sync.Mutex
 	token       string
 	renewToken  string
 	expiresAt   time.Time
@@ -99,7 +102,13 @@ func (c *NordClient) do(ctx context.Context, method, path string, body any, auth
 		return nil, 0, err
 	}
 	request.Header.Set("Content-Type", "application/json")
+	if path == "/v1/users/tokens/renew" {
+		request.Header.Set("Idempotency-Key", uuid.NewString())
+	}
 	if authenticated {
+		if err := c.RenewIfDue(ctx); err != nil {
+			return nil, 0, err
+		}
 		c.mu.Lock()
 		token := c.token
 		c.mu.Unlock()
@@ -166,6 +175,7 @@ func (c *NordClient) LoginExchange(ctx context.Context, attempt, verifier, excha
 	c.mu.Lock()
 	c.token = login.Token
 	c.renewToken = login.RenewToken
+	c.expiresAt, _ = time.Parse(time.RFC3339, login.ExpiresAt)
 	c.mu.Unlock()
 	return nil
 }
@@ -284,4 +294,45 @@ func (c *NordClient) PublicKey(ctx context.Context, hostname string) (string, er
 		}
 	}
 	return "", fmt.Errorf("nordvpn: sem public_key wireguard para %s", hostname)
+}
+
+// Manual dashboard tokens do not have a renew token: never invent a refresh
+// flow for them. OAuth refresh is serialized and rotated secrets are saved
+// before becoming visible to other requests.
+func (c *NordClient) RenewIfDue(ctx context.Context) error {
+	c.renewMu.Lock()
+	defer c.renewMu.Unlock()
+	c.mu.Lock()
+	renew, expires := c.renewToken, c.expiresAt
+	c.mu.Unlock()
+	if renew == "" || expires.IsZero() || time.Until(expires) > 5*time.Minute {
+		return nil
+	}
+	payload, _, err := c.do(ctx, http.MethodPost, "/v1/users/tokens/renew", map[string]string{"renewToken": renew}, false)
+	if err != nil {
+		return fmt.Errorf("nordvpn: session renewal unavailable; reauthenticate if revoked")
+	}
+	var login nordLoginResponse
+	if json.Unmarshal(payload, &login) != nil || login.Token == "" || login.RenewToken == "" {
+		return fmt.Errorf("nordvpn: invalid renewal response")
+	}
+	expiry, err := time.Parse(time.RFC3339, login.ExpiresAt)
+	if err != nil {
+		return fmt.Errorf("nordvpn: invalid renewal expiry")
+	}
+	nordAuthPersistence.RLock()
+	store := nordAuthPersistence.store
+	nordAuthPersistence.RUnlock()
+	if store != nil {
+		if err = store.Save(ctx, nordAuthState{login.Token, login.RenewToken, expiry}); err != nil {
+			return err
+		}
+	}
+	c.mu.Lock()
+	c.token = login.Token
+	c.renewToken = login.RenewToken
+	c.expiresAt = expiry
+	c.credentials = nil
+	c.mu.Unlock()
+	return nil
 }
