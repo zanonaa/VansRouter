@@ -114,7 +114,7 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 		response, err := client.Do(request)
 		if err != nil {
 			response = nil
-			if poolID != "" && attempt < maxPoolRetries {
+			if poolID != "" && attempt < maxPoolRetries && len(mergePoolCandidates(metadata, append(append([]string{}, excluded...), poolID))) > 0 {
 				// Falha de transporte no proxy marcado: tenta o próximo pool
 				// antes de devolver erro ao cliente.
 				excluded = append(excluded, poolID)
@@ -141,11 +141,13 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 		lastStatus = response.StatusCode
 		lastDetails = string(details)
 		lastRetryAfter = response.Header.Get("Retry-After")
-		if poolID != "" && openCodeIsIPLimit(response.StatusCode, lastDetails) && attempt < maxPoolRetries && len(mergePoolCandidates(metadata, excluded)) > 0 {
+		if poolID != "" && openCodeIsIPLimit(response.StatusCode, lastDetails) {
 			until := ipLimitRetryAfter(lastRetryAfter)
 			markPoolUnfit(r.Context(), poolID, openCodeIPLimitScope(provider, model), until, "ip-limit")
 			excluded = append(excluded, poolID)
-			continue
+			if attempt < maxPoolRetries && len(mergePoolCandidates(metadata, excluded)) > 0 {
+				continue
+			}
 		}
 		break
 	}

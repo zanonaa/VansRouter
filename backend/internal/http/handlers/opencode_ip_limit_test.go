@@ -210,3 +210,20 @@ func TestIPLimitReturns429WithRetryAfterWhenAllPoolsFail(t *testing.T) {
 		t.Fatalf("esperava 3 tentativas upstream (1+2 retries), veio %d", *hits)
 	}
 }
+
+func TestIPLimitSinglePoolIsNeverRetried(t *testing.T) {
+	upstream, hits := newIPLimitUpstream(t, 100)
+	proxy := newIPLimitProxy(t, upstream)
+	handler := newIPLimitHandler(map[string]map[string]any{"only": {"isActive": true, "strictProxy": true, "proxyUrl": proxy.URL}}, trustTestUpstream(t, upstream))
+	var marked []string
+	SetProxyFitnessMarker(func(_ context.Context, id, scope string, until float64, reason string) error {
+		marked = append(marked, id)
+		return nil
+	})
+	defer SetProxyFitnessMarker(nil)
+	rec := httptest.NewRecorder()
+	handler.sendOpenCodeFree(rec, httptest.NewRequest("POST", "/", nil), "opencode", "beam-free", map[string]any{"stream": false}, map[string]any{"providerSpecificData": map[string]any{"proxyPoolId": "only"}})
+	if rec.Code != 429 || *hits != 1 || len(marked) != 1 || marked[0] != "only" {
+		t.Fatalf("status=%d hits=%d marked=%v", rec.Code, *hits, marked)
+	}
+}
