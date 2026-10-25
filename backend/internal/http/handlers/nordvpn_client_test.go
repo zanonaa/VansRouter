@@ -24,7 +24,7 @@ func TestNordCredentialsCachesPrivateKey(t *testing.T) {
 			w.WriteHeader(404)
 			return
 		}
-		if r.Header.Get("Authorization") != "Bearer tok" {
+		if r.Header.Get("Authorization") != "Bearer token:tok" {
 			w.WriteHeader(401)
 			return
 		}
@@ -110,7 +110,7 @@ func TestNordLoginTokenRejectsInvalid(t *testing.T) {
 
 func TestNordLoginTokenAcceptsDashboardToken(t *testing.T) {
 	client, _ := nordTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Authorization") != "Bearer good" {
+		if r.Header.Get("Authorization") != "Bearer token:good" {
 			w.WriteHeader(401)
 			return
 		}
