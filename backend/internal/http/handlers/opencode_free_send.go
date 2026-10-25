@@ -111,6 +111,7 @@ func (t *TranslatorSend) sendOpenCodeFree(w http.ResponseWriter, r *http.Request
 			fail(502, err.Error())
 			return
 		}
+		auditOpenCodeIdentity(r.Header, headers, poolID, model, attempt+1)
 		response, err := client.Do(request)
 		if err != nil {
 			response = nil
