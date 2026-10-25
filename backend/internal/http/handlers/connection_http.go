@@ -60,6 +60,7 @@ func connectionHTTP(ctx context.Context, data map[string]any, lookup connectionP
 		client.Transport = transport
 	}
 
+	client.Transport = auditConnectionTransport(client.Transport)
 	if usage, ok := ctx.Value(usageContextKey{}).(*requestUsage); ok {
 		base := client.Transport
 		if base == nil {

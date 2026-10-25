@@ -378,7 +378,7 @@ var (
 
 func sharedDirectTransport() *http.Transport {
 	directTransportOnce.Do(func() {
-		base, ok := http.DefaultTransport.(*http.Transport)
+		base, ok := directTransportBase().(*http.Transport)
 		if ok {
 			directTransport = base.Clone()
 		} else {

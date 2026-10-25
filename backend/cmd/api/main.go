@@ -102,6 +102,27 @@ func run() error {
 		EnableRequestLogs: os.Getenv("ENABLE_REQUEST_LOGS") == "true",
 		EnableTranslator:  os.Getenv("ENABLE_TRANSLATOR") == "true",
 	}
+	// Temporary, opt-in outbound attribution diagnostics. No secret is logged.
+	if os.Getenv("OUTBOUND_AUDIT") == "true" {
+		handlers.InstallOutboundAudit(func(ctx context.Context) (map[[32]byte]handlers.AuditIdentity, error) {
+			connections, err := (database.Connections{DB: db}).List(ctx, "", nil)
+			if err != nil {
+				return nil, err
+			}
+			result := map[[32]byte]handlers.AuditIdentity{}
+			for _, connection := range connections {
+				provider, _ := connection["provider"].(string)
+				id, _ := connection["id"].(string)
+				active, _ := connection["isActive"].(bool)
+				for _, field := range []string{"apiKey", "accessToken"} {
+					if token, ok := connection[field].(string); ok && token != "" {
+						result[handlers.CredentialAuditKey(token)] = handlers.AuditIdentity{Provider: provider, Connection: id, Active: active}
+					}
+				}
+			}
+			return result, nil
+		})
+	}
 	// Proxy global persistido precisa valer também depois de um restart: o
 	// transporte lê o ambiente por requisição, mas as variáveis são restauradas
 	// aqui a partir do banco.
