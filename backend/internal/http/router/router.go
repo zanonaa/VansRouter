@@ -427,6 +427,24 @@ func NewWithSPA(ready handlers.Readiness, authentication *auth.HTTP, nodes *hand
 			r.Post("/api/proxy-pools/import-public", importPublic.Post)
 			r.Options("/api/proxy-pools/import-public", options("POST, OPTIONS"))
 		}
+		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].NordVPN != nil {
+			nordvpn := providerAPI[0].NordVPN
+			r.Post("/api/nordvpn/token", nordvpn.SetToken)
+			r.Options("/api/nordvpn/token", options("POST, OPTIONS"))
+			r.Get("/api/nordvpn/countries", nordvpn.Countries)
+			r.Head("/api/nordvpn/countries", withoutBody(nordvpn.Countries))
+			r.Options("/api/nordvpn/countries", options("GET, HEAD, OPTIONS"))
+			r.Post("/api/nordvpn/tunnels", nordvpn.CreateTunnels)
+			r.Get("/api/nordvpn/tunnels", nordvpn.ListTunnels)
+			r.Head("/api/nordvpn/tunnels", withoutBody(nordvpn.ListTunnels))
+			r.Options("/api/nordvpn/tunnels", options("GET, HEAD, OPTIONS, POST"))
+			r.Post("/api/nordvpn/tunnels/health", nordvpn.Health)
+			r.Options("/api/nordvpn/tunnels/health", options("POST, OPTIONS"))
+			r.Post("/api/nordvpn/tunnels/{id}/rotate", nordvpn.Rotate)
+			r.Delete("/api/nordvpn/tunnels/{id}", nordvpn.Delete)
+			r.Options("/api/nordvpn/tunnels/{id}", options("DELETE, OPTIONS"))
+			r.Options("/api/nordvpn/tunnels/{id}/rotate", options("POST, OPTIONS"))
+		}
 		if len(providerAPI) > 0 && providerAPI[0] != nil && providerAPI[0].Deploys != nil {
 			deploys := providerAPI[0].Deploys
 			r.Post("/api/proxy-pools/cloudflare-deploy", deploys.CloudflareDeploy)

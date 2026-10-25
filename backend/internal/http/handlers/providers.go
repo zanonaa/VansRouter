@@ -18,6 +18,7 @@ type Providers struct {
 	CatalogSync       *ModelCatalogSync
 	PoolFitness       *PoolFitnessRoutes
 	ImportPublic      *ImportPublic
+	NordVPN           *NordVPNRoutes
 	Deploys           *RelayDeploys
 	KiloFree          *KiloFreeModels
 	ClientList        *ProviderClient

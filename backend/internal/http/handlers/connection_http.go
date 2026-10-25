@@ -2,9 +2,13 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"golang.org/x/net/proxy"
 )
 
 type connectionPoolLookup func(context.Context, string) (map[string]any, error)
@@ -86,6 +90,9 @@ func resolveConnectionHTTP(ctx context.Context, data map[string]any, lookup conn
 // cache compartilhado (keep-alive reutilizável); para um transporte injetado
 // clona e sinaliza que o caller deve fechar as conexões ociosas.
 func proxyTransport(proxyURL, noProxy string, base http.RoundTripper) (*http.Transport, bool, error) {
+	if isSOCKSProxyURL(proxyURL) {
+		return socksProxyTransport(proxyURL)
+	}
 	if base == nil || base == http.RoundTripper(sharedDirectTransport()) {
 		transport, _, err := cachedProxyTransport(proxyURL, noProxy)
 		return transport, false, err
@@ -139,4 +146,50 @@ func rewriteConnectionRelay(request *http.Request, relay string) error {
 	request.URL = target
 	request.Host = ""
 	return nil
+}
+
+// isSOCKSProxyURL informa se o proxyUrl usa esquema SOCKS. Túneis NordVPN e
+// provedores SOCKS5 entram por aqui: o net/http não aplica Proxy-URL socks,
+// então seguem com dialer x/net/proxy (que respeita user:pass da URL).
+func isSOCKSProxyURL(proxyURL string) bool {
+	parsed, err := url.Parse(strings.TrimSpace(proxyURL))
+	if err != nil {
+		return false
+	}
+	switch strings.ToLower(parsed.Scheme) {
+	case "socks5", "socks5h", "socks4", "socks4a":
+		return true
+	}
+	return false
+}
+
+// socksProxyTransport devolve um transporte cujo DialContext passa pelo
+// dialer SOCKS (auth via userinfo da URL; socks5h/4a resolvem o host no
+// proxy). Devolve custom=true: o caller fecha conexões ociosas por pool.
+func socksProxyTransport(proxyURL string) (*http.Transport, bool, error) {
+	parsed, err := url.Parse(strings.TrimSpace(proxyURL))
+	if err != nil || parsed.Host == "" {
+		return nil, false, err
+	}
+	address := parsed.Host
+	if parsed.Port() == "" {
+		address = net.JoinHostPort(parsed.Hostname(), "1080")
+	}
+	var auth *proxy.Auth
+	if parsed.User != nil {
+		password, _ := parsed.User.Password()
+		auth = &proxy.Auth{User: parsed.User.Username(), Password: password}
+	}
+	dialer, err := proxy.SOCKS5("tcp", address, auth, proxy.Direct)
+	if err != nil {
+		return nil, false, err
+	}
+	contextDialer, ok := dialer.(proxy.ContextDialer)
+	if !ok {
+		return nil, false, errors.New("socks dialer sem DialContext")
+	}
+	transport := sharedDirectTransport().Clone()
+	transport.Proxy = nil // egress sempre pelo dialer SOCKS
+	transport.DialContext = contextDialer.DialContext
+	return transport, true, nil
 }
