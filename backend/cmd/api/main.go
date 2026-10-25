@@ -119,6 +119,13 @@ func run() error {
 	})
 	// Túneis NordVPN: pools socks5 userspace orquestrados pelo manager.
 	handlers.SetNordManager(database.ProxyPools{DB: db}, &handlers.NordClient{})
+	nordAuthStore, err := handlers.NewNordAuthStore(db, cfg.DataDir)
+	if err != nil {
+		return fmt.Errorf("NordVPN credential storage: %w", err)
+	}
+	if err := handlers.StartNordAuthPersistence(context.Background(), nordAuthStore); err != nil {
+		return fmt.Errorf("NordVPN credential restore: %w", err)
+	}
 	shutdownRequested := make(chan struct{}, 1)
 	shutdownHandler := &handlers.Shutdown{Request: func() {
 		select {

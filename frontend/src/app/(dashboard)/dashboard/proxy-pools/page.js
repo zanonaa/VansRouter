@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Badge, Button, Card, CardSkeleton, Input, Modal, Toggle, ConfirmModal } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
 import { countBatchResults, dedupeProxyEntries, runProxyPoolBatch } from "./batchOperations.js";
+import NordVPNModal from "./NordVPNModal.js";
 import { PUBLIC_PROXY_SOURCES } from "@/shared/constants/publicProxySources.js";
 
 function parseProxyLine(line) {
@@ -266,6 +267,7 @@ export default function ProxyPoolsPage() {
   const [showCloudflareModal, setShowCloudflareModal] = useState(false);
   const [showDenoModal, setShowDenoModal] = useState(false);
   const [showRelayMenu, setShowRelayMenu] = useState(false);
+  const [showNordVPN, setShowNordVPN] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showPublicImportModal, setShowPublicImportModal] = useState(false);
   const [publicImportForm, setPublicImportForm] = useState({
@@ -943,12 +945,18 @@ export default function ProxyPoolsPage() {
                   <span className="material-symbols-outlined text-[20px] text-emerald-500">public</span>
                   Import from Public Lists
                 </button>
+                <button type="button" onClick={() => { setShowNordVPN(true); setShowAddMenu(false); }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5">
+                  <span className="material-symbols-outlined text-[20px] text-blue-500">vpn_lock</span>
+                  NordVPN
+                </button>
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {showNordVPN && <NordVPNModal onClose={() => setShowNordVPN(false)} onChanged={fetchProxyPools} />}
       <Card>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           {proxyPools.length > 0 && (
