@@ -1,0 +1,24 @@
+# Merge into the existing application compose file. No published Headroom port.
+# Configure headroomUrl=http://headroom:8787 in the Token Saver dashboard.
+services:
+  vansrouter:
+    networks:
+      - token-savers
+  headroom:
+    image: vansrouter-headroom:0.41.0
+    build:
+      context: ./docker/token-savers/headroom
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/headroom/.cache:uid=10001,gid=10001
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - token-savers
+networks:
+  token-savers:
+    internal: true

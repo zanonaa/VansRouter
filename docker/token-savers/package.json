@@ -1,0 +1,8 @@
+{
+  "name": "vansrouter-token-saver-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "pxpipe-proxy": "0.15.1"
+  }
+}
