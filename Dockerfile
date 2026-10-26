@@ -47,7 +47,7 @@ WORKDIR /src
 RUN curl -fsSL https://codeload.github.com/rtk-ai/rtk/tar.gz/8dae5a750fe307d1fee105a2ff4a9d1ca54ac791 -o /tmp/rtk.tar.gz \
     && echo 'b79c2733653d486d126f68d68372b1531541ef4680d4afe9d1493b5600fc793e  /tmp/rtk.tar.gz' | sha256sum -c - \
     && tar -xzf /tmp/rtk.tar.gz --strip-components=1 \
-    && cargo build --release --locked \
+    && CARGO_PROFILE_RELEASE_LTO=false CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 cargo build --release --locked \
     && ./target/release/rtk --version
 
 # Official PXPIPE runtime, pinned with npm integrity hashes.
