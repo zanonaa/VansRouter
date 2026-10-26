@@ -67,8 +67,8 @@ COPY --from=spa-builder /app/frontend/dist /app/spa
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh /app/vansrouter
 
-ENV PXPIPE_PACKAGE_ROOT=/opt/token-savers/node_modules/pxpipe-proxy \
-    PORT=20128 \
+ENV PXPIPE_PACKAGE_ROOT=/opt/token-savers/node_modules/pxpipe-proxy
+ENV PORT=20128 \
     DATA_DIR=/app/data \
     SPA_DIR=/app/spa \
     RELEASE_BUILD_ID=${VCS_REF}

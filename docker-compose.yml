@@ -36,11 +36,20 @@ services:
 
   headroom:
     profiles: [headroom]
-    image: ghcr.io/chopratejas/headroom@sha256:50b85d8e320cfcdf1b38919bb7ae067b93ff7a8de0a93f05b2c1246370200d1c
+    image: vansrouter-headroom:0.41.0
+    build:
+      context: ./docker/token-savers/headroom
     container_name: headroom
     restart: unless-stopped
-    ports:
-      - "${HEADROOM_PORT:-8787}:8787"
+    # Compression service is reachable only by containers, never the host.
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/headroom/.cache:uid=10001,gid=10001
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
 volumes:
   9router-data:
