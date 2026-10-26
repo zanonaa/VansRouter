@@ -163,7 +163,7 @@ import(%s + '?v=' + encodeURIComponent(%s)).then(async (m) => {
   }
   process.stdout.write(JSON.stringify({ reason: result.reason }));
 }).catch(e => { process.stderr.write(String(e && e.message || e)); process.exit(1) });
-`, inline, strconvEntry(pxpipeAbsEntry(l.DataDir)), strconvEntry(version))
+`, strconvEntry(inline), strconvEntry(pxpipeAbsEntry(l.DataDir)), strconvEntry(version))
 	out, runErr := l.run(ctx, script)
 	if runErr != nil {
 		return nil, runErr
@@ -173,6 +173,9 @@ import(%s + '?v=' + encodeURIComponent(%s)).then(async (m) => {
 	}
 	if json.Unmarshal([]byte(out), &parsed) != nil {
 		return nil, fmt.Errorf("transform returned an unexpected shape")
+	}
+	if parsed.Reason == "parse_error" {
+		return nil, fmt.Errorf("PXPIPE self-test rejected the JSON fixture")
 	}
 	return map[string]any{
 		"ok":         true,
