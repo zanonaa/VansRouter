@@ -49,7 +49,7 @@ export default function APIPageClient() {
   const [cavemanEnabled, setCavemanEnabled] = useState(false);
   const [cavemanLevel, setCavemanLevel] = useState("full");
   const [ponytailEnabled, setPonytailEnabled] = useState(false);
-  const [ponytailLevel, setPonytailLevel] = useState("full");
+  const [ponytailLevel, setPonytailLevel] = useState("official");
   const [locale, setLocale] = useState("en");
 
   // API key visibility toggle state
@@ -106,7 +106,7 @@ export default function APIPageClient() {
       setCavemanEnabled(!!data.cavemanEnabled);
       setCavemanLevel(data.cavemanLevel || "full");
       setPonytailEnabled(!!data.ponytailEnabled);
-      setPonytailLevel(data.ponytailLevel || "full");
+      setPonytailLevel(data.ponytailLevel || "official");
     } catch (error) {
       console.log("Error loading settings:", error);
     }

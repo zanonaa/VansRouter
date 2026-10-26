@@ -40,6 +40,21 @@ COPY backend ./
 RUN if [ "$APP_VERSION" != "unknown" ]; then printf '%s\n' "$APP_VERSION" > internal/http/handlers/app-version.txt; fi \
   && CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
 
+# Download official release artifacts on the builder host; no Rust compilation.
+FROM --platform=$BUILDPLATFORM alpine:3.22@sha256:d406446bc05b82480756ce8f1287964d28768c23955fa9480d2a74a2eae7a654 AS rtk-builder
+ARG TARGETARCH
+RUN apk add --no-cache curl
+WORKDIR /out
+RUN case "$TARGETARCH" in \
+      amd64) artifact=rtk-x86_64-unknown-linux-musl.tar.gz; hash=79aa5b89c69566bbfeceb66c8a27cfbe52237fc7ee3e683115f43745a3262d21 ;; \
+      arm64) artifact=rtk-aarch64-unknown-linux-gnu.tar.gz; hash=e8c2e1787f46017ea7c5a711b2bc6a7f7cf61c7ad69385b4c1e4daff1135dcd1 ;; \
+      *) exit 1 ;; esac \
+    && curl -fsSL "https://github.com/rtk-ai/rtk/releases/download/v0.46.0/$artifact" -o /tmp/rtk.tar.gz \
+    && echo "$hash  /tmp/rtk.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/rtk.tar.gz \
+    && curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/8dae5a750fe307d1fee105a2ff4a9d1ca54ac791/LICENSE -o LICENSE \
+    && echo '4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd  LICENSE' | sha256sum -c -
+
 # Official PXPIPE runtime, pinned with npm integrity hashes.
 FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS token-savers
 WORKDIR /opt/token-savers
@@ -49,23 +64,24 @@ RUN npm ci --omit=dev --no-audit --no-fund \
 
 # Step 3: runner alpine puro: binário Go + dist. A migração do volume legado
 # roda dentro do binário no boot (backend/internal/database/legacy_migration.go).
-FROM alpine:3.22@sha256:d406446bc05b82480756ce8f1287964d28768c23955fa9480d2a74a2eae7a654 AS runner
+FROM node:22-trixie-slim@sha256:8eb619e402eaede1748a3c8173bffab391592812e85136452f781741c7242ddf AS runner
 ARG APP_VERSION
 ARG VCS_REF
 WORKDIR /app
 
-RUN apk add --no-cache su-exec ca-certificates tzdata nodejs npm \
-  && node -v && npm -v \
-  && addgroup -g 1000 app \
-  && adduser -D -u 1000 -G app app \
-  && mkdir -p /app/data \
-  && chown -R app:app /app/data
+RUN apt-get update && apt-get install -y --no-install-recommends gosu ca-certificates tzdata wget libgcc-s1 \
+   && rm -rf /var/lib/apt/lists/* \
+   && ln -s /usr/sbin/gosu /usr/local/bin/su-exec \
+   && groupmod -n app node && usermod -l app -g app node \
+   && mkdir -p /app/data && chown -R app:app /app/data
 
+COPY --from=rtk-builder /out/rtk /usr/local/bin/rtk
+COPY --from=rtk-builder /out/LICENSE /usr/share/licenses/rtk/LICENSE
 COPY --from=token-savers /opt/token-savers /opt/token-savers
 COPY --from=go-builder /out/vansrouter /app/vansrouter
 COPY --from=spa-builder /app/frontend/dist /app/spa
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh /app/vansrouter
+RUN chmod +x /entrypoint.sh /app/vansrouter && rtk --version
 
 ENV PXPIPE_PACKAGE_ROOT=/opt/token-savers/node_modules/pxpipe-proxy
 ENV PORT=20128 \

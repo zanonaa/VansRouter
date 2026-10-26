@@ -106,35 +106,8 @@ const (
 	tsPonytailPersist = "ACTIVE EVERY RESPONSE. No drift back to over-building. Still active if unsure."
 )
 
-var ponytailPrompts = map[string]string{
-	"lite": strings.Join([]string{
-		tsPonytailLadder,
-		"Level: lite. Build what's asked, but name the lazier alternative in one line — the user picks.",
-		tsPonytailRules,
-		tsPonytailOutput,
-		tsPonytailBounds,
-		tsPonytailSkeptic,
-		tsPonytailPersist,
-	}, " "),
-	"full": strings.Join([]string{
-		tsPonytailLadder,
-		"Level: full. The ladder is enforced — stdlib and native first, shortest diff, shortest explanation. Ship the lazy version and question unrequested scope in the same response.",
-		tsPonytailRules,
-		tsPonytailOutput,
-		tsPonytailBounds,
-		tsPonytailSkeptic,
-		tsPonytailPersist,
-	}, " "),
-	"ultra": strings.Join([]string{
-		tsPonytailLadder,
-		"Level: ultra. YAGNI extremist. Deletion before addition. Ship the one-liner and challenge the rest of the requirement in the same breath. No feature until a profiler or a real requirement demands it.",
-		tsPonytailRules,
-		tsPonytailOutput,
-		tsPonytailBounds,
-		tsPonytailSkeptic,
-		tsPonytailPersist,
-	}, " "),
-}
+// Legacy level keys resolve to the same unmodified official rules.
+var ponytailPrompts = map[string]string{}
 
 func injectSystemPrompt(body map[string]any, format, prompt string) {
 	if body == nil || prompt == "" {

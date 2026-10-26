@@ -152,7 +152,7 @@ func parseTokenSaverSettings(settings map[string]any) tokenSaverSettings {
 		// Defaults de settingsRepo.js: RTK ligado, demais desligados.
 		rtkEnabled:           true,
 		cavemanLevel:         "full",
-		ponytailLevel:        "full",
+		ponytailLevel:        "official",
 		headroomURL:          defaultHeadroomURLFromEnv(),
 		headroomTimeout:      defaultHeadroomTimeout,
 		pxpipeMinChars:       defaultPxpipeMinChars,
