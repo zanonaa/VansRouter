@@ -66,7 +66,7 @@ export default function TokenSaverSettings({
             </a>
           </p>
           <p className="text-sm text-text-muted">
-            git/grep/ls/tree/logs → 60-90% fewer input tokens
+            git/grep/ls/tree/logs — legacy internal filters, not the official RTK binary
           </p>
         </div>
         <Toggle
@@ -80,7 +80,7 @@ export default function TokenSaverSettings({
             <p className="font-medium">
               Compress context{" "}
               <a
-                href="https://github.com/chopratejas/headroom"
+                href="https://github.com/headroomlabs-ai/headroom"
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-normal text-primary underline hover:opacity-80"

@@ -102,7 +102,7 @@ func (l *PxpipeLoader) runWithInput(ctx context.Context, script string, stdin []
 // pxpipeExportScript: cache-bust por versão (idem `?v=` da origem); a versão
 // entra embutida no script.
 func pxpipeExportScript(entry, version string) string {
-	return fmt.Sprintf("import(%s + '?v=' + encodeURIComponent(%s)).then(m => { process.stdout.write(typeof m.transformAnthropicMessages) }).catch(e => { process.stderr.write(String(e && e.message || e)); process.exit(1) })", strconvEntry(entry), strconvEntry(version))
+	return fmt.Sprintf("import(%s + '?v=' + encodeURIComponent(%s)).then(m => { if (typeof m.transformAnthropicMessages !== 'function') process.exit(1); process.stdout.write('function') }).catch(e => { process.stderr.write(String(e && e.message || e)); process.exit(1) })", strconvEntry(entry), strconvEntry(version))
 }
 
 // Load espelha loadPxpipe: NOT_INSTALLED quando falta o pacote; erro quando o

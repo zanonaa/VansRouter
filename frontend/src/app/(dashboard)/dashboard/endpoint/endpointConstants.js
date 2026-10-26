@@ -10,6 +10,7 @@ export const CAVEMAN_LEVELS = [
 ];
 
 export const PONYTAIL_LEVELS = [
+  { id: "official", label: "Official", desc: "Pinned upstream compact rules; no client hooks or slash commands" },
   { id: "lite", label: "Lite", desc: "Build asked, name lazier option" },
   { id: "full", label: "Full", desc: "Ladder enforced: stdlib/native first" },
   { id: "ultra", label: "Ultra", desc: "YAGNI extremist, deletion first" },

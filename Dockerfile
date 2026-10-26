@@ -2,9 +2,8 @@
 ARG APP_VERSION=unknown
 ARG VCS_REF=unknown
 
-# Fase 6: imagem integrada Go + SPA (sem Next.js). O runtime Node permanece
-# apenas para o PXPIPE do Token Saver, que executa o pacote npm em library mode
-# exatamente como a origem (install on-demand + transform por subprocesso).
+# Runtime Node is retained for the official pinned PXPIPE package, bundled
+# at build time; no dashboard-time download is needed in this image.
 # Step 1: build da SPA com Vite na plataforma nativa do builder.
 FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS spa-builder
 WORKDIR /app
@@ -41,6 +40,13 @@ COPY backend ./
 RUN if [ "$APP_VERSION" != "unknown" ]; then printf '%s\n' "$APP_VERSION" > internal/http/handlers/app-version.txt; fi \
   && CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
 
+# Official PXPIPE runtime, pinned with npm integrity hashes.
+FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS token-savers
+WORKDIR /opt/token-savers
+COPY docker/token-savers/package.json docker/token-savers/package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund \
+    && node --input-type=module -e "import('./node_modules/pxpipe-proxy/dist/core/library.js').then(m => { if (typeof m.transformAnthropicMessages !== 'function') process.exit(1) })"
+
 # Step 3: runner alpine puro: binário Go + dist. A migração do volume legado
 # roda dentro do binário no boot (backend/internal/database/legacy_migration.go).
 FROM alpine:3.22@sha256:d406446bc05b82480756ce8f1287964d28768c23955fa9480d2a74a2eae7a654 AS runner
@@ -55,12 +61,14 @@ RUN apk add --no-cache su-exec ca-certificates tzdata nodejs npm \
   && mkdir -p /app/data \
   && chown -R app:app /app/data
 
+COPY --from=token-savers /opt/token-savers /opt/token-savers
 COPY --from=go-builder /out/vansrouter /app/vansrouter
 COPY --from=spa-builder /app/frontend/dist /app/spa
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh /app/vansrouter
 
-ENV PORT=20128 \
+ENV PXPIPE_PACKAGE_ROOT=/opt/token-savers/node_modules/pxpipe-proxy \
+    PORT=20128 \
     DATA_DIR=/app/data \
     SPA_DIR=/app/spa \
     RELEASE_BUILD_ID=${VCS_REF}

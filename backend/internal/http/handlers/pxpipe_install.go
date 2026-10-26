@@ -16,6 +16,7 @@ import (
 
 const (
 	pxpipePackage    = "pxpipe-proxy"
+	pxpipeVersion    = "0.15.1"
 	pxpipeTimeoutRun = 5 * time.Minute
 )
 
@@ -24,6 +25,9 @@ func pxpipeInstallLogFile(dataDir string) string {
 	return filepath.Join(pxpipeDir(dataDir), "install.log")
 }
 func pxpipePackageRoot(dataDir string) string {
+	if root := strings.TrimSpace(os.Getenv("PXPIPE_PACKAGE_ROOT")); root != "" {
+		return root
+	}
 	return filepath.Join(pxpipeDir(dataDir), "node_modules", pxpipePackage)
 }
 func pxpipeLibraryEntry(dataDir string) string {
@@ -139,6 +143,13 @@ func PxpipeIsInstalling() bool { return pxpipeState.isInstalling() }
 
 // pxpipeRunInstall executa o npm com log anexado e timeout de 5 minutos.
 func pxpipeRunInstall(ctx context.Context, dataDir string, findNpm func() string) (map[string]any, error) {
+	if strings.TrimSpace(os.Getenv("PXPIPE_PACKAGE_ROOT")) != "" {
+		info := pxpipeInstallInfo(dataDir)
+		if info["installed"] != true {
+			return nil, &pxpipeError{Code: "BUNDLED_PACKAGE_MISSING", Msg: "Bundled PXPIPE is unavailable; rebuild the image"}
+		}
+		return info, nil
+	}
 	npm := findNpm()
 	if npm == "" {
 		return nil, &pxpipeError{Code: "NPM_NOT_FOUND", Msg: "npm not found on PATH — Node.js/npm is required to install PXPIPE"}
@@ -159,8 +170,8 @@ func pxpipeRunInstall(ctx context.Context, dataDir string, findNpm func() string
 	}
 	defer log.Close()
 	stamp := time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
-	_, _ = fmt.Fprintf(log, "\n[%s] npm install %s@latest\n", stamp, pxpipePackage)
-	cmd := exec.CommandContext(ctx, npm, "install", pxpipePackage+"@latest", "--no-audit", "--no-fund", "--omit=dev")
+	_, _ = fmt.Fprintf(log, "\n[%s] npm install %s@%s\n", stamp, pxpipePackage, pxpipeVersion)
+	cmd := exec.CommandContext(ctx, npm, "install", pxpipePackage+"@"+pxpipeVersion, "--no-audit", "--no-fund", "--omit=dev")
 	cmd.Dir = pxpipeDir(dataDir)
 	cmd.Env = append(os.Environ(), "PATH="+pxpipeExtendedPath())
 	cmd.Stdout = log
