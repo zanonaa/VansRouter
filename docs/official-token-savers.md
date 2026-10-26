@@ -23,7 +23,7 @@ The gateway now invokes official Apache-2.0 RTK CLI 0.46.0 (`rtk pipe`) on tool-
 
 Docker builds the official CLI from commit `8dae5a750fe307d1fee105a2ff4a9d1ca54ac791` with archive SHA256 verification and Cargo.lock, targeting each image architecture. This avoids the fixed upstreams and separate BUSL license of RTK Proxy. The CLI license is included in the image. Native installations must install `rtk` on PATH.
 
-Ponytail legacy level keys (`lite/full/ultra`) now map to the exact official compact rules for settings compatibility; their former custom prompt variants have been removed. The UI offers only the official level.
+Ponytail has one official level only. Migration 011 rewrites persisted level settings to `official` without changing any enable flag. Previous prompt variants and runtime aliases have been removed.
 
 ## Validation and limits
 

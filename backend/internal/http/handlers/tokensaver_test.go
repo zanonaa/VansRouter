@@ -175,7 +175,7 @@ func TestTokenSaverCavemanAndPonytailInjectSystemPrompt(t *testing.T) {
 	}
 
 	ponytail := &TokenSaver{Read: tokenSaverStaticSettings(map[string]any{
-		"rtkEnabled": false, "ponytailEnabled": true, "ponytailLevel": "lite",
+		"rtkEnabled": false, "ponytailEnabled": true, "ponytailLevel": "official",
 	})}
 	payload = tokenSaverSend(t, ponytail, "openai-compatible-ponytail", "model", map[string]any{
 		"messages": []any{map[string]any{"role": "user", "content": "hi"}},

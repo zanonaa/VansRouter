@@ -236,6 +236,12 @@ func Migrate(ctx context.Context, db *sql.DB, dataDir string) error {
 			}
 		}
 	}
+	// Migration 011: replace custom Ponytail levels without changing enable flags.
+	if version < 11 {
+		if _, err = tx.ExecContext(ctx, `UPDATE settings SET data=json_set(data, '$.ponytailLevel', 'official') WHERE json_valid(data)`); err != nil {
+			return fmt.Errorf("migrate official token saver settings: %w", err)
+		}
+	}
 	for key, value := range map[string]string{"schemaVersion": fmt.Sprint(schema.Version), "backupSchemaVersion": fmt.Sprint(schema.Version), "goSchemaCheckedAt": time.Now().UTC().Format(time.RFC3339Nano)} {
 		if _, err = tx.ExecContext(ctx, `INSERT INTO _meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`, key, value); err != nil {
 			return err

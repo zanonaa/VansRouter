@@ -9,7 +9,5 @@ import _ "embed"
 var officialPonytailPrompt string
 
 func init() {
-	for _, level := range []string{"official", "lite", "full", "ultra"} {
-		ponytailPrompts[level] = officialPonytailPrompt
-	}
+	ponytailPrompts["official"] = officialPonytailPrompt
 }

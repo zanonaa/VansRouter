@@ -21,7 +21,7 @@ export default function TokenSaverClient() {
   const [cavemanEnabled, setCavemanEnabled] = useState(false);
   const [cavemanLevel, setCavemanLevel] = useState("full");
   const [ponytailEnabled, setPonytailEnabled] = useState(false);
-  const [ponytailLevel, setPonytailLevel] = useState("full");
+  const [ponytailLevel, setPonytailLevel] = useState("official");
   const [codeAware, setCodeAware] = useState(false);
   const [kompress, setKompress] = useState(true);
   const [pxpipeEnabled, setPxpipeEnabled] = useState(false);
@@ -205,7 +205,7 @@ export default function TokenSaverClient() {
           setCavemanEnabled(!!data.cavemanEnabled);
           setCavemanLevel(data.cavemanLevel || "full");
           setPonytailEnabled(!!data.ponytailEnabled);
-          setPonytailLevel(data.ponytailLevel || "full");
+          setPonytailLevel(data.ponytailLevel || "official");
           setPxpipeEnabled(!!data.pxpipeEnabled);
           if (typeof data.pxpipeMinChars === "number") setPxpipeMinChars(data.pxpipeMinChars);
           setGuards({

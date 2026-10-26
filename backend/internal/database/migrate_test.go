@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -105,5 +106,37 @@ func TestMigrateRollbackAndBackup(t *testing.T) {
 	backups, _ := filepath.Glob(filepath.Join(dir, "db", "backups", "*.sqlite"))
 	if len(backups) != 1 {
 		t.Fatal("backup missing")
+	}
+}
+
+func TestOfficialTokenSaverMigrationPreservesActivation(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+	db, err := Open(ctx, dir, "NORMAL")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err = Migrate(ctx, db, dir); err != nil {
+		t.Fatal(err)
+	}
+	for _, enabled := range []bool{false, true} {
+		raw := fmt.Sprintf(`{"ponytailLevel":"ultra","ponytailEnabled":%t,"rtkEnabled":false,"headroomEnabled":true,"pxpipeEnabled":false,"custom":"preserve"}`, enabled)
+		if _, err = db.Exec(`INSERT INTO settings(id,data) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data`, raw); err != nil {
+			t.Fatal(err)
+		}
+		if _, err = db.Exec(`UPDATE _meta SET value='10' WHERE key='schemaVersion'`); err != nil {
+			t.Fatal(err)
+		}
+		if err = Migrate(ctx, db, dir); err != nil {
+			t.Fatal(err)
+		}
+		settings, err := ReadAuthSettings(ctx, db)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if settings["ponytailLevel"] != "official" || settings["ponytailEnabled"] != enabled || settings["rtkEnabled"] != false || settings["headroomEnabled"] != true || settings["pxpipeEnabled"] != false || settings["custom"] != "preserve" {
+			t.Fatalf("migration changed activation or unrelated settings: %v", settings)
+		}
 	}
 }

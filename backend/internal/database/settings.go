@@ -72,7 +72,7 @@ func Defaults() map[string]any {
 		"cavemanEnabled":               false,
 		"cavemanLevel":                 "full",
 		"ponytailEnabled":              false,
-		"ponytailLevel":                "full",
+		"ponytailLevel":                "official",
 	}
 }
 
