@@ -21,7 +21,7 @@ Then set `headroomUrl` to `http://headroom:8787` in Token Saver settings and ena
 
 The gateway now invokes official Apache-2.0 RTK CLI 0.46.0 (`rtk pipe`) on tool-result text before sending the final request. This works with OpenAI Chat Completions and Responses because filtering is independent of the provider endpoint. The Go code only traverses message structures; copied Go filters have been removed. Autodetection and filtering belong entirely to the upstream CLI; unsupported text remains unchanged. No shell commands from messages are executed. Each eligible result has a 2-second timeout and missing/failed CLI leaves the original text with a warning, never a legacy-filter fallback.
 
-Docker builds the official CLI from commit `8dae5a750fe307d1fee105a2ff4a9d1ca54ac791` with archive SHA256 verification and Cargo.lock, targeting each image architecture. This avoids the fixed upstreams and separate BUSL license of RTK Proxy. The CLI license is included in the image. Native installations must install `rtk` on PATH.
+Docker downloads the official CLI 0.46.0 release artifacts for AMD64/ARM64 with fixed SHA256 verification. The runtime uses Debian Trixie/glibc because the upstream ARM64 binary requires GLIBC_2.39 (Alpine gcompat and Debian Bookworm were tested and are incompatible). No Rust compiler is used. This avoids the fixed upstreams and separate BUSL license of RTK Proxy. The CLI license is included in the image. Native installations must install `rtk` on PATH.
 
 Ponytail has one official level only. Migration 011 rewrites persisted level settings to `official` without changing any enable flag. Previous prompt variants and runtime aliases have been removed.
 

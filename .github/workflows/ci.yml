@@ -30,7 +30,7 @@ jobs:
   test-and-build:
     name: Tests and Docker (Linux / AMD64 + ARM64)
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
