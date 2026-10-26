@@ -6,6 +6,7 @@ RUN pip install --no-cache-dir --require-hashes -r requirements.txt \
 USER headroom
 # Only deploy on the private compose network; never publish this port.
 ENV HEADROOM_ALLOW_UNAUTHENTICATED_BIND=1 \
+    HEADROOM_COMPRESS_ALLOW_REMOTE=1 \
     HEADROOM_BEACON=off \
     HEADROOM_TELEMETRY=off \
     DO_NOT_TRACK=1
