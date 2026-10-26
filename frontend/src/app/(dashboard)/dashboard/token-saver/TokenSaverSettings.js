@@ -66,7 +66,7 @@ export default function TokenSaverSettings({
             </a>
           </p>
           <p className="text-sm text-text-muted">
-            git/grep/ls/tree/logs — legacy internal filters, not the official RTK binary
+            git/grep/test output — official RTK CLI via stdin; independent of provider endpoint
           </p>
         </div>
         <Toggle

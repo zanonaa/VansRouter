@@ -40,6 +40,16 @@ COPY backend ./
 RUN if [ "$APP_VERSION" != "unknown" ]; then printf '%s\n' "$APP_VERSION" > internal/http/handlers/app-version.txt; fi \
   && CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/vansrouter ./cmd/api
 
+# Official Apache-2.0 RTK CLI, built from immutable upstream source on each target.
+FROM rust:1.95-alpine@sha256:606fd313a0f49743ee2a7bd49a0914bab7deedb12791f3a846a34a4711db7ed2 AS rtk-builder
+RUN apk add --no-cache musl-dev pkgconfig openssl-dev openssl-libs-static curl
+WORKDIR /src
+RUN curl -fsSL https://codeload.github.com/rtk-ai/rtk/tar.gz/8dae5a750fe307d1fee105a2ff4a9d1ca54ac791 -o /tmp/rtk.tar.gz \
+    && echo 'b79c2733653d486d126f68d68372b1531541ef4680d4afe9d1493b5600fc793e  /tmp/rtk.tar.gz' | sha256sum -c - \
+    && tar -xzf /tmp/rtk.tar.gz --strip-components=1 \
+    && cargo build --release --locked \
+    && ./target/release/rtk --version
+
 # Official PXPIPE runtime, pinned with npm integrity hashes.
 FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS token-savers
 WORKDIR /opt/token-savers
@@ -61,6 +71,8 @@ RUN apk add --no-cache su-exec ca-certificates tzdata nodejs npm \
   && mkdir -p /app/data \
   && chown -R app:app /app/data
 
+COPY --from=rtk-builder /src/target/release/rtk /usr/local/bin/rtk
+COPY --from=rtk-builder /src/LICENSE /usr/share/licenses/rtk/LICENSE
 COPY --from=token-savers /opt/token-savers /opt/token-savers
 COPY --from=go-builder /out/vansrouter /app/vansrouter
 COPY --from=spa-builder /app/frontend/dist /app/spa

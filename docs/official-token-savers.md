@@ -17,16 +17,13 @@ Compose resolves relative build paths against its first file. Use `--project-dir
 
 Then set `headroomUrl` to `http://headroom:8787` in Token Saver settings and enable Headroom deliberately. External Headroom is managed by Compose, not dashboard start/stop. This overlay is not an automatic production deployment.
 
-## RTK: deliberately not replaced yet
+## RTK: official CLI via stdin
 
-The official RTK Proxy currently compresses Anthropic Messages only; OpenAI Chat Completions is forwarded unchanged. Upstreams are process-wide boot settings, not per-request. Inserting it into the generic gateway would risk breaking provider selection, proxy-pool egress, OAuth routes and credential isolation. No undocumented compression API is assumed.
+The gateway now invokes official Apache-2.0 RTK CLI 0.46.0 (`rtk pipe`) on tool-result text before sending the final request. This works with OpenAI Chat Completions and Responses because filtering is independent of the provider endpoint. The Go code only traverses message structures; copied Go filters have been removed. Autodetection and filtering belong entirely to the upstream CLI; unsupported text remains unchanged. No shell commands from messages are executed. Each eligible result has a 2-second timeout and missing/failed CLI leaves the original text with a warning, never a legacy-filter fallback.
 
-Its BUSL-1.1 additional use grant permits free production use but restricts offering it or derivatives as a paid/hosted product/service. Obtain appropriate permission before distributing an integration for such use. Sources reviewed:
+Docker builds the official CLI from commit `8dae5a750fe307d1fee105a2ff4a9d1ca54ac791` with archive SHA256 verification and Cargo.lock, targeting each image architecture. This avoids the fixed upstreams and separate BUSL license of RTK Proxy. The CLI license is included in the image. Native installations must install `rtk` on PATH.
 
-- https://github.com/rtk-ai/rtk/blob/master/proxy/LICENSE
-- https://github.com/rtk-ai/rtk/blob/master/docs/guide/proxy/configuration.md
-
-The old Go filters remain, explicitly labeled as internal legacy filters in the UI. They are not the official RTK engine. Installing the RTK CLI in the server cannot intercept commands executed on clients. Full replacement needs a separately designed, licensed integration preserving the gateway's existing egress rules.
+Ponytail legacy level keys (`lite/full/ultra`) now map to the exact official compact rules for settings compatibility; their former custom prompt variants have been removed. The UI offers only the official level.
 
 ## Validation and limits
 

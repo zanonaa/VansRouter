@@ -99,6 +99,7 @@ func tokenSaverMessage(t *testing.T, messages []any, index int) map[string]any {
 }
 
 func TestTokenSaverRTKCompressesToolResultAndPreservesTools(t *testing.T) {
+	requireOfficialRTK(t)
 	toolOutput := strings.Repeat("main.go:12:fmt.Println(\"hello\")\n", 80)
 	toolCalls := []any{map[string]any{
 		"id": "call_1", "type": "function",
@@ -135,6 +136,7 @@ func TestTokenSaverRTKCompressesToolResultAndPreservesTools(t *testing.T) {
 }
 
 func TestTokenSaverRTKResponsesFunctionCallOutput(t *testing.T) {
+	requireOfficialRTK(t)
 	output := strings.Repeat("main.go:12:fmt.Println(\"hello\")\n", 80)
 	body := map[string]any{"input": []any{
 		map[string]any{"type": "function_call", "call_id": "call_9", "name": "grep", "arguments": `{"pattern":"hello"}`},
@@ -181,7 +183,7 @@ func TestTokenSaverCavemanAndPonytailInjectSystemPrompt(t *testing.T) {
 	messages = tokenSaverMessages(t, payload)
 	system = tokenSaverMessage(t, messages, 0)
 	content := ttsString(system["content"])
-	if !strings.Contains(content, "You are a lazy senior developer") || !strings.Contains(content, "Level: lite") {
+	if !strings.Contains(content, "You are a lazy senior developer") || !strings.Contains(content, "The smallest complete change") {
 		t.Fatalf("ponytail não injetado: %q", content)
 	}
 }
