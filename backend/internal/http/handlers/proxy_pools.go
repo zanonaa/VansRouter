@@ -202,7 +202,7 @@ func (h ProxyPools) Delete(w http.ResponseWriter, r *http.Request) {
 		nodeReply(w, 409, map[string]any{"error": "Proxy pool is currently in use", "boundConnectionCount": count})
 		return
 	}
-	if _, err = h.Store.Delete(r.Context(), id); err != nil {
+	if err = deleteProxyPool(r.Context(), h.Store, id); err != nil {
 		fail()
 		return
 	}

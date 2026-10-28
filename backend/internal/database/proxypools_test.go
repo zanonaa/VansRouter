@@ -13,7 +13,8 @@ func TestProxyPoolsRepository(t *testing.T) {
 	}
 	defer db.Close()
 	_, err = db.Exec(`CREATE TABLE proxyPools(id TEXT PRIMARY KEY,isActive INTEGER DEFAULT 1,testStatus TEXT,data TEXT NOT NULL,createdAt TEXT NOT NULL,updatedAt TEXT NOT NULL);
- CREATE TABLE proxyPoolFitness(poolId TEXT,marker TEXT);`)
+ CREATE TABLE proxyPoolFitness(poolId TEXT,marker TEXT);
+ CREATE TABLE nordvpnTunnels(id TEXT PRIMARY KEY,poolId TEXT); INSERT INTO nordvpnTunnels VALUES('nord-a','pool-a'),('nord-b','pool-b');`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,6 +60,9 @@ func TestProxyPoolsRepository(t *testing.T) {
 		t.Fatalf("delete: %v %v", removed, err)
 	}
 	var count int
+	if err = db.QueryRow(`SELECT count(*) FROM nordvpnTunnels WHERE poolId='pool-a'`).Scan(&count); err != nil || count != 0 {
+		t.Fatalf("NordVPN record orphan: %d %v", count, err)
+	}
 	if err = db.QueryRow(`SELECT count(*) FROM proxyPoolFitness WHERE poolId='pool-a'`).Scan(&count); err != nil || count != 0 {
 		t.Fatalf("fitness orphan: %d %v", count, err)
 	}
@@ -80,6 +84,9 @@ func TestProxyPoolsRepository(t *testing.T) {
 	}
 	if _, err = repo.Delete(ctx, "pool-b"); err == nil {
 		t.Fatal("expected deletion failure")
+	}
+	if err = db.QueryRow(`SELECT count(*) FROM nordvpnTunnels WHERE poolId='pool-b'`).Scan(&count); err != nil || count != 1 {
+		t.Fatalf("rollback NordVPN record: %d %v", count, err)
 	}
 	if err = db.QueryRow(`SELECT count(*) FROM proxyPoolFitness WHERE poolId='pool-b'`).Scan(&count); err != nil || count != 1 {
 		t.Fatalf("rollback fitness: %d %v", count, err)
