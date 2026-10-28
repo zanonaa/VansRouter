@@ -181,6 +181,9 @@ func (p ProxyPools) Delete(ctx context.Context, id string) (map[string]any, erro
 	if err != nil || pool == nil {
 		return nil, err
 	}
+	if _, err = tx.ExecContext(ctx, "DELETE FROM nordvpnTunnels WHERE poolId = ?", id); err != nil {
+		return nil, err
+	}
 	if _, err = tx.ExecContext(ctx, "DELETE FROM proxyPoolFitness WHERE poolId = ?", id); err != nil {
 		return nil, err
 	}

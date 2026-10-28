@@ -509,7 +509,9 @@ export default function ProxyPoolsPage() {
           const { ok = 0, blocked = 0, fail: failed = 0 } = countBatchResults(results);
           await fetchProxyPools();
           clearSelection();
-          notify.success(`Deleted ${ok}${blocked ? `, ${blocked} bound` : ""}${failed ? `, ${failed} failed` : ""}`);
+          const message = `Deleted ${ok}${blocked ? `, ${blocked} still in use (unlink connections first)` : ""}${failed ? `, ${failed} failed` : ""}`;
+          if (blocked || failed) notify.warning(message);
+          else notify.success(message);
         } finally {
           setBatchProgress({ label: "", current: 0, total: 0 });
           setBulkBusy(false);
