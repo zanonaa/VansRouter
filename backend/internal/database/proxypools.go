@@ -216,7 +216,7 @@ func (p ProxyPools) delete(ctx context.Context, id string, unlink bool) (map[str
 			if ids, ok := metadata["proxyPoolIds"].([]any); ok {
 				remaining := []any{}
 				for _, value := range ids {
-					if value == id {
+					if valueID, ok := value.(string); ok && valueID == id {
 						changed = true
 					} else {
 						remaining = append(remaining, value)
