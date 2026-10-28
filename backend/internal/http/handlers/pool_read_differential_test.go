@@ -79,6 +79,14 @@ func TestPoolReadAgainstOriginal(t *testing.T) {
 		if err = json.Unmarshal(w.Body.Bytes(), &got); err != nil {
 			t.Fatal(err)
 		}
+		// The deletion conflict now includes safe binding details for confirmation.
+		if tt.Method == "DELETE" && w.Code == 409 {
+			body := got.(map[string]any)
+			if len(body["boundConnections"].([]any)) != int(body["boundConnectionCount"].(float64)) {
+				t.Fatal("missing binding details")
+			}
+			delete(body, "boundConnections")
+		}
 		if w.Code != tt.Status || !reflect.DeepEqual(got, tt.Body) {
 			t.Fatalf("case %d %s %s: Go=%d %v original=%d %v", i, tt.Method, tt.Path, w.Code, got, tt.Status, tt.Body)
 		}

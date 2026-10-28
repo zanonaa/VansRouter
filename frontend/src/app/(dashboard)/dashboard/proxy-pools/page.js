@@ -391,6 +391,26 @@ export default function ProxyPoolsPage() {
     }
   };
 
+  const confirmUnlinkAndDelete = (pools) => {
+    setConfirmState({
+      title: "Unlink Connections and Delete",
+      message: <div className="space-y-3"><p>These pools are used by the connections below:</p><ul>{pools.flatMap(({ pool, connections }) => connections.map((connection) => <li key={`${pool.id}-${connection.id}`}>{pool.name}: {connection.name || connection.id} ({connection.provider})</li>))}</ul><p>Remove these bindings and delete the pools? Connections without another proxy may use the server’s direct IP or their legacy proxy. Cancel to keep the current configuration.</p></div>,
+      onConfirm: async () => {
+        setConfirmState(null);
+        let failed = 0;
+        for (const { pool } of pools) {
+          try {
+            const res = await fetch(`/api/proxy-pools/${pool.id}?unlink=true`, { method: "DELETE" });
+            if (!res.ok) failed++;
+          } catch { failed++; }
+        }
+        await fetchProxyPools();
+        if (failed) notify.error(`${failed} pool(s) could not be deleted`);
+        else notify.success("Connections unlinked and pools deleted");
+      },
+    });
+  };
+
   const handleDelete = async (proxyPool) => {
     setConfirmState({
       title: "Delete Proxy Pool",
@@ -407,7 +427,7 @@ export default function ProxyPoolsPage() {
 
           const data = await res.json();
           if (res.status === 409) {
-            notify.warning(`Cannot delete: ${data.boundConnectionCount || 0} connection(s) are still using this pool.`);
+            confirmUnlinkAndDelete([{ pool: proxyPool, connections: data.boundConnections || [] }]);
           } else {
             notify.error(data.error || "Failed to delete proxy pool");
           }
@@ -500,10 +520,15 @@ export default function ProxyPoolsPage() {
         const targets = [...selectedIds];
         setBatchProgress({ label: "Deleting", current: 0, total: targets.length });
         try {
+          const boundPools = [];
           const results = await runProxyPoolBatch(targets, async (id) => {
             const res = await fetch(`/api/proxy-pools/${id}`, { method: "DELETE" });
             if (res.ok) return "ok";
-            if (res.status === 409) return "blocked";
+            if (res.status === 409) {
+              const data = await res.json();
+              boundPools.push({ pool: proxyPools.find((pool) => pool.id === id), connections: data.boundConnections || [] });
+              return "blocked";
+            }
             return "fail";
           }, (current) => setBatchProgress((prev) => ({ ...prev, current })));
           const { ok = 0, blocked = 0, fail: failed = 0 } = countBatchResults(results);
@@ -512,6 +537,7 @@ export default function ProxyPoolsPage() {
           const message = `Deleted ${ok}${blocked ? `, ${blocked} still in use (unlink connections first)` : ""}${failed ? `, ${failed} failed` : ""}`;
           if (blocked || failed) notify.warning(message);
           else notify.success(message);
+          if (boundPools.length) confirmUnlinkAndDelete(boundPools);
         } finally {
           setBatchProgress({ label: "", current: 0, total: 0 });
           setBulkBusy(false);

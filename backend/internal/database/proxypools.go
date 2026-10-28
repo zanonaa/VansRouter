@@ -172,6 +172,14 @@ func (p ProxyPools) Update(ctx context.Context, id string, patch map[string]any)
 	return pool, nil
 }
 func (p ProxyPools) Delete(ctx context.Context, id string) (map[string]any, error) {
+	return p.delete(ctx, id, false)
+}
+
+func (p ProxyPools) DeleteWithUnlink(ctx context.Context, id string) (map[string]any, error) {
+	return p.delete(ctx, id, true)
+}
+
+func (p ProxyPools) delete(ctx context.Context, id string, unlink bool) (map[string]any, error) {
 	tx, err := p.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -180,6 +188,61 @@ func (p ProxyPools) Delete(ctx context.Context, id string) (map[string]any, erro
 	pool, err := scanPool(tx.QueryRowContext(ctx, "SELECT "+poolColumns+" FROM proxyPools WHERE id = ?", id))
 	if err != nil || pool == nil {
 		return nil, err
+	}
+	if unlink {
+		rows, err := tx.QueryContext(ctx, `SELECT id,data FROM providerConnections`)
+		if err != nil {
+			return nil, err
+		}
+		type update struct{ id, data string }
+		var updates []update
+		for rows.Next() {
+			var connectionID, raw string
+			if err = rows.Scan(&connectionID, &raw); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			var data map[string]any
+			if err = json.Unmarshal([]byte(raw), &data); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			metadata, _ := data["providerSpecificData"].(map[string]any)
+			changed := false
+			if metadata["proxyPoolId"] == id {
+				metadata["proxyPoolId"] = "__none__"
+				changed = true
+			}
+			if ids, ok := metadata["proxyPoolIds"].([]any); ok {
+				remaining := []any{}
+				for _, value := range ids {
+					if value == id {
+						changed = true
+					} else {
+						remaining = append(remaining, value)
+					}
+				}
+				metadata["proxyPoolIds"] = remaining
+			}
+			if changed {
+				encoded, e := json.Marshal(data)
+				if e != nil {
+					rows.Close()
+					return nil, e
+				}
+				updates = append(updates, update{connectionID, string(encoded)})
+			}
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return nil, err
+		}
+		for _, u := range updates {
+			if _, err = tx.ExecContext(ctx, `UPDATE providerConnections SET data=?,updatedAt=? WHERE id=?`, u.data, time.Now().UTC().Format(time.RFC3339Nano), u.id); err != nil {
+				return nil, err
+			}
+		}
 	}
 	if _, err = tx.ExecContext(ctx, "DELETE FROM nordvpnTunnels WHERE poolId = ?", id); err != nil {
 		return nil, err

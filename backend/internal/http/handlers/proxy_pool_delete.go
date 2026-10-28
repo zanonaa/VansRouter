@@ -1,9 +1,16 @@
 package handlers
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // Serialize with restore/rotation: commit deletion before closing the live tunnel.
 func deleteProxyPool(ctx context.Context, store PoolStore, poolID string) error {
+	return deleteProxyPoolWithUnlink(ctx, store, poolID, false)
+}
+
+func deleteProxyPoolWithUnlink(ctx context.Context, store PoolStore, poolID string, unlink bool) error {
 	nordManager.ops.Lock()
 	defer nordManager.ops.Unlock()
 	var tunnelIDs []string
@@ -26,7 +33,17 @@ func deleteProxyPool(ctx context.Context, store PoolStore, poolID string) error 
 			return err
 		}
 	}
-	if _, err := store.Delete(ctx, poolID); err != nil {
+	remove := store.Delete
+	if unlink {
+		atomicStore, ok := store.(interface {
+			DeleteWithUnlink(context.Context, string) (map[string]any, error)
+		})
+		if !ok {
+			return fmt.Errorf("atomic unlink is unavailable")
+		}
+		remove = atomicStore.DeleteWithUnlink
+	}
+	if _, err := remove(ctx, poolID); err != nil {
 		return err
 	}
 	nordManager.mu.Lock()
