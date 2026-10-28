@@ -197,12 +197,18 @@ func (h ProxyPools) Delete(w http.ResponseWriter, r *http.Request) {
 		fail()
 		return
 	}
-	count := poolUsage(connections)[id]
-	if count > 0 {
-		nodeReply(w, 409, map[string]any{"error": "Proxy pool is currently in use", "boundConnectionCount": count})
+	bound := []map[string]any{}
+	for _, connection := range connections {
+		if poolUsage([]map[string]any{connection})[id] > 0 {
+			bound = append(bound, map[string]any{"id": connection["id"], "name": connection["name"], "provider": connection["provider"], "isActive": connection["isActive"]})
+		}
+	}
+	unlink := r.URL.Query().Get("unlink") == "true"
+	if len(bound) > 0 && !unlink {
+		nodeReply(w, 409, map[string]any{"error": "Proxy pool is currently in use", "boundConnectionCount": len(bound), "boundConnections": bound})
 		return
 	}
-	if err = deleteProxyPool(r.Context(), h.Store, id); err != nil {
+	if err = deleteProxyPoolWithUnlink(r.Context(), h.Store, id, unlink); err != nil {
 		fail()
 		return
 	}

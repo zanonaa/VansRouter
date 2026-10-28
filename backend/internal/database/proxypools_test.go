@@ -92,3 +92,54 @@ func TestProxyPoolsRepository(t *testing.T) {
 		t.Fatalf("rollback fitness: %d %v", count, err)
 	}
 }
+
+func TestDeleteWithUnlinkAtomic(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+	db, err := Open(ctx, dir, "NORMAL")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err = Migrate(ctx, db, dir); err != nil {
+		t.Fatal(err)
+	}
+	repo := ProxyPools{DB: db}
+	if _, err = repo.Create(ctx, map[string]any{"id": "p"}); err != nil {
+		t.Fatal(err)
+	}
+	raw := `{"providerSpecificData":{"proxyPoolId":"p","proxyPoolIds":["p","other"],"keep":"yes"}}`
+	_, err = db.Exec(`INSERT INTO providerConnections(id,provider,authType,data,createdAt,updatedAt) VALUES('c','test','apikey',?,'now','now')`, raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.Exec(`CREATE TRIGGER block_delete BEFORE DELETE ON proxyPools BEGIN SELECT RAISE(ABORT,'test'); END`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = repo.DeleteWithUnlink(ctx, "p"); err == nil {
+		t.Fatal("expected rollback")
+	}
+	var got string
+	if err = db.QueryRow(`SELECT data FROM providerConnections WHERE id='c'`).Scan(&got); err != nil {
+		t.Fatal(err)
+	}
+	if got != raw {
+		t.Fatal("failed deletion changed bindings")
+	}
+	if _, err = db.Exec(`DROP TRIGGER block_delete`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = repo.DeleteWithUnlink(ctx, "p"); err != nil {
+		t.Fatal(err)
+	}
+	c, err := (Connections{DB: db}).Get(ctx, "c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data := c["providerSpecificData"].(map[string]any)
+	ids := data["proxyPoolIds"].([]any)
+	if data["proxyPoolId"] != "__none__" || len(ids) != 1 || ids[0] != "other" || data["keep"] != "yes" {
+		t.Fatalf("unexpected metadata: %v", data)
+	}
+}
