@@ -98,7 +98,7 @@ func (u *UsageContracts) grokUsage(r *http.Request, connection map[string]any) m
 		return map[string]any{"message": "Grok CLI access token not available."}
 	}
 	metadata, _ := connection["providerSpecificData"].(map[string]any)
-	headers := map[string]string{"Authorization": "Bearer " + token, "Accept": "application/json", "User-Agent": "grok-shell/1.0.44 (linux; x86_64)", "x-xai-token-auth": "xai-grok-cli", "x-grok-client-identifier": "grok-shell", "x-grok-client-version": "1.0.44", "x-grok-client-mode": "headless"}
+	headers := map[string]string{"Authorization": "Bearer " + token, "Accept": "application/json", "User-Agent": "grok-shell/1.0.73 (linux; x86_64)", "x-xai-token-auth": "xai-grok-cli", "x-grok-client-identifier": "grok-shell", "x-grok-client-version": "1.0.73", "x-grok-client-mode": "headless"}
 	if email := ttsString(metadata["email"]); email != "" {
 		headers["x-email"] = email
 	}
@@ -159,9 +159,43 @@ func (u *UsageContracts) grokUsage(r *http.Request, connection map[string]any) m
 		if parsed["subscriptionAccess"] == true {
 			message = "Subscription access is active; Grok does not expose a numeric included quota."
 		}
+		// Segunda fonte oficial (cliente 1.0.73): format=full expõe o uso do
+		// período mesmo quando credits não traz limites. Sem limite conhecido,
+		// reportamos o uso sem inventar total.
+		if fullStatus, full, fullErr := u.resetJSON(r.Context(), "GET", "https://cli-chat-proxy.grok.com/v1/billing?format=full", headers, nil); fullErr == nil && fullStatus >= 200 && fullStatus < 300 && full != nil {
+			if fullQuotas, usageLine := parseGrokFullUsage(full); len(fullQuotas) > 0 {
+				return map[string]any{"plan": parsed["plan"], "quotas": fullQuotas}
+			} else if usageLine != "" {
+				return map[string]any{"plan": parsed["plan"], "quotas": map[string]any{}, "message": usageLine}
+			}
+		}
 		return map[string]any{"plan": parsed["plan"], "message": message, "quotas": map[string]any{}}
 	}
 	return map[string]any{"plan": parsed["plan"], "quotas": parsed["quotas"]}
+}
+
+// parseGrokFullUsage lê o format=full (BillingConfig do cliente 1.0.73).
+// Retorna quotas quando há limite conhecido; senão, linha de uso do período.
+func parseGrokFullUsage(full map[string]any) (map[string]any, string) {
+	config, _ := full["config"].(map[string]any)
+	if config == nil {
+		return nil, ""
+	}
+	reset := usageResetDate(firstNonEmpty(config["billingPeriodEnd"], config["billing_period_end"]))
+	monthly, monthlyOK := grokNumber(firstNonEmpty(config["monthlyLimit"], config["monthly_limit"]))
+	used, usedOK := grokNumber(firstNonEmpty(config["used"], config["includedUsed"], config["included_used"], config["totalUsed"], config["total_used"]))
+	if !usedOK || used <= 0 {
+		return nil, ""
+	}
+	if monthlyOK && monthly > 0 {
+		return map[string]any{"Monthly included": grokQuota(used, monthly, reset)}, ""
+	}
+	// Sem limite publicado: número real de uso, sem barra enganosa.
+	usage := fmt.Sprintf("%d used this billing period", int64(used))
+	if reset != nil {
+		usage += fmt.Sprintf(", resets %v", reset)
+	}
+	return nil, usage
 }
 
 type grokCredits struct {
