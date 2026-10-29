@@ -147,6 +147,8 @@ func (u *UsageContracts) grokUsage(r *http.Request, connection map[string]any) m
 	parsed := parseGrokUsage(billing, user)
 	if len(parsed["quotas"].(map[string]any)) == 0 {
 		decoded, err := u.grokCredits(r.Context(), token)
+		// Payload sem ratio (contas GrokPro/unified billing) não é erro: a origem
+		// JS trata como null e cai na mensagem informativa abaixo.
 		if err != nil {
 			return map[string]any{"message": "Grok CLI usage error: " + err.Error()}
 		}
@@ -223,7 +225,9 @@ func decodeGrokCredits(raw []byte) (*grokCredits, error) {
 	}
 	ratio, ok := nested[1].(float64)
 	if !ok || math.IsNaN(ratio) || ratio < 0 {
-		return nil, fmt.Errorf("Grok credits usage ratio invalid")
+		// shortcut: upstream dropped the ratio field for unified-billing accounts,
+		// return no quota instead of an error so the UI shows the fallback message
+		return nil, nil
 	}
 	var reset any
 	if timestamp, ok := nested[5].([]byte); ok {
