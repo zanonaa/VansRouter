@@ -163,10 +163,8 @@ func (u *UsageContracts) grokUsage(r *http.Request, connection map[string]any) m
 		// período mesmo quando credits não traz limites. Sem limite conhecido,
 		// reportamos o uso sem inventar total.
 		if fullStatus, full, fullErr := u.resetJSON(r.Context(), "GET", "https://cli-chat-proxy.grok.com/v1/billing?format=full", headers, nil); fullErr == nil && fullStatus >= 200 && fullStatus < 300 && full != nil {
-			if fullQuotas, usageLine := parseGrokFullUsage(full); len(fullQuotas) > 0 {
+			if fullQuotas := parseGrokFullUsage(full); len(fullQuotas) > 0 {
 				return map[string]any{"plan": parsed["plan"], "quotas": fullQuotas}
-			} else if usageLine != "" {
-				return map[string]any{"plan": parsed["plan"], "quotas": map[string]any{}, "message": usageLine}
 			}
 		}
 		return map[string]any{"plan": parsed["plan"], "message": message, "quotas": map[string]any{}}
@@ -176,26 +174,23 @@ func (u *UsageContracts) grokUsage(r *http.Request, connection map[string]any) m
 
 // parseGrokFullUsage lê o format=full (BillingConfig do cliente 1.0.73).
 // Retorna quotas quando há limite conhecido; senão, linha de uso do período.
-func parseGrokFullUsage(full map[string]any) (map[string]any, string) {
+func parseGrokFullUsage(full map[string]any) map[string]any {
 	config, _ := full["config"].(map[string]any)
 	if config == nil {
-		return nil, ""
+		return nil
 	}
 	reset := usageResetDate(firstNonEmpty(config["billingPeriodEnd"], config["billing_period_end"]))
 	monthly, monthlyOK := grokNumber(firstNonEmpty(config["monthlyLimit"], config["monthly_limit"]))
 	used, usedOK := grokNumber(firstNonEmpty(config["used"], config["includedUsed"], config["included_used"], config["totalUsed"], config["total_used"]))
 	if !usedOK || used <= 0 {
-		return nil, ""
+		return nil
 	}
 	if monthlyOK && monthly > 0 {
-		return map[string]any{"Monthly included": grokQuota(used, monthly, reset)}, ""
+		return map[string]any{"Monthly included": grokQuota(used, monthly, reset)}
 	}
-	// Sem limite publicado: número real de uso, sem barra enganosa.
-	usage := fmt.Sprintf("%d used this billing period", int64(used))
-	if reset != nil {
-		usage += fmt.Sprintf(", resets %v", reset)
-	}
-	return nil, usage
+	// Sem limite publicado: uso real do período na barra padrão da UI
+	// (unlimited → "152 used · Unlimited" com countdown), sem total inventado.
+	return map[string]any{"Monthly usage": map[string]any{"used": used, "total": 0, "remainingPercentage": 100, "resetAt": reset, "unlimited": true}}
 }
 
 type grokCredits struct {
