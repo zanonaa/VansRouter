@@ -50,17 +50,18 @@ func TestGrokCreditsFrameDecode(t *testing.T) {
 
 func TestParseGrokFullUsage(t *testing.T) {
 	live := map[string]any{"config": map[string]any{"monthlyLimit": map[string]any{"val": float64(0)}, "used": map[string]any{"val": float64(152)}, "billingPeriodEnd": "2026-11-01T00:00:00Z"}}
-	quotas, line := parseGrokFullUsage(live)
-	if quotas != nil || line == "" || !strings.Contains(line, "152 used this billing period") || !strings.Contains(line, "2026-11-01") {
-		t.Fatalf("unified-billing live shape: %v %q", quotas, line)
+	quotas := parseGrokFullUsage(live)
+	usage := quotas["Monthly usage"].(map[string]any)
+	if usage["unlimited"] != true || usage["used"] != float64(152) || usage["resetAt"] == nil {
+		t.Fatalf("unified-billing live shape: %v", usage)
 	}
 	withLimit := map[string]any{"config": map[string]any{"monthlyLimit": map[string]any{"val": float64(300)}, "used": map[string]any{"val": float64(152)}, "billingPeriodEnd": "2026-11-01T00:00:00Z"}}
-	quotas, line = parseGrokFullUsage(withLimit)
+	quotas = parseGrokFullUsage(withLimit)
 	monthly := quotas["Monthly included"].(map[string]any)
-	if line != "" || monthly["remainingPercentage"] != float64(100-152.0/300*100) {
-		t.Fatalf("monthly limit shape: %v %q", monthly, line)
+	if monthly["remainingPercentage"] != float64(100-152.0/300*100) {
+		t.Fatalf("monthly limit shape: %v", monthly)
 	}
-	if quotas, line = parseGrokFullUsage(map[string]any{"config": map[string]any{"monthlyLimit": map[string]any{"val": float64(0)}, "used": map[string]any{"val": float64(0)}}}); quotas != nil || line != "" {
-		t.Fatalf("empty usage should fall through: %v %q", quotas, line)
+	if quotas = parseGrokFullUsage(map[string]any{"config": map[string]any{"monthlyLimit": map[string]any{"val": float64(0)}, "used": map[string]any{"val": float64(0)}}}); quotas != nil {
+		t.Fatalf("empty usage should fall through: %v", quotas)
 	}
 }
