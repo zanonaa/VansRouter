@@ -40,4 +40,10 @@ func TestGrokCreditsFrameDecode(t *testing.T) {
 	if _, err = decodeGrokCredits([]byte{0, 0, 0, 0, 9, 1}); err == nil {
 		t.Fatal("accepted truncated frame")
 	}
+	// Unified-billing payloads carry no usage-ratio field: decoder must return
+	// no quota (not an error), matching the JS origin's fail-open null.
+	ratioLess := []byte{0, 0, 0, 0, 0x06, 0x0a, 0x04, 0x12, 0x00, 0x1a, 0x00}
+	if decoded, decodeErr := decodeGrokCredits(ratioLess); decodeErr != nil || decoded != nil {
+		t.Fatal("ratio-less frame must decode to nil without error", decoded, decodeErr)
+	}
 }
