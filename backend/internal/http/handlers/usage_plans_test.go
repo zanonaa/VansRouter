@@ -16,7 +16,7 @@ func TestGLMAndMiniMaxUsage(t *testing.T) {
 		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{"data":{"level":"pro","limits":[{"type":"TOKENS_LIMIT","unit":3,"number":5,"percentage":25,"nextResetTime":1700000000000}]}}`))}, nil
 	})}}
 	result := u.glmUsage(httptest.NewRequest("GET", "/", nil), "glm-cn", "key")
-	if result["plan"] != "Pro" || result["quotas"].(map[string]any)["Session (5h)"].(map[string]any)["remaining"] != float64(75) {
+	if result["plan"] != "Pro" || result["quotas"].(map[string]any)["Session (5h)"].(map[string]any)["remainingPercentage"] != float64(75) {
 		t.Fatal(result)
 	}
 	calls := 0
@@ -54,5 +54,25 @@ func TestKimiUsageAPIKeyAndPermission(t *testing.T) {
 	result = u.kimiUsage(httptest.NewRequest("GET", "/", nil), map[string]any{"accessToken": "token"})
 	if result["message"] != "subscribe first" {
 		t.Fatal(result)
+	}
+}
+
+func TestParseGLMUsageFromLiveHAR(t *testing.T) {
+	payload := map[string]any{"data": map[string]any{"level": "lite", "limits": []any{
+		map[string]any{"type": "CREDIT_LIMIT", "unit": float64(3), "number": float64(5), "usage": float64(2000), "currentValue": float64(0), "remaining": float64(2000), "percentage": float64(0)},
+		map[string]any{"type": "CREDIT_LIMIT", "unit": float64(6), "number": float64(1), "usage": float64(10000), "currentValue": float64(1027), "remaining": float64(8972), "percentage": float64(10), "nextResetTime": float64(1793581331985)},
+	}}}
+	result := parseGLMUsage(payload)
+	quotas := result["quotas"].(map[string]any)
+	weekly := quotas["Weekly (7d)"].(map[string]any)
+	if result["plan"] != "Lite" || weekly["remainingPercentage"] != float64(90) || weekly["resetAt"] != "2026-11-02T01:02:11.985Z" {
+		t.Fatalf("weekly HAR shape: %v", weekly)
+	}
+	if _, hasAbsolute := weekly["remaining"]; hasAbsolute {
+		t.Fatal("absolute `remaining` leaks as percentage into the UI")
+	}
+	session := quotas["Session (5h)"].(map[string]any)
+	if session["remainingPercentage"] != float64(100) || session["resetAt"] != nil {
+		t.Fatalf("session HAR shape: %v", session)
 	}
 }

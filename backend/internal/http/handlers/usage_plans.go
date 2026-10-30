@@ -65,7 +65,9 @@ func parseGLMUsage(data map[string]any) map[string]any {
 		if reset > 0 {
 			resetAt = time.UnixMilli(int64(reset)).UTC().Format(time.RFC3339Nano)
 		}
-		quotas[key] = map[string]any{"used": used, "total": 100, "remaining": remaining, "remainingPercentage": remaining, "resetAt": resetAt, "unlimited": false}
+		// Não emitir `remaining` absoluto: a UI o interpreta como percentual
+		// (mesma convenção de grok/qoder). Percentual + reset bastam.
+		quotas[key] = map[string]any{"used": used, "total": 100, "remainingPercentage": remaining, "resetAt": resetAt, "unlimited": false}
 	}
 	level := ttsString(payload["level"])
 	plan := "Unknown"
