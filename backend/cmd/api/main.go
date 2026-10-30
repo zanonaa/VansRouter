@@ -212,6 +212,9 @@ func run() error {
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
 	catalogSync.StartTimer()
+	// Refresh proativo de OAuth: renova access tokens ~5min antes de expirar,
+	// evitando o 401+retry na primeira chamada após períodos sem tráfego.
+	handlers.StartOAuthRefreshScheduler(ctx, handlers.OAuthRefreshScheduler{Connections: database.Connections{DB: db}})
 	quotaAutoPing := handlers.NewQuotaAutoPing(db, nil)
 	quotaPingDone := make(chan struct{})
 	go func() { defer close(quotaPingDone); quotaAutoPing.Run(ctx) }()
