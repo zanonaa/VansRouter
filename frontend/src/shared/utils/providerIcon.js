@@ -1,5 +1,13 @@
 // Provider icon paths under /public/providers.
 // Alias related brands; session-cache 404s so one miss never spams again.
+// Custom providers (openai-compatible-<uuid> etc.) never have an icon file:
+// resolve to fallback upfront so no 404 is ever requested.
+
+const CUSTOM_PROVIDER_PREFIXES = [
+  "openai-compatible-",
+  "anthropic-compatible-",
+  "custom-embedding-",
+];
 
 const ICON_ALIASES = {
   "perplexity-agent": "perplexity",
@@ -21,11 +29,16 @@ function normalizeId(providerId) {
   return providerId.trim().toLowerCase();
 }
 
+function isCustomProviderId(id) {
+  return CUSTOM_PROVIDER_PREFIXES.some((prefix) => id.startsWith(prefix));
+}
+
 /** Resolve icon file id (after alias). Empty if previously failed this session. */
 export function resolveProviderIconId(providerId) {
   const id = normalizeId(providerId);
   if (!id) return "";
   if (failedIds.has(id)) return "";
+  if (isCustomProviderId(id)) return "";
   const aliased = ICON_ALIASES[id] || id;
   if (failedIds.has(aliased)) return "";
   return aliased;
